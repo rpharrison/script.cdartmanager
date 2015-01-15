@@ -53,7 +53,9 @@ def check_size( path, type, size_w, size_h ):
     else:
         return True
     try:
-        artwork = Image.open( destination )
+        # Helix: not really a Helix problem but file cannot be removed after Image.open locking it
+        with open(str(destination), 'rb') as destf:
+            artwork = Image.open( destf )
         log( "Image Size: %s px(W) X %s px(H)" % ( artwork.size[ 0 ], artwork.size[ 1 ] ), xbmc.LOGDEBUG )
         if artwork.size[0] < size_w and artwork.size[1] < size_h:  # if image is smaller than 1000 x 1000 and the image on fanart.tv = 1000
             delete_file( destination )
@@ -88,6 +90,7 @@ def get_filename( type, url, mode ):
     return file_name
 
 def make_music_path( artist ):
+    #Helix: paths MUST end with trailing slash
     path = os.path.join( music_path, artist ).replace( "\\\\","\\" )
     path2 = os.path.join( music_path, str.lower(artist) ).replace( "\\\\","\\" )
     if not exists( path2 ):
@@ -119,7 +122,8 @@ def download_art( url_cdart, album, database_id, type, mode, size, background = 
         dialog_msg( "create", heading = __language__(32047), background = background )
         #Onscreen Dialog - "Downloading...."
     file_name = get_filename( type, url_cdart, mode )
-    path = album["path"].replace( "\\\\" , "\\" )
+    #Helix: paths MUST end with trailing slash
+    path = os.path.join(album["path"].replace( "\\\\" , "\\" ), '')
     if file_name == "unknown":
         log( "Unknown Type ", xbmc.LOGDEBUG )
         message = [ __language__(32026), __language__(32025), "File: %s" % get_unicode( path ), "Url: %s" % get_unicode( url_cdart ) ]

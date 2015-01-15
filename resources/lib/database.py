@@ -225,7 +225,8 @@ def retrieve_album_details_full( album_list, total, background=False, simple=Fal
                         if path == previous_path:
                             continue
                         else:
-                            if xbmcvfs.exists(path):
+                            #Helix: paths MUST end with trailing slash
+                            if xbmcvfs.exists(os.path.join(path, '')):
                                 log( "Path Exists", xbmc.LOGDEBUG )
                                 try:
                                     album_artist["local_id"] = detail['local_id']  # for database update

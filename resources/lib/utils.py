@@ -171,8 +171,9 @@ def get_html_source( url, path, save_file = True, overwrite = False ):
     if save_file:
         path = path.replace("http://api.fanart.tv/api/music.php?id=", "")
         path = path + ".xml"
-        if not exists( tempxml_folder ):
-            os.mkdir( tempxml_folder )
+        #Helix: paths MUST end with trailing slash
+        if not exists( os.path.join(tempxml_folder, '') ):
+            os.mkdir( os.path.join(tempxml_folder, '') )
         file_name = os.path.join( tempxml_folder, path )
     class AppURLopener(urllib.FancyURLopener):
         version = __useragent__
