@@ -265,7 +265,7 @@ def check_fanart_new_artwork( present_datecode ):
     previous_datecode = retrieve_fanarttv_datecode()
     # fix: use global tempxml_folder instead of explicit definition
     if xbmcvfs.exists( os.path.join( tempxml_folder, "%s.xml" % previous_datecode ) ):
-        xbmcvfs.delete( os.path.join( tempxml_folder, "tempxml", "%s.xml" % previous_datecode ) )
+        xbmcvfs.delete( os.path.join( tempxml_folder, "%s.xml" % previous_datecode ) )
     url = new_music % ( api_key, str( previous_datecode ) )
     htmlsource = ( get_html_source( url, str( present_datecode ), save_file = True, overwrite = False ) ).encode( 'utf-8', 'ignore' )
     if htmlsource == "null":
