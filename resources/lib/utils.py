@@ -155,8 +155,9 @@ def clear_image_cache( url ):
         delete_file( dds )
 
 def empty_tempxml_folder():
-    if exists( tempxml_folder ):
-        for file_name in os.listdir( tempxml_folder ):
+    #Helix: paths MUST end with trailing slash
+    if exists( os.path.join(tempxml_folder, '') ):
+        for file_name in os.listdir( os.path.join(tempxml_folder, '') ):
             delete_file( os.path.join( tempxml_folder, file_name ) )
     else:
         pass
@@ -226,8 +227,9 @@ def get_html_source2( url, path, save_file = True, overwrite = False ):
     if save_file:
         path = path.replace("http://api.fanart.tv/api/music.php?id=", "")
         path = path + ".xml"
-        if not exists( tempxml_folder ):
-            os.mkdir( tempxml_folder )
+        #Helix: paths MUST end with trailing slash
+        if not exists( os.path.join(tempxml_folder, '') ):
+            os.mkdir( os.path.join(tempxml_folder, '') )
         file_name = os.path.join( tempxml_folder, path )
     for i in range(0, 4):
         try:

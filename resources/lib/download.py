@@ -30,6 +30,8 @@ music_path         = sys.modules[ "__main__" ].music_path
 enable_hdlogos     = sys.modules[ "__main__" ].enable_hdlogos
 fanart_limit       = sys.modules[ "__main__" ].fanart_limit
 enable_fanart_limit= sys.modules[ "__main__" ].enable_fanart_limit
+# use temp folder for downloading
+tempgfx_folder  = sys.modules[ "__main__" ].tempgfx_folder
 
 from fanarttv_scraper import remote_banner_list, remote_hdlogo_list, get_recognized, remote_cdart_list, remote_coverart_list, remote_fanart_list, remote_clearlogo_list, remote_artistthumb_list
 from database import get_local_artists_db, get_local_albums_db, artwork_search
@@ -142,7 +144,11 @@ def download_art( url_cdart, album, database_id, type, mode, size, background = 
     log( "Path: %s" % path, xbmc.LOGDEBUG )
     log( "Filename: %s" % file_name, xbmc.LOGDEBUG )
     log( "url: %s" % url_cdart, xbmc.LOGDEBUG )
-    destination = os.path.join( addon_work_folder , file_name).replace( "\\\\","\\" ) # download to work folder first
+    
+    # cosmetic: use subfolder for downloading instead of work folder
+    if not exists( os.path.join(tempgfx_folder, '').replace( "\\\\","\\" )):
+        _makedirs(os.path.join(tempgfx_folder, '').replace( "\\\\","\\" ))
+    destination = os.path.join(tempgfx_folder, file_name).replace( "\\\\","\\" ) # download to work folder first
     final_destination = os.path.join( path, file_name ).replace( "\\\\","\\" )
     try:
         #this give the ability to use the progress bar by retrieving the downloading information
@@ -187,8 +193,9 @@ def download_art( url_cdart, album, database_id, type, mode, size, background = 
             log( "    file path: %s" % repr( destination ), xbmc.LOGDEBUG )
             message = [ __language__(32026),  __language__(32025) , "File: %s" % get_unicode( path ), "Url: %s" % get_unicode( url_cdart ) ]
             #message = Download Problem, Check file paths - Artwork Not Downloaded]           
-        if type == "fanart":
-            delete_file( destination )
+        # always cleanup downloaded files
+        #if type == "fanart":
+        delete_file( destination )
     except:
         log( "General download error", xbmc.LOGDEBUG )
         message = [ __language__(32026), __language__(32025), "File: %s" % get_unicode( path ), "Url: %s" % get_unicode( url_cdart ) ]
@@ -322,6 +329,9 @@ def auto_download( type, artist_list, background=False ):
                         if type == "artistthumb":
                             if resizeondownload:
                                 low_res = check_size( auto_art["path"], key_label, 1000, 1000 )
+                            # Fixed always redownloading Thumbs
+                            else:
+                                low_res = False
                             if exists( os.path.join( auto_art["path"], "folder.jpg" ) ) and not low_res:
                                 log( "Artist Thumb already exists, skipping", xbmc.LOGDEBUG )
                                 continue
