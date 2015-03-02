@@ -3,7 +3,14 @@
 import xbmc, xbmcgui
 import urllib, sys, re, os, urllib2
 from traceback import print_exc
-from PIL import Image
+
+# Helix: PIL is not available in Helix 14.1 on Android 
+try:
+    from PIL import Image
+    pil_is_available = True
+except:
+    pil_is_available = False
+    
 try:
     from sqlite3 import dbapi2 as sqlite3
 except:
@@ -55,17 +62,22 @@ def check_size( path, type, size_w, size_h ):
     else:
         return True
     try:
-        # Helix: not really a Helix problem but file cannot be removed after Image.open locking it
-        with open(str(destination), 'rb') as destf:
-            artwork = Image.open( destf )
-        log( "Image Size: %s px(W) X %s px(H)" % ( artwork.size[ 0 ], artwork.size[ 1 ] ), xbmc.LOGDEBUG )
-        if artwork.size[0] < size_w and artwork.size[1] < size_h:  # if image is smaller than 1000 x 1000 and the image on fanart.tv = 1000
-            delete_file( destination )
-            log( "Image is smaller", xbmc.LOGDEBUG )
-            return True
+        # Helix: PIL is not available in Helix 14.1 on Android 
+        if (pil_is_available):
+            # Helix: not really a Helix problem but file cannot be removed after Image.open locking it
+            with open(str(destination), 'rb') as destf:
+                artwork = Image.open( destf )
+            log( "Image Size: %s px(W) X %s px(H)" % ( artwork.size[ 0 ], artwork.size[ 1 ] ), xbmc.LOGDEBUG )
+            if artwork.size[0] < size_w and artwork.size[1] < size_h:  # if image is smaller than 1000 x 1000 and the image on fanart.tv = 1000
+                delete_file( destination )
+                log( "Image is smaller", xbmc.LOGDEBUG )
+                return True
+            else:
+                delete_file( destination )
+                log( "Image is same size or larger", xbmc.LOGDEBUG )
+                return False
         else:
-            delete_file( destination )
-            log( "Image is same size or larger", xbmc.LOGDEBUG )
+            log( "PIL not available, skipping size check", xbmc.LOGDEBUG )
             return False
     except:
         log( "artwork does not exist. Source: %s" % source, xbmc.LOGDEBUG )
