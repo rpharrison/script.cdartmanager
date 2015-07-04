@@ -305,7 +305,7 @@ if ( __name__ == "__main__" ):
     log( "#    %-50s    #" % __credits__, xbmc.LOGNOTICE )
     log( "#    %-50s    #" % __credits2__, xbmc.LOGNOTICE )
     log( "#    Thanks for the help guys...                           #", xbmc.LOGNOTICE )
-    log( "#    %-50s    #" % "Frodo", xbmc.LOGNOTICE )
+    log( "#    %-50s    #" % "Helix", xbmc.LOGNOTICE )
     log( "############################################################", xbmc.LOGNOTICE )
     log( "Looking for settings.xml", xbmc.LOGNOTICE )
     if not exists(settings_file): # Open Settings if settings.xml does not exists
