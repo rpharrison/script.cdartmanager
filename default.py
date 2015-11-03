@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import sys
-import os
-import traceback
-import time
-import datetime
 import calendar
+import datetime
+import os
+import sys
+import time
+import traceback
 
-import xbmcaddon
 import xbmc
+import xbmcaddon
 import xbmcgui
 
 try:
@@ -334,7 +334,7 @@ if (__name__ == "__main__"):
     log("#    %-50s    #" % __credits__, xbmc.LOGNOTICE)
     log("#    %-50s    #" % __credits2__, xbmc.LOGNOTICE)
     log("#    Thanks for the help guys...                           #", xbmc.LOGNOTICE)
-    log("#    %-50s    #" % "Helix", xbmc.LOGNOTICE)
+    log("#    %-50s    #" % "NG", xbmc.LOGNOTICE)
     log("############################################################", xbmc.LOGNOTICE)
     log("Looking for settings.xml", xbmc.LOGNOTICE)
     if not exists(settings_file):  # Open Settings if settings.xml does not exists
