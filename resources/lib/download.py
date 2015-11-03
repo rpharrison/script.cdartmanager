@@ -1,17 +1,13 @@
 # -*- coding: utf-8 -*-
 
-import urllib
-import sys
-import re
 import os
-import urllib2
+import sys
+import urllib
 from traceback import print_exc
 
 import xbmc
-import xbmcgui
 
-
-# Helix: PIL is not available in Helix 14.1 on Android 
+# Helix: PIL is not available in Helix 14.1 on Android
 try:
     from PIL import Image
 
@@ -48,13 +44,11 @@ enable_fanart_limit = sys.modules["__main__"].enable_fanart_limit
 # use temp folder for downloading
 tempgfx_folder = sys.modules["__main__"].tempgfx_folder
 
-from fanarttv_scraper import remote_banner_list, remote_hdlogo_list, get_recognized, remote_cdart_list, \
+from fanarttv_scraper import remote_banner_list, remote_hdlogo_list, remote_cdart_list, \
     remote_coverart_list, remote_fanart_list, remote_clearlogo_list, remote_artistthumb_list
-from database import get_local_artists_db, get_local_albums_db, artwork_search
-from utils import clear_image_cache, get_unicode, change_characters, log, dialog_msg, smart_unicode, smart_utf8
-from file_item import Thumbnails
-from jsonrpc_calls import get_all_local_artists, retrieve_album_list, retrieve_album_details, get_album_path, \
-    get_thumbnail_path, get_fanart_path
+from database import get_local_albums_db, artwork_search
+from utils import get_unicode, change_characters, log, dialog_msg, smart_unicode
+from jsonrpc_calls import get_thumbnail_path, get_fanart_path
 from xbmcvfs import delete as delete_file
 from xbmcvfs import exists as exists
 from xbmcvfs import copy as file_copy
@@ -63,37 +57,40 @@ from xbmcvfs import listdir
 
 
 def check_size(path, type, size_w, size_h):
-    # first copy from source to work directory since Python does not support SMB://
-    file_name = get_filename(type, path, "auto")
-    destination = os.path.join(addon_work_folder, "temp", file_name)
-    source = os.path.join(path, file_name)
-    log("Checking Size", xbmc.LOGDEBUG)
-    if exists(source):
-        file_copy(source, destination)
-    else:
-        return True
-    try:
-        # Helix: PIL is not available in Helix 14.1 on Android 
-        if (pil_is_available):
-            # Helix: not really a Helix problem but file cannot be removed after Image.open locking it
-            with open(str(destination), 'rb') as destf:
-                artwork = Image.open(destf)
-            log("Image Size: %s px(W) X %s px(H)" % (artwork.size[0], artwork.size[1]), xbmc.LOGDEBUG)
-            if artwork.size[0] < size_w and artwork.size[
-                1] < size_h:  # if image is smaller than 1000 x 1000 and the image on fanart.tv = 1000
-                delete_file(destination)
-                log("Image is smaller", xbmc.LOGDEBUG)
-                return True
-            else:
-                delete_file(destination)
-                log("Image is same size or larger", xbmc.LOGDEBUG)
-                return False
-        else:
-            log("PIL not available, skipping size check", xbmc.LOGDEBUG)
-            return False
-    except:
-        log("artwork does not exist. Source: %s" % source, xbmc.LOGDEBUG)
-        return True
+    return False
+
+
+#    # first copy from source to work directory since Python does not support SMB://
+#    file_name = get_filename(type, path, "auto")
+#    destination = os.path.join(addon_work_folder, "temp", file_name)
+#    source = os.path.join(path, file_name)
+#    log("Checking Size", xbmc.LOGDEBUG)
+#    if exists(source):
+#        file_copy(source, destination)
+#    else:
+#        return True
+#    try:
+#        # Helix: PIL is not available in Helix 14.1 on Android
+#        if (pil_is_available):
+#            # Helix: not really a Helix problem but file cannot be removed after Image.open locking it
+#            with open(str(destination), 'rb') as destf:
+#                artwork = Image.open(destf)
+#            log("Image Size: %s px(W) X %s px(H)" % (artwork.size[0], artwork.size[1]), xbmc.LOGDEBUG)
+#            if artwork.size[0] < size_w and artwork.size[
+#                1] < size_h:  # if image is smaller than 1000 x 1000 and the image on fanart.tv = 1000
+#                delete_file(destination)
+#                log("Image is smaller", xbmc.LOGDEBUG)
+#                return True
+#            else:
+#                delete_file(destination)
+#                log("Image is same size or larger", xbmc.LOGDEBUG)
+#                return False
+#        else:
+#            log("PIL not available, skipping size check", xbmc.LOGDEBUG)
+#            return False
+#    except:
+#        log("artwork does not exist. Source: %s" % source, xbmc.LOGDEBUG)
+#        return True
 
 
 def get_filename(type, url, mode):
