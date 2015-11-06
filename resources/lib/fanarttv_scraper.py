@@ -304,11 +304,11 @@ def check_art(mbid, artist_type="album"):
     has_art = "False"
     # url = music_url_json % (api_key, str(mbid), "all")
     url = music_url_json % (str(mbid), api_key)
-    if artist_type == "album":
-        # htmlsource = (get_html_source(url, str(mbid), save_file=True, overwrite=True)).encode('utf-8', 'ignore')
-        htmlsource = (get_html_source(url, str(mbid), save_file=True, overwrite=True))
-    #    else:
-    #        htmlsource = (get_html_source(url, str(mbid), save_file=True, overwrite=True)).encode('utf-8', 'ignore')
+    # if artist_type == "album":
+    #   htmlsource = (get_html_source(url, str(mbid), save_file=True, overwrite=True)).encode('utf-8', 'ignore')
+    # else:
+    #   htmlsource = (get_html_source(url, str(mbid), save_file=True, overwrite=True)).encode('utf-8', 'ignore')
+    htmlsource = get_html_source(url, str(mbid), save_file=True, overwrite=True)
     if htmlsource == "null":
         log("No artwork found for MBID: %s" % mbid, xbmc.LOGDEBUG)
         has_art = "False"
@@ -326,7 +326,7 @@ def update_art(mbid, data, existing_has_art):
             url = music_url_json % (str(mbid), api_key)
             has_art = "True"
             #            new_art = (get_html_source(url, str(mbid), save_file=True, overwrite=True)).encode('utf-8', 'ignore')
-            new_art = (get_html_source(url, str(mbid), save_file=True, overwrite=True))
+            new_art = get_html_source(url, str(mbid), save_file=True, overwrite=True)
             break
     return has_art
 
