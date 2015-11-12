@@ -218,7 +218,7 @@ def update_xbmc_thumbnails(background=False):
         if dialog_msg("iscanceled"):
             break
         dialog_msg("update", percent=percent, line1=__language__(32112),
-                   line2=" %s %s" % (__language__(32038), getunicode(artist["name"])), background=background)
+                   line2=" %s %s" % (__language__(32038), get_unicode(artist["name"])), background=background)
         xbmc_thumbnail_path = ""
         xbmc_fanart_path = ""
         fanart_path = os.path.join(music_path, change_characters(artist["name"]), fanart).replace("\\\\", "\\")
@@ -249,7 +249,7 @@ def update_xbmc_thumbnails(background=False):
         if dialog_msg("iscanceled"):
             break
         dialog_msg("update", percent=percent, line1=__language__(32042), line2=__language__(32112),
-                   line3=" %s %s" % (__language__(32039), getunicode(album["title"])), background=background)
+                   line3=" %s %s" % (__language__(32039), get_unicode(album["title"])), background=background)
         xbmc_thumbnail_path = ""
         coverart_path = os.path.join(album["path"], albumthumb).replace("\\\\", "\\")
         if exists(coverart_path):
@@ -376,21 +376,14 @@ if (__name__ == "__main__"):
                     all_artists = []
                 first_check(all_artists, local_artists, background=True)
                 xbmcgui.Window(10000).setProperty("cdartmanager_update", "False")
-            elif script_mode in (
-            "autocdart", "autocover", "autofanart", "autologo", "autothumb", "autobanner", "autoall", "update"):
+            elif script_mode in ("autocdart", "autocover", "autofanart", "autologo", "autothumb", "autobanner", "autoall", "update"):
                 local_artists = get_local_artists_db(mode="album_artists", background=True)
                 if enable_all_artists:
                     all_artists = get_local_artists_db(mode="all_artists", background=True)
                 else:
                     all_artists = []
-                d = datetime.datetime.utcnow()
-                present_datecode = calendar.timegm(d.utctimetuple())
-                new_artwork, data = check_fanart_new_artwork(present_datecode)
-                if new_artwork:
-                    all_artists_list, album_artists = get_recognized(all_artists, local_artists, background=True)
-                else:
-                    all_artists_list = all_artists
-                    album_artists = local_artists
+                all_artists_list = all_artists
+                album_artists = local_artists
             if script_mode in ("autocdart", "autocover", "autofanart", "autologo", "autothumb", "autobanner"):
                 xbmcgui.Window(10000).setProperty("cdart_manager_running", "True")
                 if script_mode == "autocdart":
@@ -439,11 +432,9 @@ if (__name__ == "__main__"):
                 for artwork_type in ("cdart", "cover", "fanart", "clearlogo", "artistthumb", "musicbanner"):
                     log("Start method - Autodownload %s in background" % artwork_type, xbmc.LOGNOTICE)
                     if artwork_type in ("fanart", "clearlogo", "artistthumb", "musicbanner") and enable_all_artists:
-                        download_count, successfully_downloaded = auto_download(artwork_type, all_artists_list,
-                                                                                background=True)
+                        download_count, successfully_downloaded = auto_download(artwork_type, all_artists_list, background=True)
                     elif artwork_type:
-                        download_count, successfully_downloaded = auto_download(artwork_type, album_artists,
-                                                                                background=True)
+                        download_count, successfully_downloaded = auto_download(artwork_type, album_artists, background=True)
                     total_artwork += download_count
                 log("Autodownload all artwork completed\nTotal artwork downloaded: %d" % total_artwork, xbmc.LOGNOTICE)
             elif script_mode == "update_thumbs":
@@ -521,7 +512,7 @@ if (__name__ == "__main__"):
                         c = conn_l.cursor()
                         c.execute(query)
                         version = c.fetchall()
-                        c.close
+                        c.close()
                         if version[0][0] == __dbversion__:
                             log("Database matched", xbmc.LOGNOTICE)
                         elif version[0][0] == __dbversionold__:

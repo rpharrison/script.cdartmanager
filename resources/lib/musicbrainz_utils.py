@@ -301,7 +301,7 @@ def get_musicbrainz_artist_id(artist_search, limit=1, alias=False):
         url = artist_url % (server, quote_plus(artist_name.encode("utf-8")), limit)
     else:
         url = alias_url % (server, quote_plus(artist_name.encode("utf-8")), limit)
-    htmlsource = get_html_source(url, "", save_file=False)
+    htmlsource = get_html_source(url, "", save_file=False, overwrite=False)
     match = re.search('''<artist(.*?)</artist>''', htmlsource)
     if match:
         score_match = re.search('''score="(.*?)"''', htmlsource)
@@ -368,7 +368,7 @@ def mbid_check(database_mbid, type):
         url = release_group_id_check % (server, database_mbid)
     elif type == "artist":
         url = artist_id_check % (server, database_mbid)
-    htmlsource = get_html_source(url, "", save_file=False)
+    htmlsource = get_html_source(url, "", save_file=False, overwrite=False)
     if type == "release-group":
         match = re.search('''<release-group id="(.*?)"(?:.*?)>''', htmlsource)
         if match:

@@ -186,10 +186,7 @@ def get_html_source(url, path, save_file=True, overwrite=False):
     htmlsource = "null"
     file_name = ""
     if save_file:
-        # path = path.replace("http://api.fanart.tv/api/music.php?id=", "")
-        # path = path + ".xml"
-        path = path + ".json"
-        # Helix: paths MUST end with trailing slash
+        path += ".json"
         if not exists(os.path.join(tempxml_folder, '')):
             os.mkdir(os.path.join(tempxml_folder, ''))
         file_name = os.path.join(tempxml_folder, path)
@@ -212,7 +209,7 @@ def get_html_source(url, path, save_file=True, overwrite=False):
                 urllib.urlcleanup()
                 sock = urllib.urlopen(url)
             htmlsource = sock.read()
-            if save_file and not htmlsource == "null":
+            if save_file and htmlsource not in ("null", ""):
                 if not exists(file_name) or overwrite:
                     file(file_name, "w").write(htmlsource)
             sock.close()
@@ -227,57 +224,12 @@ def get_html_source(url, path, save_file=True, overwrite=False):
             log("!!Unable to open page %s" % url, xbmc.LOGDEBUG)
             error = True
     if error:
-        return htmlsource
+        return "null"
     else:
         log("HTML Source:\n%s" % htmlsource, xbmc.LOGDEBUG)
+        if htmlsource == "":
+            htmlsource = "null"
         return htmlsource
-
-
-# def get_html_source2(url, path, save_file=True, overwrite=False):
-#    """ fetch the html source """
-#    log("Retrieving HTML Source", xbmc.LOGDEBUG)
-#    log("Fetching URL: %s" % url, xbmc.LOGDEBUG)
-#    error = False
-#    htmlsource = "null"
-#    file_name = ""
-#    socket.setdefaulttimeout(30)
-#    request = urllib2.Request(url)
-#    opener = urllib2.build_opener()
-#    request.add_header('User-Agent', __useragent__)
-#    if save_file:
-#        path = path.replace("http://api.fanart.tv/api/music.php?id=", "")
-#        path = path + ".xml"
-#        # Helix: paths MUST end with trailing slash
-#        if not exists(os.path.join(tempxml_folder, '')):
-#            os.mkdir(os.path.join(tempxml_folder, ''))
-#        file_name = os.path.join(tempxml_folder, path)
-#    for i in range(0, 4):
-#        try:
-#            if save_file:
-#                if exists(file_name) and not overwrite:
-#                    log("Retrieving local source", xbmc.LOGDEBUG)
-#                    sock = open(file_name, "r")
-#                else:
-#                    log("Retrieving online source", xbmc.LOGDEBUG)
-#                    sock = opener.open(request)
-#            else:
-#                sock = opener.open(request)
-#            htmlsource = sock.read()
-#            if save_file and not htmlsource == "null":
-#                if not exists(file_name) or overwrite:
-#                    file(file_name, "w").write(htmlsource)
-#            sock.close()
-#            error = False
-#            break
-#        except:
-#            traceback.print_exc()
-#            log("!!Unable to open page %s" % url, xbmc.LOGNOTICE)
-#            error = True
-#    if error:
-#        return htmlsource
-#    else:
-#        log("HTML Source:\n%s" % htmlsource, xbmc.LOGDEBUG)
-#        return htmlsource
 
 
 def unescape(text):

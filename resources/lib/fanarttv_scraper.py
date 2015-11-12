@@ -3,10 +3,12 @@
 
 import calendar
 import sys
+import os
 from datetime import datetime
 from traceback import print_exc
 
 import xbmc
+import xbmcvfs
 
 if sys.version_info < (2, 7):
     import simplejson
@@ -28,17 +30,11 @@ api_key = sys.modules["__main__"].api_key
 enable_all_artists = sys.modules["__main__"].enable_all_artists
 tempxml_folder = sys.modules["__main__"].tempxml_folder
 
-# sys.path.append( os.path.join( BASE_RESOURCE_PATH, "lib" ) )
 from utils import get_html_source, log, dialog_msg
 from database import store_lalist, store_local_artist_table, store_fanarttv_datecode, retrieve_fanarttv_datecode
 
-# music_url = "http://api.fanart.tv/webservice/artist/%s/%s/xml/%s/2/2"
-# single_release_group = "http://api.fanart.tv/webservice/album/%s/%s/xml/%s/2/2"
-# artist_url = "http://api.fanart.tv/webservice/has-art/%s/"
-# music_url_json = "http://api.fanart.tv/webservice/artist/%s/%s/json/%s/2/2"
 music_url_json = "http://webservice.fanart.tv/v3/music/%s?api_key=%s"
-# single_release_group_json = "http://api.fanart.tv/webservice/album/%s/%s/json/%s/2/2"
-# new_music = "http://api.fanart.tv/webservice/newmusic/%s/%s/"
+new_music = "http://webservice.fanart.tv/v3/music/latest?api_key=%s&date=%s"
 
 lookup_id = False
 
@@ -163,7 +159,7 @@ def retrieve_fanarttv_json(id):
     # url = music_url_json % (api_key, id, "all")
     url = music_url_json % (id, api_key)
     # htmlsource = (get_html_source(url, id, save_file=False, overwrite=False)).encode('utf-8', 'ignore')
-    htmlsource = (get_html_source(url, id, save_file=False, overwrite=False))
+    htmlsource = get_html_source(url, "FTV_"+str(id), save_file=True, overwrite=False)
     artist_artwork = []
     backgrounds = []
     musiclogos = []
@@ -252,63 +248,33 @@ def retrieve_fanarttv_json(id):
     return artist_artwork
 
 
-# def match_library(local_artist_list):
-#    available_artwork = []
-#    try:
-#        for artist in local_artist_list:
-#            artist_artwork = {}
-#            if not artist["musicbrainz_artistid"]:
-#                name, artist["musicbrainz_artistid"], sortname = get_musicbrainz_artist_id(artist["name"])
-#            if artist["musicbrainz_artistid"]:
-#                artwork = retrieve_fanarttv_xml(artist["musicbrainz_artistid"])
-#                if artwork:
-#                    artist_artwork["name"] = artist["name"]
-#                    artist_artwork["musicbrainz_id"] = artist["musicbrainz_artistid"]
-#                    artist_artwork["artwork"] = artwork
-#                    available_artwork.append(artist_artwork)
-#                else:
-#                    log("Unable to match artist on fanart.tv: %s" % artist["name"], xbmc.LOGDEBUG)
-#            else:
-#                log("Unable to match artist on Musicbrainz: %s" % artist["name"], xbmc.LOGDEBUG)
-#    except:
-#        print_exc()
-#    return available_artwork
-
-
 def check_fanart_new_artwork(present_datecode):
-    '''This function returns True if fanart.tv has new artwork, False if not.
-       Also it returns the JSON Data'''
-    #    log("Checking for new Artwork on fanart.tv since last run...", xbmc.LOGNOTICE)
-    #    previous_datecode = retrieve_fanarttv_datecode()
-    #    # fix: use global tempxml_folder instead of explicit definition
-    #    if xbmcvfs.exists(os.path.join(tempxml_folder, "%s.xml" % previous_datecode)):
-    #        xbmcvfs.delete(os.path.join(tempxml_folder, "%s.xml" % previous_datecode))
-    #    url = new_music % (api_key, str(previous_datecode))
-    #    htmlsource = (get_html_source(url, str(present_datecode), save_file=True, overwrite=False)).encode('utf-8',
-    #                                                                                                       'ignore')
-    #    if htmlsource == "null":
-    #        log("No new Artwork found on fanart.tv", xbmc.LOGNOTICE)
-    #        return False, htmlsource
-    #    else:
-    #        try:
-    #            log("New Artwork found on fanart.tv", xbmc.LOGNOTICE)
-    #            data = simplejson.loads(htmlsource)
-    #            return True, data
-    #        except:
-    #            htmlsource = "null"
-    #            print_exc()
-    #            return False, htmlsource
-    return False, "null"
+    log("Checking for new Artwork on fanart.tv since last run...", xbmc.LOGNOTICE)
+    previous_datecode = retrieve_fanarttv_datecode()
+    # fix: use global tempxml_folder instead of explicit definition
+    if xbmcvfs.exists(os.path.join(tempxml_folder, "%s.xml" % previous_datecode)):
+        xbmcvfs.delete(os.path.join(tempxml_folder, "%s.xml" % previous_datecode))
+    url = new_music % (api_key, str(previous_datecode))
+    htmlsource = get_html_source(url, "FTV-NEW_"+str(present_datecode), save_file=True, overwrite=False)
+    if htmlsource == "null":
+        log("No new Artwork found on fanart.tv", xbmc.LOGNOTICE)
+        return False, htmlsource
+    else:
+        try:
+            log("New Artwork found on fanart.tv", xbmc.LOGNOTICE)
+            data = simplejson.loads(htmlsource)
+            return True, data
+        except:
+            htmlsource = "null"
+            print_exc()
+            return False, htmlsource
+
 
 def check_art(mbid, artist_type="album"):
     has_art = "False"
     # url = music_url_json % (api_key, str(mbid), "all")
     url = music_url_json % (str(mbid), api_key)
-    # if artist_type == "album":
-    #   htmlsource = (get_html_source(url, str(mbid), save_file=True, overwrite=True)).encode('utf-8', 'ignore')
-    # else:
-    #   htmlsource = (get_html_source(url, str(mbid), save_file=True, overwrite=True)).encode('utf-8', 'ignore')
-    htmlsource = get_html_source(url, str(mbid), save_file=True, overwrite=True)
+    htmlsource = get_html_source(url, "FTV_"+str(mbid), save_file=True, overwrite=True)
     if htmlsource == "null":
         log("No artwork found for MBID: %s" % mbid, xbmc.LOGDEBUG)
         has_art = "False"
@@ -326,7 +292,7 @@ def update_art(mbid, data, existing_has_art):
             url = music_url_json % (str(mbid), api_key)
             has_art = "True"
             #            new_art = (get_html_source(url, str(mbid), save_file=True, overwrite=True)).encode('utf-8', 'ignore')
-            new_art = get_html_source(url, str(mbid), save_file=True, overwrite=True)
+            new_art = get_html_source(url, "FTV_"+str(mbid), save_file=True, overwrite=True)
             break
     return has_art
 
@@ -391,22 +357,14 @@ def get_recognized(all_artists, album_artists, background=False):
     log("Checking for artist match with fanart.tv - Get Recognized artists", xbmc.LOGNOTICE)
     album_artists_matched = []
     all_artists_matched = []
-    true = 0
     count = 0
-    name = ""
-    artist_list = []
-    all_artist_list = []
-    fanart_test = ""
-    previous_datecode = retrieve_fanarttv_datecode()
-    d = datetime.utcnow()
-    present_datecode = calendar.timegm(d.utctimetuple())
     dialog_msg("create", heading="", background=background)
+    present_datecode = calendar.timegm(datetime.utcnow().utctimetuple())
     new_artwork, data = check_fanart_new_artwork(present_datecode)
     if new_artwork:
         for artist in album_artists:
             percent = int((float(count) / len(album_artists)) * 100)
             log("Checking artist MBID: %s" % artist["musicbrainz_artistid"], xbmc.LOGDEBUG)
-            match = {}
             match = artist
             if match["musicbrainz_artistid"]:
                 match["has_art"] = update_art(match["musicbrainz_artistid"], data, artist["has_art"])
@@ -419,7 +377,6 @@ def get_recognized(all_artists, album_artists, background=False):
             for artist in all_artists:
                 percent = int((float(count) / len(all_artists)) * 100)
                 log("Checking artist MBID: %s" % artist["musicbrainz_artistid"], xbmc.LOGDEBUG)
-                match = {}
                 match = artist
                 if match["musicbrainz_artistid"]:
                     match["has_art"] = update_art(match["musicbrainz_artistid"], data, artist["has_art"])
