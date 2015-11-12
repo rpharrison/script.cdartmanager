@@ -57,8 +57,14 @@ from xbmcvfs import listdir
 
 
 def check_size(path, type, size_w, size_h):
-    return False
-
+    # size check is disabled because currently fanart.tv always returns size=1000
+    # ref: https://forum.fanart.tv/viewtopic.php?f=4&t=403
+    file_name = get_filename(type, path, "auto")
+    source = os.path.join(path, file_name)
+    if exists(source):
+        return False
+    else:
+        return True
 
 #    # first copy from source to work directory since Python does not support SMB://
 #    file_name = get_filename(type, path, "auto")
@@ -441,8 +447,7 @@ def auto_download(type, artist_list, background=False):
                         art = artwork_search(remote_art_url, musicbrainz_albumid, album["disc"], key_label)
                         if art:
                             if resizeondownload:
-                                low_res = check_size(album["path"].replace("\\\\", "\\"), key_label, art["size"],
-                                                     art["size"])
+                                low_res = check_size(album["path"].replace("\\\\", "\\"), key_label, art["size"], art["size"])
                             if art["picture"]:
                                 log("ALBUM MATCH ON FANART.TV FOUND", xbmc.LOGDEBUG)
                                 # log( "test_album[0]: %s" % test_album[0], xbmc.LOGDEBUG )
