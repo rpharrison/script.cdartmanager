@@ -6,6 +6,7 @@ import re
 import sys
 import traceback
 import urllib
+import datetime
 
 import xbmc
 import xbmcgui
@@ -14,6 +15,7 @@ try:
     from sqlite3 import dbapi2 as sqlite3
 except:
     from pysqlite2 import dbapi2 as sqlite3
+
 __language__ = sys.modules["__main__"].__language__
 __scriptname__ = sys.modules["__main__"].__scriptname__
 __scriptID__ = sys.modules["__main__"].__scriptID__
@@ -139,7 +141,7 @@ def _makedirs(_path):
     # loop thru and create each folder
     while (not exists(tmppath)):
         try:
-            if (pDialog.iscanceled()):
+            if (dialog.iscanceled()):
                 canceled = True
                 break
         except:
@@ -198,6 +200,13 @@ def get_html_source(url, path, save_file=True, overwrite=False):
     for i in range(0, 4):
         try:
             if save_file:
+                if exists(file_name):
+                    file_mtime = datetime.datetime.fromtimestamp(os.path.getmtime(file_name))
+                    file_age = datetime.datetime.today() - file_mtime
+                    if file_age.days > -1:  # yes i know... but this is temporary and will be configurable in a later release
+                        log("Cached file is %s days old, refreshing" % file_age.days, xbmc.LOGNOTICE)
+                        delete_file(file_name)
+
                 if exists(file_name) and not overwrite:
                     log("Retrieving local source", xbmc.LOGDEBUG)
                     sock = open(file_name, "r")
