@@ -479,8 +479,7 @@ if (__name__ == "__main__"):
                         background_db = False
                         # message "cdART Manager, Stopping Background Database Building"
                         dialog_msg("okdialog", heading=__language__(32042), line1=__language__(32119))
-                        log("Background Database Was in Progress, Stopping, allowing script to continue",
-                            xbmc.LOGNOTICE)
+                        log("Background Database Was in Progress, Stopping, allowing script to continue", xbmc.LOGNOTICE)
                         xbmcgui.Window(10000).setProperty("cdartmanager_update", "False")
                     else:
                         background_db = True
@@ -519,8 +518,7 @@ if (__name__ == "__main__"):
                             log("Version 2.7.8 found, Removing Bach MBID's from database", xbmc.LOGNOTICE)
                             mbid_repair()
                         elif version[0][0] == __dbversionancient__:
-                            log("Version 1.5.3 found, Adding new column to Local Album Artist and Local Artists",
-                                xbmc.LOGNOTICE)
+                            log("Version 1.5.3 found, Adding new column to Local Album Artist and Local Artists", xbmc.LOGNOTICE)
                             all_artists = []
                             local_artists = []
                             file_copy(addon_db, addon_db_update)

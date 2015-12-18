@@ -750,8 +750,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                 try:
                     c.execute("""UPDATE alblist SET cdart="True" WHERE path='%s'""" % album["path"])
                 except:
-                    log("######  Problem modifying Database!!  Artist: %s   Album: %s" % (
-                        repr(album["artist"]), repr(album["title"])), xbmc.LOGNOTICE)
+                    log("######  Problem modifying Database!!  Artist: %s   Album: %s" % (repr(album["artist"]), repr(album["title"])), xbmc.LOGNOTICE)
             else:
                 pass
             dialog_msg("update", percent=percent, line1="From Folder: %s" % from_folder,
@@ -1322,12 +1321,18 @@ class GUI(xbmcgui.WindowXMLDialog):
             cdart_path["title"] = self.remove_color(cdart_path["title"])
             self.selected_item = self.getControl(122).getSelectedPosition()
             if not url == "":  # If it is a recognized Album...
-                if self.menu_mode == 1:
-                    message, d_success, is_canceled = download_art(url, cdart_path, database_id, "cdart", "manual", 0)
-                elif self.menu_mode == 3:
-                    message, d_success, is_canceled = download_art(url, cdart_path, database_id, "cover", "manual", 0)
-                dialog_msg("close")
-                dialog_msg("ok", heading=message[0], line1=message[1], line2=message[2], line3=message[3])
+                # make sure the url is remote before attemting to download it
+                if url.lower().startswith("http"):
+                    message = None
+                    if self.menu_mode == 1:
+                        message, d_success, is_canceled = download_art(url, cdart_path, database_id, "cdart", "manual", 0)
+                    elif self.menu_mode == 3:
+                        message, d_success, is_canceled = download_art(url, cdart_path, database_id, "cover", "manual", 0)
+                    dialog_msg("close")
+                    if message is not None:  # and do not crash if there's somethin wrong with this url
+                        dialog_msg("ok", heading=message[0], line1=message[1], line2=message[2], line3=message[3])
+                    else:
+                        log("Download must have failed, message is None")
             else:  # If it is not a recognized Album...
                 log("Oops --  Some how I got here... - ControlID(122)", xbmc.LOGDEBUG)
             all_artist_count, local_album_count, local_artist_count, local_cdart_count = new_local_count()

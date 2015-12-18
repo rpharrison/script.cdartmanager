@@ -74,6 +74,9 @@ def remote_coverart_list(artist_menu):
     try:
         art = retrieve_fanarttv_json(artist_menu["musicbrainz_artistid"])
         if not len(art) < 2:
+
+
+
             album_artwork = art[5]["artwork"]
             if album_artwork:
                 for artwork in album_artwork:
@@ -203,10 +206,7 @@ def retrieve_fanarttv_json(id):
                     if art == "albums" and not albums:
                         # for album_id in data[artist]["albums"]:
                         for album_id, album in data["albums"].iteritems():
-                            album_artwork = {}
-                            album_artwork["musicbrainz_albumid"] = album_id
-                            album_artwork["cdart"] = []
-                            album_artwork["cover"] = ""
+                            album_artwork = {"musicbrainz_albumid": album_id, "cdart": [], "cover": ""}
                             # if value["albums"][album_id].has_key("cdart"):
                             if album.has_key("cdart"):
                                 # for item in value["albums"][album_id]["cdart"]:
@@ -225,8 +225,9 @@ def retrieve_fanarttv_json(id):
                                     album_artwork["cdart"].append(cdart)
                             try:
                                 if album.has_key("albumcover"):
-                                    if len(album["albumcover"]) < 2:
-                                        album_artwork["cover"] = album["albumcover"][0]["url"]
+                                    #if len(album["albumcover"]) < 2:
+                                    # this is a quick fix, we should download the first hit here if there are multiple covers
+                                    album_artwork["cover"] = album["albumcover"][0]["url"]
                             except:
                                 album_artwork["cover"] = ""
                             albums.append(album_artwork)
@@ -244,7 +245,7 @@ def retrieve_fanarttv_json(id):
     artist_artwork.append(hdlogo)
     artist_artwork.append(banner)
     artist_artwork.append(album_art)
-    print artist_artwork
+    # print artist_artwork
     return artist_artwork
 
 

@@ -205,10 +205,10 @@ def download_art(url_cdart, album, database_id, type, mode, size, background=Fal
                     is_canceled = True
 
         if exists(path):
+            log("Fetching image: %s" % url_cdart, xbmc.LOGDEBUG)
             fp, h = urllib.urlretrieve(url_cdart, destination, _report_hook)
             # message = ["Download Sucessful!"]
-            message = [__language__(32023), __language__(32024), "File: %s" % get_unicode(path),
-                       "Url: %s" % get_unicode(url_cdart)]
+            message = [__language__(32023), __language__(32024), "File: %s" % get_unicode(path), "Url: %s" % get_unicode(url_cdart)]
             success = file_copy(destination, final_destination)  # copy it to album folder
             # update database
             try:
@@ -224,11 +224,11 @@ def download_art(url_cdart, album, database_id, type, mode, size, background=Fal
                 log("Error updating database", xbmc.LOGDEBUG)
                 print_exc()
             download_success = True
+
         else:
             log("Path error", xbmc.LOGDEBUG)
             log("    file path: %s" % repr(destination), xbmc.LOGDEBUG)
-            message = [__language__(32026), __language__(32025), "File: %s" % get_unicode(path),
-                       "Url: %s" % get_unicode(url_cdart)]
+            message = [__language__(32026), __language__(32025), "File: %s" % get_unicode(path), "Url: %s" % get_unicode(url_cdart)]
             # message = Download Problem, Check file paths - Artwork Not Downloaded]
         # always cleanup downloaded files
         # if type == "fanart":
@@ -238,7 +238,7 @@ def download_art(url_cdart, album, database_id, type, mode, size, background=Fal
         message = [__language__(32026), __language__(32025), "File: %s" % get_unicode(path),
                    "Url: %s" % get_unicode(url_cdart)]
         # message = [Download Problem, Check file paths - Artwork Not Downloaded]
-        print_exc()
+        # print_exc()
     if mode == "auto" or mode == "single":
         return message, download_success, final_destination, is_canceled  # returns one of the messages built based on success or lack of
     else:
@@ -294,8 +294,7 @@ def auto_download(type, artist_list, background=False):
                 percent = 1
             if percent > 100:
                 percent = 100
-            log("Artist: %-40s Local ID: %-10s   Distant MBID: %s" % (
-            artist["name"], artist["local_id"], artist["musicbrainz_artistid"]), xbmc.LOGNOTICE)
+            log("Artist: %-40s Local ID: %-10s   Distant MBID: %s" % (artist["name"], artist["local_id"], artist["musicbrainz_artistid"]), xbmc.LOGNOTICE)
             if type in ("fanart", "clearlogo", "artistthumb", "musicbanner") and artist["has_art"]:
                 dialog_msg("update", percent=percent, line1="%s%s" % (__language__(32038), get_unicode(artist["name"])),
                            background=background)
