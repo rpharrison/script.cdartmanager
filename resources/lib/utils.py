@@ -203,7 +203,7 @@ def get_html_source(url, path, save_file=True, overwrite=False):
                 if exists(file_name):
                     file_mtime = datetime.datetime.fromtimestamp(os.path.getmtime(file_name))
                     file_age = datetime.datetime.today() - file_mtime
-                    if file_age.days > -1:  # yes i know... but this is temporary and will be configurable in a later release
+                    if file_age.days > 14:  # yes i know... but this is temporary and will be configurable in a later release
                         log("Cached file is %s days old, refreshing" % file_age.days, xbmc.LOGNOTICE)
                         delete_file(file_name)
 
