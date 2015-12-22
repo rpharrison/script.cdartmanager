@@ -62,8 +62,10 @@ def check_size(path, type, size_w, size_h):
     file_name = get_filename(type, path, "auto")
     source = os.path.join(path, file_name)
     if exists(source):
+        log("size check n.a. in new fanart.tv API, returning False for %s" % source)
         return False
     else:
+        log("size check n.a. in new fanart.tv API, returning True for %s" % source)
         return True
 
 #    # first copy from source to work directory since Python does not support SMB://
