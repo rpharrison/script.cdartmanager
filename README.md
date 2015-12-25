@@ -1,6 +1,7 @@
 # script.cdartmanager
-This is the development branch, only for the brave - DO NOT USE THIS unless you know what you are doing.
+cdART Manager for Kodi enriches your music collection with several types of fanart provided by fanart.tv.
 
-Make sure to remove all previous versions (including Helix) via Kodi's Addon-Manager before installing this.
+If you want to install this release manually via ZIP file then make sure to remove all previous versions via Kodi's Addon-Manager beforehand.
 
 Diskussion available at: http://forum.kodi.tv/showthread.php?tid=77031&action=lastpost
+

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="script.cdartmanager"
        name="cdART Manager"
-       version="4.0.5"
-       provider-name="Giftie">
+       version="4.1.0"
+       provider-name="stef.an">
   <requires>
-    <import addon="xbmc.addon" version="12.0.0"/>
-    <import addon="xbmc.json" version="6.6.0"/>
-    <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="script.module.pil" version="1.1.7"/>
+    <import addon="xbmc.addon" version="14.0.0"/>
+    <import addon="xbmc.python" version="2.19.0"/>
+    <import addon="xbmc.json" version="6.20.0"/>
+    <import addon="script.module.pil" version="1.1.7" optional="true"/>
     <import addon="script.module.simplejson" version="3.3.0"/>
   </requires>
   <extension point="xbmc.python.script"
@@ -25,9 +25,10 @@
     <description lang="it">Con questo script puoi gestire le tue cdART. Potrai scaricare le cdART dal sito fanart.tv, fare un backup delle tue cdART, visualizzare ed anche cancellare le cdART memorizzate in locale</description>
     <description lang="pt">Este script permite que você gerencie seus cdARTs. Você poderá baixar cdARTs do site fanart.tv, efetuar backup, Visualizar e até apagar seus cdARTs armazenados localmente.</description>
     <description lang="es">Con este script serás capaz de administrar tus cdARTs. Puedes descargar cdARTs desde fanart.tv, Respaldar tus cdARTs, Ver e incluso Borrar tus cdARTs locales.</description>
-    <website></website>
-    <source>https://github.com/Giftie/script.cdartmanager</source>
-    <forum>http://forum.xbmc.org/showthread.php?tid=77031</forum>
+    <license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
+    <source>https://github.com/stefansielaff/script.cdartmanager</source>
+    <forum>http://forum.kodi.tv/showthread.php?tid=77031</forum>
+    <website>http://wiki.xbmc.org/index.php?title=Add-on:Artist_Slideshow</website>
     <email></email>
   </extension>
 </addon>

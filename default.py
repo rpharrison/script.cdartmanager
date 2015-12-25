@@ -30,21 +30,20 @@ __language__ = __addon__.getLocalizedString
 __scriptname__ = __addon__.getAddonInfo('name')
 __scriptID__ = __addon__.getAddonInfo('id')
 __author__ = __addon__.getAddonInfo('author')
-__version__ = __addon__.getAddonInfo('version')
-__credits__ = "Ppic, Reaven, Imaginos, redje, Jair, "
-__credits2__ = "Chaos_666, Magnatism, Kode, Martijn"
-__version_date__ = "5-10-13"
+__version__ = "NG / %s" % __addon__.getAddonInfo('version')
+__credits__ = "This addon is yet another fork of the original"
+__credits2__ = "cdART Manager by giftie, thanks to all contributors!"
 __dbversion__ = "3.0.3"
 __dbversionold__ = "2.7.8"
 __dbversionancient__ = "1.5.3"
 __addon_path__ = __addon__.getAddonInfo('path')
-__useragent__ = "%s\\%s (giftie61@hotmail.com)" % (__scriptname__, __version__)
+__useragent__ = "%s\\%s (https://github.com/stefansielaff/script.cdartmanager)" % (__scriptname__, __version__)
 enable_hdlogos = eval(__addon__.getSetting("enable_hdlogos"))
 mbid_match_number = int(__addon__.getSetting("mbid_match_number"))
 use_musicbrainz = eval(__addon__.getSetting("use_musicbrainz"))
 musicbrainz_server = __addon__.getSetting("musicbrainz_server")
 mb_delay = int(float(__addon__.getSetting("mb_delay")))
-api_key = "e308cc6c6f76e502f98526f1694c62ac"
+api_key = "65169f993d552483391ca10c1ae7fb03"
 BASE_RESOURCE_PATH = xbmc.translatePath(os.path.join(__addon_path__, 'resources')).decode('utf-8')
 music_path = xbmc.translatePath(__addon__.getSetting("music_path")).decode('utf-8')
 addon_work_folder = xbmc.translatePath(__addon__.getAddonInfo('profile')).decode('utf-8')
@@ -71,7 +70,6 @@ download_temp_folder = os.path.join(addon_work_folder, "temp").decode("utf8")
 addon_image_path = os.path.join(BASE_RESOURCE_PATH, "skins", "Default", "media").decode("utf8")
 missing_cdart_image = os.path.join(addon_image_path, "missing_cdart.png")
 missing_cover_image = os.path.join(addon_image_path, "missing_cover.png")
-enable_all_artists = eval(__addon__.getSetting("enable_all_artists"))
 backup_during_update = eval(__addon__.getSetting("backup_during_update"))
 enable_missing = eval(__addon__.getSetting("enable_missing"))
 enable_fanart_limit = eval(__addon__.getSetting("enable_fanart_limit"))
@@ -325,17 +323,14 @@ def get_script_mode():
 
 if (__name__ == "__main__"):
     xbmc.executebuiltin('Dialog.Close(all, true)')
-    log("############################################################", xbmc.LOGNOTICE)
-    log("#    %-50s    #" % __scriptname__, xbmc.LOGNOTICE)
-    log("#        default.py module                                 #", xbmc.LOGNOTICE)
-    log("#    %-50s    #" % __scriptID__, xbmc.LOGNOTICE)
-    log("#    %-50s    #" % __author__, xbmc.LOGNOTICE)
-    log("#    %-50s    #" % __version__, xbmc.LOGNOTICE)
-    log("#    %-50s    #" % __credits__, xbmc.LOGNOTICE)
-    log("#    %-50s    #" % __credits2__, xbmc.LOGNOTICE)
-    log("#    Thanks for the help guys...                           #", xbmc.LOGNOTICE)
-    log("#    %-50s    #" % "NG", xbmc.LOGNOTICE)
-    log("############################################################", xbmc.LOGNOTICE)
+    log("###############################################################", xbmc.LOGNOTICE)
+    log("#  %-55s    #" % __scriptname__, xbmc.LOGNOTICE)
+    log("#  %-55s    #" % __scriptID__, xbmc.LOGNOTICE)
+    log("#  %-55s    #" % __author__, xbmc.LOGNOTICE)
+    log("#  %-55s    #" % __version__, xbmc.LOGNOTICE)
+    log("#  %-55s    #" % __credits__, xbmc.LOGNOTICE)
+    log("#  %-55s    #" % __credits2__, xbmc.LOGNOTICE)
+    log("###############################################################", xbmc.LOGNOTICE)
     log("Looking for settings.xml", xbmc.LOGNOTICE)
     if not exists(settings_file):  # Open Settings if settings.xml does not exists
         log("settings.xml File not found, creating path and opening settings", xbmc.LOGNOTICE)

@@ -36,7 +36,8 @@ addon_db = sys.modules["__main__"].addon_db
 addon_work_folder = sys.modules["__main__"].addon_work_folder
 BASE_RESOURCE_PATH = sys.modules["__main__"].BASE_RESOURCE_PATH
 __useragent__ = sys.modules["__main__"].__useragent__
-resizeondownload = eval(__addon__.getSetting("resizeondownload"))
+# resizeondownload = eval(__addon__.getSetting("resizeondownload"))
+resizeondownload = False  # disabled because fanart.tv API V3 doesn't deliver correct sizes
 music_path = sys.modules["__main__"].music_path
 enable_hdlogos = sys.modules["__main__"].enable_hdlogos
 fanart_limit = sys.modules["__main__"].fanart_limit
@@ -283,7 +284,6 @@ def auto_download(type, artist_list, background=False):
         # Onscreen Dialog - Automatic Downloading of Artwork
         key_label = type
         for artist in artist_list:
-            low_res = True
             if dialog_msg("iscanceled", background=background) or is_canceled:
                 is_canceled = True
                 break

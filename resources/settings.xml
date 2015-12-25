@@ -33,7 +33,6 @@
         <setting label="32143" type="lsep" />
         <setting type="sep" />
         <setting label="" type="lsep" />
-        <setting label="32106" type="bool" id="resizeondownload" default="false" />
         <setting label="32175" type="bool" id="enable_replace_illegal" default ="false" />
         <setting label="32176" type="text" id="illegal_characters" visible="eq(-1,true)" default=":*&lt;&gt;/\|?&quot;" />
         <setting label="32177" type="text" id="replace_character" visible="eq(-2,true)" default="_" />
@@ -55,5 +54,7 @@
         <setting label="32188" type="bool" id="use_musicbrainz" default="true" />
         <setting label="32189" type="text" id="musicbrainz_server" visible="eq(-1,false)" default="http://musicbrainz.org" />
         <setting label="32190" type="slider" id="mb_delay" option="int" visible="eq(-2,false)" range="0,9" default="9" />
+        <setting type="sep" />
+        <setting label="32106" type="bool" id="resizeondownload" default="false" enable="false"/>
     </category>
 </settings>
