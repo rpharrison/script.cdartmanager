@@ -4,7 +4,6 @@
        version="4.1.0"
        provider-name="stef.an">
     <requires>
-        <import addon="xbmc.addon" version="14.0.0"/>
         <import addon="xbmc.python" version="2.19.0"/>
         <import addon="xbmc.json" version="6.20.0"/>
         <import addon="script.module.pil" version="1.1.7" optional="true"/>
