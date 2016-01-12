@@ -322,7 +322,7 @@ def get_script_mode():
 
 
 if (__name__ == "__main__"):
-    xbmc.executebuiltin('Dialog.Close(all, true)')
+    # xbmc.executebuiltin('Dialog.Close(all, true)')
     log("###############################################################", xbmc.LOGNOTICE)
     log("#  %-55s    #" % __scriptname__, xbmc.LOGNOTICE)
     log("#  %-55s    #" % __scriptID__, xbmc.LOGNOTICE)
@@ -357,7 +357,7 @@ if (__name__ == "__main__"):
                 xbmcgui.Window(10000).setProperty("cdart_manager_allartist", "True")
             else:
                 xbmcgui.Window(10000).setProperty("cdart_manager_allartist", "False")
-            xbmc.executebuiltin('Dialog.Close(all, true)')
+            # xbmc.executebuiltin('Dialog.Close(all, true)')
             if script_mode in ("database"):
                 log("Start method - Build Database in background", xbmc.LOGNOTICE)
                 xbmcgui.Window(10000).setProperty("cdartmanager_update", "True")
