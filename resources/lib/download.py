@@ -316,7 +316,7 @@ def auto_download(type, artist_list, background=False):
                     art = remote_banner_list(auto_art)
                 else:
                     art = remote_artistthumb_list(auto_art)
-                if art:
+                if art or arthd:
                     if type == "fanart":
                         temp_art["path"] = path
                         auto_art["path"] = os.path.join(path, "extrafanart").replace("\\\\", "\\")
