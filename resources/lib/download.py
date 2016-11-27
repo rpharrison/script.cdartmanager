@@ -310,13 +310,16 @@ def auto_download(type, artist_list, background=False):
                 if type == "fanart":
                     art = remote_fanart_list(auto_art)
                 elif type == "clearlogo":
-                    art = remote_clearlogo_list(auto_art)
-                    arthd = remote_hdlogo_list(auto_art)
+#                    art = remote_clearlogo_list(auto_art)
+#                    arthd = remote_hdlogo_list(auto_art)
+                    art = remote_hdlogo_list(auto_art)
+                    if not art:
+                        art = remote_clearlogo_list(auto_art)
                 elif type == "musicbanner":
                     art = remote_banner_list(auto_art)
                 else:
                     art = remote_artistthumb_list(auto_art)
-                if art or arthd:
+                if art:
                     if type == "fanart":
                         temp_art["path"] = path
                         auto_art["path"] = os.path.join(path, "extrafanart").replace("\\\\", "\\")
@@ -368,13 +371,14 @@ def auto_download(type, artist_list, background=False):
                                 log("    Path: %s" % auto_art["path"], xbmc.LOGDEBUG)
                                 d_error = True
                     else:
-                        if type == "clearlogo":
-                            if arthd and enable_hdlogos:
-                                artwork = arthd[0]
-                            else:
-                                artwork = art[0]
-                        else:
-                            artwork = art[0]
+#                        if type == "clearlogo":
+#                            if arthd and enable_hdlogos:
+#                                artwork = arthd[0]
+#                            else:
+#                                artwork = art[0]
+#                        else:
+#                            artwork = art[0]
+                        artwork = art[0]
                         if type == "artistthumb":
                             if resizeondownload:
                                 low_res = check_size(auto_art["path"], key_label, 1000, 1000)
@@ -390,11 +394,12 @@ def auto_download(type, artist_list, background=False):
                                                                                                   "artistthumb", "auto",
                                                                                                   0, background)
                         elif type == "clearlogo":
-                            if enable_hdlogos and resizeondownload and arthd:
-                                low_res = check_size(auto_art["path"], key_label, 800, 310)
-                            else:
-                                low_res = False
-                            if exists(os.path.join(auto_art["path"], "logo.png")) and not low_res:
+#                            if enable_hdlogos and resizeondownload and arthd:
+#                                low_res = check_size(auto_art["path"], key_label, 800, 310)
+#                            else:
+#                                low_res = False
+#                            if exists(os.path.join(auto_art["path"], "logo.png")) and not low_res:
+                            if exists(os.path.join(auto_art["path"], "logo.png")):
                                 log("ClearLOGO already exists, skipping", xbmc.LOGDEBUG)
                                 continue
                             else:
