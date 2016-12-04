@@ -11,35 +11,34 @@ import xbmc
 import xbmcaddon
 import xbmcgui
 
-try:
-    from sqlite3 import dbapi2 as sqlite3
-except:
-    from pysqlite2 import dbapi2 as sqlite3
-
+from sqlite3 import dbapi2 as sqlite3
 from xbmcvfs import copy as file_copy
 from xbmcvfs import delete as delete_file
 from xbmcvfs import exists as exists
 from xbmcvfs import rename as file_rename
 
+import lib.cdam
+
 true = True
 false = False
 null = None
 
-__addon__ = xbmcaddon.Addon("script.cdartmanager")
-__language__ = __addon__.getLocalizedString
-__scriptname__ = __addon__.getAddonInfo('name')
-__scriptID__ = __addon__.getAddonInfo('id')
-__author__ = __addon__.getAddonInfo('author')
-__version__ = "NG / %s" % __addon__.getAddonInfo('version')
+__cdam__ = lib.cdam.Settings()
+__addon__ = __cdam__.getAddon()
+__language__ = __cdam__.getLocalizedString
+__scriptname__ = __cdam__.getName()
+__scriptID__ = __cdam__.getId()
+__author__ = __cdam__.getAuthor()
+__version__ = "NG / %s" % __cdam__.getVersion()
 __credits__ = "This addon is yet another fork of the original"
 __credits2__ = "cdART Manager by giftie, thanks to all contributors!"
 __dbversion__ = "3.0.3"
 __dbversionold__ = "2.7.8"
 __dbversionancient__ = "1.5.3"
-__addon_path__ = __addon__.getAddonInfo('path')
+__addon_path__ = __cdam__.getPath()
 __useragent__ = "%s\\%s (https://github.com/stefansielaff/script.cdartmanager)" % (__scriptname__, __version__)
 # enable_hdlogos = eval(__addon__.getSetting("enable_hdlogos"))
-enable_hdlogos = True # fanart.tv has deprecated low res art, so we always pefer hd from now on
+enable_hdlogos = True  # fanart.tv has deprecated low res art, so we always pefer hd from now on
 mbid_match_number = int(__addon__.getSetting("mbid_match_number"))
 use_musicbrainz = eval(__addon__.getSetting("use_musicbrainz"))
 musicbrainz_server = __addon__.getSetting("musicbrainz_server")
@@ -94,23 +93,21 @@ else:
     else:
         mb_delay = mb_delay * 100
 
-sys.path.append(os.path.join(BASE_RESOURCE_PATH, "skins", "Default"))
-sys.path.append(os.path.join(BASE_RESOURCE_PATH, "lib"))
-
-from utils import settings_to_log, get_unicode, change_characters, log, dialog_msg
-from database import store_counts, new_local_count, get_local_artists_db, get_local_albums_db, update_database, \
-    retrieve_album_details_full, mbid_repair
-from jsonrpc_calls import retrieve_album_details, retrieve_artist_details, get_fanart_path, get_thumbnail_path
-from musicbrainz_utils import get_musicbrainz_artist_id
-from fanarttv_scraper import check_fanart_new_artwork, first_check, remote_banner_list, remote_hdlogo_list, \
+from lib.utils import settings_to_log, get_unicode, change_characters, log, dialog_msg
+from lib.database import store_counts, new_local_count, get_local_artists_db, get_local_albums_db, update_database, \
+    retrieve_album_details_full, mbid_repair, refresh_db
+from lib.jsonrpc_calls import retrieve_album_details, retrieve_artist_details, get_fanart_path, get_thumbnail_path
+from lib.musicbrainz_utils import get_musicbrainz_artist_id
+from lib.fanarttv_scraper import check_fanart_new_artwork, first_check, remote_banner_list, remote_hdlogo_list, \
     get_recognized, remote_cdart_list, remote_coverart_list, remote_fanart_list, remote_clearlogo_list, \
     remote_artistthumb_list
-from download import auto_download
+from lib.download import auto_download
+import lib.gui
 
 try:
     from xbmcvfs import mkdirs as _makedirs
 except:
-    from utils import _makedirs
+    from lib.utils import _makedirs
 
 
 def clear_skin_properties():
@@ -362,8 +359,6 @@ if (__name__ == "__main__"):
             if script_mode in ("database"):
                 log("Start method - Build Database in background", xbmc.LOGNOTICE)
                 xbmcgui.Window(10000).setProperty("cdartmanager_update", "True")
-                from database import refresh_db
-
                 local_album_count, local_artist_count, local_cdart_count = refresh_db(background=True)
                 local_artists = get_local_artists_db(mode="album_artists", background=True)
                 if enable_all_artists:
@@ -553,14 +548,10 @@ if (__name__ == "__main__"):
                 path = __addon__.getAddonInfo('path')
                 if not script_fail and not background_db:
                     if rebuild:
-                        from database import refresh_db
-
                         local_album_count, local_artist_count, local_cdart_count = refresh_db(True)
                     elif not rebuild and not soft_exit:
-                        import gui
-
                         try:
-                            ui = gui.GUI("script-cdartmanager.xml", __addon__.getAddonInfo('path'), "Default")
+                            ui = lib.gui.GUI("script-cdartmanager.xml", __addon__.getAddonInfo('path'), "Default")
                             xbmc.sleep(2000)
                             ui.doModal()
                             del ui
@@ -577,7 +568,7 @@ if (__name__ == "__main__"):
             clear_skin_properties()
         except:
             print "Unexpected error:", sys.exc_info()[0]
-            raise
             clear_skin_properties()
+            raise
     else:
         clear_skin_properties()

@@ -4,9 +4,9 @@
 
 import os
 
+import utils
 import xbmc
 from json_utils import retrieve_json_dict
-import utils
 
 empty = []
 
