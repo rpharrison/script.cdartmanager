@@ -15,7 +15,7 @@ def dirEntries(dir_name, media_type="files", recursive="FALSE", contains=""):
     '''
     fileList = []
     json_query = '{"jsonrpc": "2.0", "method": "Files.GetDirectory", "params": {"directory": "%s", "media": "%s", "recursive": "%s"}, "id": 1}' % (
-    escapeDirJSON(dir_name), media_type, recursive)
+        escapeDirJSON(dir_name), media_type, recursive)
     json_folder_detail = xbmc.executeJSONRPC(json_query)
     file_detail = compile("{(.*?)}", DOTALL).findall(json_folder_detail)
     for f in file_detail:

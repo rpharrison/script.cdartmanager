@@ -11,24 +11,12 @@ import datetime
 import xbmc
 import xbmcgui
 
-try:
-    from sqlite3 import dbapi2 as sqlite3
-except:
-    from pysqlite2 import dbapi2 as sqlite3
+import cdam
 
-__language__ = sys.modules["__main__"].__language__
-__scriptname__ = sys.modules["__main__"].__scriptname__
-__scriptID__ = sys.modules["__main__"].__scriptID__
-__author__ = sys.modules["__main__"].__author__
-__credits__ = sys.modules["__main__"].__credits__
-__credits2__ = sys.modules["__main__"].__credits2__
-__version__ = sys.modules["__main__"].__version__
-__addon__ = sys.modules["__main__"].__addon__
-addon_db = sys.modules["__main__"].addon_db
-addon_work_folder = sys.modules["__main__"].addon_work_folder
+__cdam__ = cdam.Settings()
+__language__ = __cdam__.getLocalizedString
+
 tempxml_folder = sys.modules["__main__"].tempxml_folder
-__useragent__ = sys.modules["__main__"].__useragent__
-BASE_RESOURCE_PATH = sys.modules["__main__"].BASE_RESOURCE_PATH
 illegal_characters = sys.modules["__main__"].illegal_characters
 replace_character = sys.modules["__main__"].replace_character
 enable_replace_illegal = sys.modules["__main__"].enable_replace_illegal
@@ -36,7 +24,6 @@ notify_in_background = sys.modules["__main__"].notify_in_background
 change_period_atend = sys.modules["__main__"].change_period_atend
 image = sys.modules["__main__"].image
 
-# sys.path.append( os.path.join( BASE_RESOURCE_PATH, "lib" ) )
 from file_item import Thumbnails
 from xbmcvfs import delete as delete_file
 from xbmcvfs import exists as exists
@@ -194,7 +181,7 @@ def get_html_source(url, path, save_file=True, overwrite=False):
         file_name = os.path.join(tempxml_folder, path)
 
     class AppURLopener(urllib.FancyURLopener):
-        version = __useragent__
+        version = __cdam__.getUserAgent()
 
     urllib._urlopener = AppURLopener()
     for i in range(0, 4):
@@ -282,9 +269,9 @@ def dialog_msg(action,
     line3 = line3.encode('utf-8', 'ignore')
     # Dialog logic
     if not heading == '':
-        heading = __scriptname__ + " - " + heading
+        heading = __cdam__.getName() + " - " + heading
     else:
-        heading = __scriptname__
+        heading = __cdam__.getName()
     if not line1:
         line1 = ""
     if not line2:
@@ -320,5 +307,5 @@ def dialog_msg(action,
 def log(text, severity=xbmc.LOGDEBUG):
     if type(text).__name__ == 'unicode':
         text = text.encode('utf-8')
-    message = ('[%s] - %s' % (__scriptname__, text.__str__()))
+    message = ('[%s] - %s' % (__cdam__.getName(), text.__str__()))
     xbmc.log(msg=message, level=severity)

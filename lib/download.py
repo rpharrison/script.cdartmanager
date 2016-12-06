@@ -7,42 +7,19 @@ from traceback import print_exc
 
 import xbmc
 
-# Helix: PIL is not available in Helix 14.1 on Android
-try:
-    from PIL import Image
-
-    pil_is_available = True
-except:
-    pil_is_available = False
-
-try:
-    from sqlite3 import dbapi2 as sqlite3
-except:
-    from pysqlite2 import dbapi2 as sqlite3
+from sqlite3 import dbapi2 as sqlite3
 
 true = True
 false = False
 null = None
 
 __language__ = sys.modules["__main__"].__language__
-__scriptname__ = sys.modules["__main__"].__scriptname__
-__scriptID__ = sys.modules["__main__"].__scriptID__
-__author__ = sys.modules["__main__"].__author__
-__credits__ = sys.modules["__main__"].__credits__
-__credits2__ = sys.modules["__main__"].__credits2__
-__version__ = sys.modules["__main__"].__version__
-__addon__ = sys.modules["__main__"].__addon__
 addon_db = sys.modules["__main__"].addon_db
-addon_work_folder = sys.modules["__main__"].addon_work_folder
-BASE_RESOURCE_PATH = sys.modules["__main__"].BASE_RESOURCE_PATH
-__useragent__ = sys.modules["__main__"].__useragent__
-# resizeondownload = eval(__addon__.getSetting("resizeondownload"))
 resizeondownload = False  # disabled because fanart.tv API V3 doesn't deliver correct sizes
 music_path = sys.modules["__main__"].music_path
 enable_hdlogos = sys.modules["__main__"].enable_hdlogos
 fanart_limit = sys.modules["__main__"].fanart_limit
 enable_fanart_limit = sys.modules["__main__"].enable_fanart_limit
-# use temp folder for downloading
 tempgfx_folder = sys.modules["__main__"].tempgfx_folder
 
 from fanarttv_scraper import remote_banner_list, remote_hdlogo_list, remote_cdart_list, \
@@ -69,7 +46,8 @@ def check_size(path, type, size_w, size_h):
         log("size check n.a. in new fanart.tv API, returning True for %s" % source)
         return True
 
-#    # first copy from source to work directory since Python does not support SMB://
+
+# # first copy from source to work directory since Python does not support SMB://
 #    file_name = get_filename(type, path, "auto")
 #    destination = os.path.join(addon_work_folder, "temp", file_name)
 #    source = os.path.join(path, file_name)
@@ -211,7 +189,8 @@ def download_art(url_cdart, album, database_id, type, mode, size, background=Fal
             log("Fetching image: %s" % url_cdart, xbmc.LOGDEBUG)
             fp, h = urllib.urlretrieve(url_cdart, destination, _report_hook)
             # message = ["Download Sucessful!"]
-            message = [__language__(32023), __language__(32024), "File: %s" % get_unicode(path), "Url: %s" % get_unicode(url_cdart)]
+            message = [__language__(32023), __language__(32024), "File: %s" % get_unicode(path),
+                       "Url: %s" % get_unicode(url_cdart)]
             success = file_copy(destination, final_destination)  # copy it to album folder
             # update database
             try:
@@ -231,7 +210,8 @@ def download_art(url_cdart, album, database_id, type, mode, size, background=Fal
         else:
             log("Path error", xbmc.LOGDEBUG)
             log("    file path: %s" % repr(destination), xbmc.LOGDEBUG)
-            message = [__language__(32026), __language__(32025), "File: %s" % get_unicode(path), "Url: %s" % get_unicode(url_cdart)]
+            message = [__language__(32026), __language__(32025), "File: %s" % get_unicode(path),
+                       "Url: %s" % get_unicode(url_cdart)]
             # message = Download Problem, Check file paths - Artwork Not Downloaded]
         # always cleanup downloaded files
         # if type == "fanart":
@@ -296,7 +276,8 @@ def auto_download(type, artist_list, background=False):
                 percent = 1
             if percent > 100:
                 percent = 100
-            log("Artist: %-40s Local ID: %-10s   Distant MBID: %s" % (artist["name"], artist["local_id"], artist["musicbrainz_artistid"]), xbmc.LOGNOTICE)
+            log("Artist: %-40s Local ID: %-10s   Distant MBID: %s" % (
+            artist["name"], artist["local_id"], artist["musicbrainz_artistid"]), xbmc.LOGNOTICE)
             if type in ("fanart", "clearlogo", "artistthumb", "musicbanner") and artist["has_art"]:
                 dialog_msg("update", percent=percent, line1="%s%s" % (__language__(32038), get_unicode(artist["name"])),
                            background=background)
@@ -310,8 +291,8 @@ def auto_download(type, artist_list, background=False):
                 if type == "fanart":
                     art = remote_fanart_list(auto_art)
                 elif type == "clearlogo":
-#                    art = remote_clearlogo_list(auto_art)
-#                    arthd = remote_hdlogo_list(auto_art)
+                    #                    art = remote_clearlogo_list(auto_art)
+                    #                    arthd = remote_hdlogo_list(auto_art)
                     art = remote_hdlogo_list(auto_art)
                     if not art:
                         art = remote_clearlogo_list(auto_art)
@@ -371,13 +352,13 @@ def auto_download(type, artist_list, background=False):
                                 log("    Path: %s" % auto_art["path"], xbmc.LOGDEBUG)
                                 d_error = True
                     else:
-#                        if type == "clearlogo":
-#                            if arthd and enable_hdlogos:
-#                                artwork = arthd[0]
-#                            else:
-#                                artwork = art[0]
-#                        else:
-#                            artwork = art[0]
+                        #                        if type == "clearlogo":
+                        #                            if arthd and enable_hdlogos:
+                        #                                artwork = arthd[0]
+                        #                            else:
+                        #                                artwork = art[0]
+                        #                        else:
+                        #                            artwork = art[0]
                         artwork = art[0]
                         if type == "artistthumb":
                             if resizeondownload:
@@ -394,11 +375,11 @@ def auto_download(type, artist_list, background=False):
                                                                                                   "artistthumb", "auto",
                                                                                                   0, background)
                         elif type == "clearlogo":
-#                            if enable_hdlogos and resizeondownload and arthd:
-#                                low_res = check_size(auto_art["path"], key_label, 800, 310)
-#                            else:
-#                                low_res = False
-#                            if exists(os.path.join(auto_art["path"], "logo.png")) and not low_res:
+                            #                            if enable_hdlogos and resizeondownload and arthd:
+                            #                                low_res = check_size(auto_art["path"], key_label, 800, 310)
+                            #                            else:
+                            #                                low_res = False
+                            #                            if exists(os.path.join(auto_art["path"], "logo.png")) and not low_res:
                             if exists(os.path.join(auto_art["path"], "logo.png")):
                                 log("ClearLOGO already exists, skipping", xbmc.LOGDEBUG)
                                 continue
@@ -453,7 +434,8 @@ def auto_download(type, artist_list, background=False):
                         art = artwork_search(remote_art_url, musicbrainz_albumid, album["disc"], key_label)
                         if art:
                             if resizeondownload:
-                                low_res = check_size(album["path"].replace("\\\\", "\\"), key_label, art["size"], art["size"])
+                                low_res = check_size(album["path"].replace("\\\\", "\\"), key_label, art["size"],
+                                                     art["size"])
                             if art["picture"]:
                                 log("ALBUM MATCH ON FANART.TV FOUND", xbmc.LOGDEBUG)
                                 # log( "test_album[0]: %s" % test_album[0], xbmc.LOGDEBUG )

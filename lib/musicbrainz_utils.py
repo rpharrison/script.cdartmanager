@@ -7,25 +7,10 @@ from urllib import quote_plus, quote
 from traceback import print_exc
 
 import xbmc
+from sqlite3 import dbapi2 as sqlite3
 
-try:
-    from sqlite3 import dbapi2 as sqlite3
-except:
-    from pysqlite2 import dbapi2 as sqlite3
-
-__language__ = sys.modules["__main__"].__language__
-__scriptname__ = sys.modules["__main__"].__scriptname__
-__scriptID__ = sys.modules["__main__"].__scriptID__
-__version__ = sys.modules["__main__"].__version__
-__addon__ = sys.modules["__main__"].__addon__
-use_musicbrainz = sys.modules["__main__"].use_musicbrainz
 musicbrainz_server = sys.modules["__main__"].musicbrainz_server
 addon_db = sys.modules["__main__"].addon_db
-addon_work_folder = sys.modules["__main__"].addon_work_folder
-BASE_RESOURCE_PATH = sys.modules["__main__"].BASE_RESOURCE_PATH
-mb_delay = sys.modules["__main__"].mb_delay
-
-# sys.path.append( os.path.join( BASE_RESOURCE_PATH, "lib" ) )
 
 from utils import get_html_source, unescape, log, get_unicode, smart_unicode
 
@@ -120,7 +105,7 @@ def get_musicbrainz_album(album_title, artist, e_count, limit=1, with_singles=Fa
     if limit == 1:
         if not use_alias:
             url = release_group_url_artist % (
-            server, quote_plus(album_title.encode("utf-8")), match_within, quote_plus(artist.encode("utf-8")))
+                server, quote_plus(album_title.encode("utf-8")), match_within, quote_plus(artist.encode("utf-8")))
             if not with_singles and not by_release and not use_live:
                 log("Retrieving MusicBrainz Info - Checking by Artist - Not including Singles or Live albums",
                     xbmc.LOGDEBUG)
@@ -138,7 +123,7 @@ def get_musicbrainz_album(album_title, artist, e_count, limit=1, with_singles=Fa
                                                   quote_plus(artist.encode("utf-8"))) + query_limit % limit
         elif use_alias:
             url = release_group_url_alias % (
-            server, quote_plus(album_title.encode("utf-8")), match_within, quote_plus(artist.encode("utf-8")))
+                server, quote_plus(album_title.encode("utf-8")), match_within, quote_plus(artist.encode("utf-8")))
             if not with_singles and not by_release and not use_live:
                 log("Retrieving MusicBrainz Info - Checking by Artist - Not including Singles or Live albums",
                     xbmc.LOGDEBUG)
@@ -203,7 +188,7 @@ def get_musicbrainz_album(album_title, artist, e_count, limit=1, with_singles=Fa
     else:
         match_within = "~4"
         url = release_group_url_artist % (
-        server, (album_title.encode("utf-8")), match_within, (artist.encode("utf-8"))) + query_limit % limit
+            server, (album_title.encode("utf-8")), match_within, (artist.encode("utf-8"))) + query_limit % limit
         htmlsource = get_html_source(url, "", save_file=False, overwrite=False)
         match = re.search('''<release-group-list count="(?:.*?)" offset="(?:.*?)">(.*?)</release-group-list>''',
                           htmlsource)

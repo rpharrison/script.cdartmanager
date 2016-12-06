@@ -7,43 +7,24 @@ import traceback
 from datetime import datetime
 # xbmc module imports
 import xbmcgui, xbmc, xbmcvfs
+from sqlite3 import dbapi2 as sqlite3
 
-### this probably can be removed
-try:
-    from sqlite3 import dbapi2 as sqlite3
-except:
-    from pysqlite2 import dbapi2 as sqlite3
-# pull information from default.py
 __language__ = sys.modules["__main__"].__language__
-__scriptname__ = sys.modules["__main__"].__scriptname__
-__scriptID__ = sys.modules["__main__"].__scriptID__
-__author__ = sys.modules["__main__"].__author__
-__credits__ = sys.modules["__main__"].__credits__
-__credits2__ = sys.modules["__main__"].__credits2__
-__version__ = sys.modules["__main__"].__version__
+
 __addon__ = sys.modules["__main__"].__addon__
 __dbversion__ = sys.modules["__main__"].__dbversion__
 addon_db = sys.modules["__main__"].addon_db
 addon_db_backup = sys.modules["__main__"].addon_db_backup
 addon_work_folder = sys.modules["__main__"].addon_work_folder
-__useragent__ = sys.modules["__main__"].__useragent__
 image = sys.modules["__main__"].image
-BASE_RESOURCE_PATH = sys.modules["__main__"].BASE_RESOURCE_PATH
 enable_hdlogos = sys.modules["__main__"].enable_hdlogos
 mbid_match_number = sys.modules["__main__"].mbid_match_number
 music_path = sys.modules["__main__"].music_path
 backup_path = sys.modules["__main__"].backup_path
-missing_path = sys.modules["__main__"].missing_path
-enableresize = sys.modules["__main__"].enableresize
-folder = sys.modules["__main__"].folder
 enablecustom = sys.modules["__main__"].enablecustom
-download_temp_folder = sys.modules["__main__"].download_temp_folder
-addon_image_path = sys.modules["__main__"].addon_image_path
 missing_cdart_image = sys.modules["__main__"].missing_cdart_image
 missing_cover_image = sys.modules["__main__"].missing_cover_image
-safe_db_version = sys.modules["__main__"].__dbversion__
 skin_art_path = sys.modules["__main__"].skin_art_path
-safe_db_version = __dbversion__
 enable_all_artists = sys.modules["__main__"].enable_all_artists
 enable_missing = sys.modules["__main__"].enable_missing
 
@@ -53,7 +34,8 @@ from fanarttv_scraper import first_check, remote_banner_list, remote_hdlogo_list
     remote_artistthumb_list
 from utils import clear_image_cache, get_unicode, change_characters, log, dialog_msg, smart_unicode
 from download import download_art, auto_download
-from database import user_updates, backup_database, database_setup, get_local_albums_db, get_local_artists_db, new_local_count, refresh_db, \
+from database import user_updates, backup_database, database_setup, get_local_albums_db, get_local_artists_db, \
+    new_local_count, refresh_db, \
     artwork_search, update_database, check_album_mbid, check_artist_mbid, update_missing_artist_mbid, \
     update_missing_album_mbid
 from musicbrainz_utils import get_musicbrainz_album, update_musicbrainzid, get_musicbrainz_artists
@@ -225,7 +207,8 @@ class GUI(xbmcgui.WindowXMLDialog):
         try:
             for album in local_album_list:
                 label2 = "%s MBID: %s[CR][COLOR=7fffffff]%s MBID: %s[/COLOR]" % (
-                    __language__(32138), album["musicbrainz_albumid"], __language__(32137), album["musicbrainz_artistid"])
+                    __language__(32138), album["musicbrainz_albumid"], __language__(32137),
+                    album["musicbrainz_artistid"])
                 label1 = "%s: %s[CR][COLOR=7fffffff]%s: %s[/COLOR][CR][COLOR=FFE85600]%s[/COLOR]" % (
                     __language__(32138), album["title"], __language__(32137), album["artist"], album["path"])
                 listitem = xbmcgui.ListItem(label=label1, label2=label2)
@@ -750,7 +733,8 @@ class GUI(xbmcgui.WindowXMLDialog):
                 try:
                     c.execute("""UPDATE alblist SET cdart="True" WHERE path='%s'""" % album["path"])
                 except:
-                    log("######  Problem modifying Database!!  Artist: %s   Album: %s" % (repr(album["artist"]), repr(album["title"])), xbmc.LOGNOTICE)
+                    log("######  Problem modifying Database!!  Artist: %s   Album: %s" % (
+                    repr(album["artist"]), repr(album["title"])), xbmc.LOGNOTICE)
             else:
                 pass
             dialog_msg("update", percent=percent, line1="From Folder: %s" % from_folder,
@@ -1325,9 +1309,11 @@ class GUI(xbmcgui.WindowXMLDialog):
                 if url.lower().startswith("http"):
                     message = None
                     if self.menu_mode == 1:
-                        message, d_success, is_canceled = download_art(url, cdart_path, database_id, "cdart", "manual", 0)
+                        message, d_success, is_canceled = download_art(url, cdart_path, database_id, "cdart", "manual",
+                                                                       0)
                     elif self.menu_mode == 3:
-                        message, d_success, is_canceled = download_art(url, cdart_path, database_id, "cover", "manual", 0)
+                        message, d_success, is_canceled = download_art(url, cdart_path, database_id, "cover", "manual",
+                                                                       0)
                     dialog_msg("close")
                     if message is not None:  # and do not crash if there's somethin wrong with this url
                         dialog_msg("ok", heading=message[0], line1=message[1], line2=message[2], line3=message[3])

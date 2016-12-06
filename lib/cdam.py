@@ -3,7 +3,6 @@ import xbmcaddon
 
 
 class Settings:
-
     # this is shared between all instances
     __addon = None
 
@@ -67,3 +66,16 @@ class Settings:
             return int(self.getSetting(setting))
         except ValueError:
             return -1
+
+    # strings
+
+    def getCredits(self):
+        return [
+            self.getName(),
+            "%s by %s - Branch NG / v%s" % (self.getId(), self.getAuthor(), self.getVersion()),
+            "This addon is yet another fork of the original",
+            "cdART Manager by giftie, thanks to all contributors!"
+        ]
+
+    def getUserAgent(self):
+        return "%s\\%s (https://github.com/stefansielaff/script.cdartmanager)" % (self.getName(), self.getVersion())

@@ -9,23 +9,9 @@ from traceback import print_exc
 
 import xbmc
 import xbmcvfs
-
-if sys.version_info < (2, 7):
-    import simplejson
-else:
-    import json as simplejson
+import json as simplejson
 
 __language__ = sys.modules["__main__"].__language__
-__scriptname__ = sys.modules["__main__"].__scriptname__
-__scriptID__ = sys.modules["__main__"].__scriptID__
-__author__ = sys.modules["__main__"].__author__
-__credits__ = sys.modules["__main__"].__credits__
-__credits2__ = sys.modules["__main__"].__credits2__
-__version__ = sys.modules["__main__"].__version__
-__addon__ = sys.modules["__main__"].__addon__
-addon_db = sys.modules["__main__"].addon_db
-addon_work_folder = sys.modules["__main__"].addon_work_folder
-BASE_RESOURCE_PATH = sys.modules["__main__"].BASE_RESOURCE_PATH
 api_key = sys.modules["__main__"].api_key
 enable_all_artists = sys.modules["__main__"].enable_all_artists
 tempxml_folder = sys.modules["__main__"].tempxml_folder
@@ -74,8 +60,6 @@ def remote_coverart_list(artist_menu):
     try:
         art = retrieve_fanarttv_json(artist_menu["musicbrainz_artistid"])
         if not len(art) < 2:
-
-
 
             album_artwork = art[5]["artwork"]
             if album_artwork:
@@ -162,7 +146,7 @@ def retrieve_fanarttv_json(id):
     # url = music_url_json % (api_key, id, "all")
     url = music_url_json % (id, api_key)
     # htmlsource = (get_html_source(url, id, save_file=False, overwrite=False)).encode('utf-8', 'ignore')
-    htmlsource = get_html_source(url, "FTV_"+str(id), save_file=True, overwrite=False)
+    htmlsource = get_html_source(url, "FTV_" + str(id), save_file=True, overwrite=False)
     artist_artwork = []
     backgrounds = []
     musiclogos = []
@@ -225,7 +209,7 @@ def retrieve_fanarttv_json(id):
                                     album_artwork["cdart"].append(cdart)
                             try:
                                 if album.has_key("albumcover"):
-                                    #if len(album["albumcover"]) < 2:
+                                    # if len(album["albumcover"]) < 2:
                                     # this is a quick fix, we should download the first hit here if there are multiple covers
                                     album_artwork["cover"] = album["albumcover"][0]["url"]
                             except:
@@ -256,7 +240,7 @@ def check_fanart_new_artwork(present_datecode):
     if xbmcvfs.exists(os.path.join(tempxml_folder, "%s.xml" % previous_datecode)):
         xbmcvfs.delete(os.path.join(tempxml_folder, "%s.xml" % previous_datecode))
     url = new_music % (api_key, str(previous_datecode))
-    htmlsource = get_html_source(url, "FTV-NEW_"+str(present_datecode), save_file=True, overwrite=False)
+    htmlsource = get_html_source(url, "FTV-NEW_" + str(present_datecode), save_file=True, overwrite=False)
     if htmlsource == "null":
         log("No new Artwork found on fanart.tv", xbmc.LOGNOTICE)
         return False, htmlsource
@@ -275,7 +259,7 @@ def check_art(mbid, artist_type="album"):
     has_art = "False"
     # url = music_url_json % (api_key, str(mbid), "all")
     url = music_url_json % (str(mbid), api_key)
-    htmlsource = get_html_source(url, "FTV_"+str(mbid), save_file=True, overwrite=True)
+    htmlsource = get_html_source(url, "FTV_" + str(mbid), save_file=True, overwrite=True)
     if htmlsource == "null":
         log("No artwork found for MBID: %s" % mbid, xbmc.LOGDEBUG)
         has_art = "False"
@@ -293,7 +277,7 @@ def update_art(mbid, data, existing_has_art):
             url = music_url_json % (str(mbid), api_key)
             has_art = "True"
             #            new_art = (get_html_source(url, str(mbid), save_file=True, overwrite=True)).encode('utf-8', 'ignore')
-            new_art = get_html_source(url, "FTV_"+str(mbid), save_file=True, overwrite=True)
+            new_art = get_html_source(url, "FTV_" + str(mbid), save_file=True, overwrite=True)
             break
     return has_art
 
