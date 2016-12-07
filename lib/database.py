@@ -1,28 +1,30 @@
 # -*- coding: utf-8 -*-
 
-import sys
+import datetime
 import os
 import re
-import datetime
-import traceback
+import sys
 import time
-
-import xbmc
-import xbmcgui
-import xbmcvfs
-
+import traceback
 from sqlite3 import dbapi2 as sqlite3
 
-__language__ = sys.modules["__main__"].__language__
+import xbmc
+import xbmcvfs
+
+import cdam
+
+__cdam__ = cdam.CDAM()
+__settings__ = cdam.Settings()
+
+__language__ = __cdam__.getLocalizedString
 addon_db = sys.modules["__main__"].addon_db
 addon_work_folder = sys.modules["__main__"].addon_work_folder
-__dbversion__ = sys.modules["__main__"].__dbversion__
-check_mbid = sys.modules["__main__"].check_mbid
-update_musicbraniz_id = sys.modules["__main__"].update_musicbraniz_id
-enable_all_artists = sys.modules["__main__"].enable_all_artists
-backup_during_update = sys.modules["__main__"].backup_during_update
+check_mbid = __settings__.check_mbid()
+update_musicbrainz = __settings__.update_musicbrainz()
+enable_all_artists = __settings__.enable_all_artists()
+backup_during_update = __settings__.backup_during_update()
 
-from musicbrainz_utils import get_musicbrainz_artist_id, get_musicbrainz_album, update_musicbrainzid, mbid_check, \
+from musicbrainz_utils import get_musicbrainz_artist_id, get_musicbrainz_album, mbid_check, \
     get_musicbrainz_release_group
 from utils import get_unicode, log, dialog_msg
 from jsonrpc_calls import get_all_local_artists, retrieve_album_list, retrieve_album_details, get_album_path
@@ -480,7 +482,7 @@ def retrieve_fanarttv_datecode():
     c = conn_l.cursor()
     c.execute(query)
     result = c.fetchall()
-    c.close
+    c.close()
     datecode = result[0][0]
     return datecode
 
@@ -528,11 +530,11 @@ def store_counts(local_artists_count, artist_count, album_count, cdart_existing,
         traceback.print_exc()
     if datecode == 0:
         c.execute('''insert into counts(local_artists, artists, albums, cdarts, version) values (?, ?, ?, ?, ?)''',
-                  (local_artists_count, artist_count, album_count, cdart_existing, __dbversion__))
+                  (local_artists_count, artist_count, album_count, cdart_existing, cdam.Constants.db_version()))
     else:
         c.execute(
             '''insert into counts(local_artists, artists, albums, cdarts, version, datecode) values (?, ?, ?, ?, ?, ?)''',
-            (local_artists_count, artist_count, album_count, cdart_existing, __dbversion__, datecode))
+            (local_artists_count, artist_count, album_count, cdart_existing, cdam.Constants.db_version(), datecode))
     conn.commit()
     c.close()
     log("Finished Storing Counts", xbmc.LOGDEBUG)
@@ -660,7 +662,7 @@ def get_local_albums_db(artist_name, background=False):
             except:
                 traceback.print_exc()
         db = c.fetchall()
-        c.close
+        c.close()
         for item in db:
             album = {}
             album["local_id"] = (item[0])
@@ -697,7 +699,7 @@ def get_local_artists_db(mode="album_artists", background=False):
     try:
         c.execute(query)
         db = c.fetchall()
-        c.close
+        c.close()
         for item in db:
             artists = {}
             artists["local_id"] = (item[0])
@@ -745,7 +747,7 @@ def store_local_artist_table(artist_list, background=False):
             traceback.print_exc()
     conn.commit()
     dialog_msg("close", background=background)
-    c.close
+    c.close()
     return count
 
 
@@ -798,7 +800,7 @@ def build_local_artist_table(background=False):
         log("Problem with making all artists table", xbmc.LOGDEBUG)
         traceback.print_exc()
         dialog_msg("close", background=background)
-    c.close
+    c.close()
     return count
 
 
@@ -811,7 +813,7 @@ def new_local_count():
         query = "SELECT local_artists, artists, albums, cdarts FROM counts"
         c.execute(query)
         counts = c.fetchall()
-        c.close
+        c.close()
         for item in counts:
             local_artist_count = item[0]
             album_artist = item[1]
@@ -821,7 +823,7 @@ def new_local_count():
         return local_artist_count, album_count, album_artist, cdart_existing
     except UnboundLocalError:
         log("Counts Not Available in Local DB, Rebuilding DB", xbmc.LOGDEBUG)
-        c.close
+        c.close()
         return 0, 0, 0, 0
 
 
@@ -1105,7 +1107,7 @@ def update_database(background=False):
         for item in local_artists:
             if not (item["local_id"], get_unicode(item["name"])) in local_artists_matched_indexed:
                 local_artists_unmatched.append(item)
-        if update_musicbraniz_id and not canceled:  # update missing MusicBrainz ID's
+        if update_musicbrainz and not canceled:  # update missing MusicBrainz ID's
             combined_artists, canceled = update_missing_artist_mbid(local_artists_matched, background=background,
                                                                     mode="all_artists")
         else:
@@ -1121,7 +1123,7 @@ def update_database(background=False):
     percent = 0
     count = 0
     log("Updating Addon's DB - Getting MusicBrainz ID's for Artist and Albums", xbmc.LOGNOTICE)
-    if update_musicbraniz_id and not canceled:  # update missing MusicBrainz ID's
+    if update_musicbrainz and not canceled:  # update missing MusicBrainz ID's
         if not canceled:
             updated_albums, canceled = update_missing_album_mbid(combined, background=background)
         combined = updated_albums

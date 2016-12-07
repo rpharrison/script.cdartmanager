@@ -8,8 +8,10 @@ from traceback import print_exc
 
 import xbmc
 from sqlite3 import dbapi2 as sqlite3
+import cdam
 
-musicbrainz_server = sys.modules["__main__"].musicbrainz_server
+__settings__ = cdam.Settings()
+
 addon_db = sys.modules["__main__"].addon_db
 
 from utils import get_html_source, unescape, log, get_unicode, smart_unicode
@@ -29,7 +31,15 @@ release_group_url_release_mbid = '''%s/ws/2/release-group/?release=%s'''
 release_groups_url_artist_mbid = '''%s/ws/2/release-group/?artist="%s"'''
 artist_id_check = '''%s/ws/2/artist/%s'''
 release_group_id_check = '''%s/ws/2/release-group/%s'''
-server = musicbrainz_server
+
+mb_delay = 910
+server = '''http://musicbrainz.org'''
+if not __settings__.use_musicbrainz():
+    server = __settings__.musicbrainz_server()
+    mb_delay = __settings__.mb_delay()
+    if mb_delay < 1:
+        mb_delay = 1
+    mb_delay *= 100
 
 
 def split_album_info(album_result, index):

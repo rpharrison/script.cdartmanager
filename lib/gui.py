@@ -7,26 +7,31 @@ import traceback
 from datetime import datetime
 # xbmc module imports
 import xbmcgui, xbmc, xbmcvfs
+import cdam
 from sqlite3 import dbapi2 as sqlite3
 
-__language__ = sys.modules["__main__"].__language__
+__cdam__ = cdam.CDAM()
+__settings__ = cdam.Settings()
+
+__language__ = __cdam__.getLocalizedString
 
 __addon__ = sys.modules["__main__"].__addon__
-__dbversion__ = sys.modules["__main__"].__dbversion__
 addon_db = sys.modules["__main__"].addon_db
-addon_db_backup = sys.modules["__main__"].addon_db_backup
 addon_work_folder = sys.modules["__main__"].addon_work_folder
 image = sys.modules["__main__"].image
-enable_hdlogos = sys.modules["__main__"].enable_hdlogos
-mbid_match_number = sys.modules["__main__"].mbid_match_number
+
+mbid_match_number = __settings__.mbid_match_number()
+
 music_path = sys.modules["__main__"].music_path
 backup_path = sys.modules["__main__"].backup_path
-enablecustom = sys.modules["__main__"].enablecustom
+
+enablecustom = __settings__.enablecustom()
+
 missing_cdart_image = sys.modules["__main__"].missing_cdart_image
 missing_cover_image = sys.modules["__main__"].missing_cover_image
-skin_art_path = sys.modules["__main__"].skin_art_path
-enable_all_artists = sys.modules["__main__"].enable_all_artists
-enable_missing = sys.modules["__main__"].enable_missing
+addon_image_path = sys.modules["__main__"].addon_image_path
+enable_all_artists = __settings__.enable_all_artists()
+enable_missing = __settings__.enable_missing()
 
 # script imports
 from fanarttv_scraper import first_check, remote_banner_list, remote_hdlogo_list, check_fanart_new_artwork, \
@@ -62,13 +67,13 @@ class GUI(xbmcgui.WindowXMLDialog):
 
     def setup_colors(self):
         if enablecustom:
-            self.recognized_color = colours[int(__addon__.getSetting("recognized"))]
-            self.unrecognized_color = colours[int(__addon__.getSetting("unrecognized"))]
-            self.remote_color = colours[int(__addon__.getSetting("remote"))]
-            self.local_color = colours[int(__addon__.getSetting("local"))]
-            self.remotelocal_color = colours[int(__addon__.getSetting("remotelocal"))]
-            self.unmatched_color = colours[int(__addon__.getSetting("unmatched"))]
-            self.localcdart_color = colours[int(__addon__.getSetting("localcdart"))]
+            self.recognized_color = colours[__settings__.color_recognized()]
+            self.unrecognized_color = colours[__settings__.color_unrecognized()]
+            self.remote_color = colours[__settings__.color_remote()]
+            self.local_color = colours[__settings__.color_local()]
+            self.remotelocal_color = colours[__settings__.color_remotelocal()]
+            self.unmatched_color = colours[__settings__.color_unmatched()]
+            self.localcdart_color = colours[__settings__.color_localcdart()]
         else:
             self.recognized_color = "green"
             self.unrecognized_color = "white"
@@ -375,8 +380,7 @@ class GUI(xbmcgui.WindowXMLDialog):
         not_found = False
         try:
             clearlogo = remote_clearlogo_list(artist_menu)
-            if enable_hdlogos:
-                hdlogo = remote_hdlogo_list(artist_menu)
+            hdlogo = remote_hdlogo_list(artist_menu)
             if clearlogo:
                 for artwork in clearlogo:
                     clear_image_cache(artwork)
@@ -496,8 +500,6 @@ class GUI(xbmcgui.WindowXMLDialog):
         if not unique_folder:
             __addon__.openSettings()
             unique_folder = __addon__.getSetting("unique_path")
-        resize = __addon__.getSetting("enableresize")
-        log("Resize: %s" % resize, xbmc.LOGNOTICE)
         log("Unique Folder: %s" % repr(unique_folder), xbmc.LOGNOTICE)
         if xbmcvfs.exists(source):
             log("source: %s" % repr(source), xbmc.LOGNOTICE)
@@ -586,9 +588,7 @@ class GUI(xbmcgui.WindowXMLDialog):
         if not unique_folder:
             __addon__.openSettings()
             unique_folder = __addon__.getSetting("unique_path")
-        resize = __addon__.getSetting("enableresize")
         log("Unique Folder: %s" % unique_folder, xbmc.LOGNOTICE)
-        log("Resize: %s" % resize, xbmc.LOGNOTICE)
         dialog_msg("create", heading=__language__(32060))
         for album in unique:
             percent = int((count / len(unique)) * 100)
@@ -627,7 +627,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                             c.execute("insert into unqlist(title, artist, path, cdart) values (?, ?, ?, ?)", (
                                 get_unicode(album["title"]), get_unicode(album["artist"]), get_unicode(album["path"]),
                                 album["local"]))
-                            c.commit
+                            c.commit()
                             count += 1
                         except:
                             log("Copying error, check path and file permissions", xbmc.LOGNOTICE)
@@ -955,7 +955,7 @@ class GUI(xbmcgui.WindowXMLDialog):
 
     # This selects which cdART image shows up in the display box (image id 210) 
     def cdart_icon(self):
-        blank_art = os.path.join(skin_art_path, "blank_artwork.png")
+        blank_art = os.path.join(addon_image_path, "blank_artwork.png")
         image = blank_art
         cdart_path = {}
         try:  # If there is information in label 2 of list id 140(local album list)

@@ -6,12 +6,10 @@ import os
 import sys
 import time
 import traceback
+from sqlite3 import dbapi2 as sqlite3
 
 import xbmc
-import xbmcaddon
 import xbmcgui
-
-from sqlite3 import dbapi2 as sqlite3
 from xbmcvfs import copy as file_copy
 from xbmcvfs import delete as delete_file
 from xbmcvfs import exists as exists
@@ -23,57 +21,37 @@ true = True
 false = False
 null = None
 
-__cdam__ = lib.cdam.Settings()
+__cdam__ = lib.cdam.CDAM()
+__settings__ = lib.cdam.Settings()
+
 __addon__ = __cdam__.getAddon()
 __language__ = __cdam__.getLocalizedString
-__scriptname__ = __cdam__.getName()
-__scriptID__ = __cdam__.getId()
-__author__ = __cdam__.getAuthor()
-__version__ = "NG / %s" % __cdam__.getVersion()
-__dbversion__ = "3.0.3"
-__dbversionold__ = "2.7.8"
-__dbversionancient__ = "1.5.3"
-__addon_path__ = __cdam__.getPath()
-__useragent__ = __cdam__.getUserAgent()
-enable_hdlogos = True  # fanart.tv has deprecated low res art, so we always pefer hd from now on
-mbid_match_number = int(__addon__.getSetting("mbid_match_number"))
-use_musicbrainz = eval(__addon__.getSetting("use_musicbrainz"))
-musicbrainz_server = __addon__.getSetting("musicbrainz_server")
-mb_delay = int(float(__addon__.getSetting("mb_delay")))
-api_key = "65169f993d552483391ca10c1ae7fb03"
+
+__addon_path__ = __cdam__.path()
+
 BASE_RESOURCE_PATH = xbmc.translatePath(os.path.join(__addon_path__, 'resources')).decode('utf-8')
 music_path = xbmc.translatePath(__addon__.getSetting("music_path")).decode('utf-8')
 addon_work_folder = xbmc.translatePath(__addon__.getAddonInfo('profile')).decode('utf-8')
+
 addon_db = os.path.join(addon_work_folder, "l_cdart.db").replace("\\\\", "\\")
-addon_db_update = os.path.join(addon_work_folder, "l_cdart." + __dbversionold__ + ".db").replace("\\\\", "\\")
+addon_db_update = os.path.join(addon_work_folder, "l_cdart." + lib.cdam.Constants.db_version_old() + ".db").replace("\\\\", "\\")
 addon_db_backup = os.path.join(addon_work_folder, "l_cdart.db.bak").replace("\\\\", "\\")
 addon_db_crash = os.path.join(addon_work_folder, "l_cdart.db-journal").replace("\\\\", "\\")
 settings_file = os.path.join(addon_work_folder, "settings.xml").replace("\\\\", "\\")
 image = xbmc.translatePath(os.path.join(__addon_path__, "icon.png")).decode('utf-8')
-illegal_characters = list(__addon__.getSetting("illegal_characters"))
-replace_character = __addon__.getSetting("replace_character")
-enable_replace_illegal = eval(__addon__.getSetting("enable_replace_illegal"))
-check_mbid = eval(__addon__.getSetting("check_mbid"))
-enable_all_artists = eval(__addon__.getSetting("enable_all_artists"))
-update_musicbraniz_id = eval(__addon__.getSetting("update_musicbrainz"))
-notify_in_background = eval(__addon__.getSetting("notify_in_background"))
-change_period_atend = eval(__addon__.getSetting("change_period_atend"))
+
+enable_all_artists = __settings__.enable_all_artists()
+
 backup_path = xbmc.translatePath(__addon__.getSetting("backup_path")).decode('utf-8')
 missing_path = xbmc.translatePath(__addon__.getSetting("missing_path")).decode('utf-8')
-enableresize = eval(__addon__.getSetting("enableresize"))
 folder = xbmc.translatePath(__addon__.getSetting("folder")).decode('utf-8')
-enablecustom = eval(__addon__.getSetting("enablecustom"))
 download_temp_folder = os.path.join(addon_work_folder, "temp").decode("utf8")
 addon_image_path = os.path.join(BASE_RESOURCE_PATH, "skins", "Default", "media").decode("utf8")
 missing_cdart_image = os.path.join(addon_image_path, "missing_cdart.png")
 missing_cover_image = os.path.join(addon_image_path, "missing_cover.png")
-backup_during_update = eval(__addon__.getSetting("backup_during_update"))
-enable_missing = eval(__addon__.getSetting("enable_missing"))
-enable_fanart_limit = eval(__addon__.getSetting("enable_fanart_limit"))
-fanart_limit = int(float(__addon__.getSetting("fanart_limit")))
-skin_art_path = addon_image_path
 tempxml_folder = os.path.join(addon_work_folder, "tempxml")
 tempgfx_folder = os.path.join(addon_work_folder, "tempgfx")
+
 script_fail = False
 first_run = False
 rebuild = False
@@ -81,22 +59,13 @@ soft_exit = False
 background_db = False
 script_mode = ""
 
-if use_musicbrainz:
-    mb_delay = 910
-    musicbrainz_server = '''http://musicbrainz.org'''
-else:
-    if mb_delay < 1:
-        mb_delay = 1
-    else:
-        mb_delay = mb_delay * 100
-
 from lib.utils import settings_to_log, get_unicode, change_characters, log, dialog_msg
 from lib.database import store_counts, new_local_count, get_local_artists_db, get_local_albums_db, update_database, \
     retrieve_album_details_full, mbid_repair, refresh_db
 from lib.jsonrpc_calls import retrieve_album_details, retrieve_artist_details, get_fanart_path, get_thumbnail_path
 from lib.musicbrainz_utils import get_musicbrainz_artist_id
-from lib.fanarttv_scraper import check_fanart_new_artwork, first_check, remote_banner_list, remote_hdlogo_list, \
-    get_recognized, remote_cdart_list, remote_coverart_list, remote_fanart_list, remote_clearlogo_list, \
+from lib.fanarttv_scraper import first_check, remote_banner_list, remote_hdlogo_list, \
+    remote_cdart_list, remote_coverart_list, remote_fanart_list, remote_clearlogo_list, \
     remote_artistthumb_list
 from lib.download import auto_download
 import lib.gui
@@ -320,7 +289,7 @@ def get_script_mode():
 if (__name__ == "__main__"):
     # xbmc.executebuiltin('Dialog.Close(all, true)')
     log("###############################################################", xbmc.LOGNOTICE)
-    for credit in __cdam__.getCredits():
+    for credit in __cdam__.credits():
         log("#  %-55s    #" % credit, xbmc.LOGNOTICE)
     log("###############################################################", xbmc.LOGNOTICE)
     log("Looking for settings.xml", xbmc.LOGNOTICE)
@@ -331,7 +300,7 @@ if (__name__ == "__main__"):
         soft_exit = True
     settings_to_log(addon_work_folder, "[script.cdartmanager]")
     try:
-        recognized_ = int(__addon__.getSetting("recognized"))
+        recognized_ = __settings__.color_recognized()
         soft_exit = False
     except:
         dialog_msg("okdialog", heading=__language__(32181), line1=__language__(32182))
@@ -494,20 +463,20 @@ if (__name__ == "__main__"):
                         traceback.print_exc()
                         script_fail = True
                 elif not first_run and not background_db and not soft_exit and not script_fail:  # Test database version
-                    log("Looking for database version: %s" % __dbversion__, xbmc.LOGNOTICE)
+                    log("Looking for database version: %s" % lib.cdam.Constants.db_version(), xbmc.LOGNOTICE)
                     try:
                         conn_l = sqlite3.connect(addon_db)
                         c = conn_l.cursor()
                         c.execute(query)
                         version = c.fetchall()
                         c.close()
-                        if version[0][0] == __dbversion__:
+                        if version[0][0] == lib.cdam.Constants.db_version():
                             log("Database matched", xbmc.LOGNOTICE)
-                        elif version[0][0] == __dbversionold__:
-                            log("Version 2.7.8 found, Removing Bach MBID's from database", xbmc.LOGNOTICE)
+                        elif version[0][0] == lib.cdam.Constants.db_version_old():
+                            log("Old version found, Removing Bach MBID's from database", xbmc.LOGNOTICE)
                             mbid_repair()
-                        elif version[0][0] == __dbversionancient__:
-                            log("Version 1.5.3 found, Adding new column to Local Album Artist and Local Artists",
+                        elif version[0][0] == lib.cdam.Constants.db_version_ancient():
+                            log("Ancient version found, Adding new column to Local Album Artist and Local Artists",
                                 xbmc.LOGNOTICE)
                             all_artists = []
                             local_artists = []

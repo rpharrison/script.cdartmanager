@@ -13,15 +13,17 @@ import xbmcgui
 
 import cdam
 
-__cdam__ = cdam.Settings()
+__cdam__ = cdam.CDAM()
+__settings__ = cdam.Settings()
 __language__ = __cdam__.getLocalizedString
 
 tempxml_folder = sys.modules["__main__"].tempxml_folder
-illegal_characters = sys.modules["__main__"].illegal_characters
-replace_character = sys.modules["__main__"].replace_character
-enable_replace_illegal = sys.modules["__main__"].enable_replace_illegal
-notify_in_background = sys.modules["__main__"].notify_in_background
-change_period_atend = sys.modules["__main__"].change_period_atend
+illegal_characters = __settings__.illegal_characters()
+replace_character = __settings__.replace_character()
+enable_replace_illegal = __settings__.enable_replace_illegal()
+change_period_atend = __settings__.change_period_atend()
+
+notify_in_background = __settings__.notify_in_background()
 image = sys.modules["__main__"].image
 
 from file_item import Thumbnails
@@ -181,7 +183,7 @@ def get_html_source(url, path, save_file=True, overwrite=False):
         file_name = os.path.join(tempxml_folder, path)
 
     class AppURLopener(urllib.FancyURLopener):
-        version = __cdam__.getUserAgent()
+        version = __cdam__.user_agent()
 
     urllib._urlopener = AppURLopener()
     for i in range(0, 4):
@@ -269,9 +271,9 @@ def dialog_msg(action,
     line3 = line3.encode('utf-8', 'ignore')
     # Dialog logic
     if not heading == '':
-        heading = __cdam__.getName() + " - " + heading
+        heading = __cdam__.name() + " - " + heading
     else:
-        heading = __cdam__.getName()
+        heading = __cdam__.name()
     if not line1:
         line1 = ""
     if not line2:
@@ -307,5 +309,5 @@ def dialog_msg(action,
 def log(text, severity=xbmc.LOGDEBUG):
     if type(text).__name__ == 'unicode':
         text = text.encode('utf-8')
-    message = ('[%s] - %s' % (__cdam__.getName(), text.__str__()))
+    message = ('[%s] - %s' % (__cdam__.name(), text.__str__()))
     xbmc.log(msg=message, level=severity)

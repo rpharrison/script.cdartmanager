@@ -10,10 +10,14 @@ from traceback import print_exc
 import xbmc
 import xbmcvfs
 import json as simplejson
+import cdam
 
-__language__ = sys.modules["__main__"].__language__
-api_key = sys.modules["__main__"].api_key
-enable_all_artists = sys.modules["__main__"].enable_all_artists
+__cdam__ = cdam.CDAM()
+__settings__ = cdam.Settings()
+
+__language__ = __cdam__.getLocalizedString
+api_key = cdam.Constants.api_key()
+enable_all_artists = __settings__.enable_all_artists()
 tempxml_folder = sys.modules["__main__"].tempxml_folder
 
 from utils import get_html_source, log, dialog_msg
@@ -21,7 +25,6 @@ from database import store_lalist, store_local_artist_table, store_fanarttv_date
 
 music_url_json = "http://webservice.fanart.tv/v3/music/%s?api_key=%s"
 new_music = "http://webservice.fanart.tv/v3/music/latest?api_key=%s&date=%s"
-
 lookup_id = False
 
 

@@ -8,18 +8,22 @@ from traceback import print_exc
 import xbmc
 
 from sqlite3 import dbapi2 as sqlite3
+import cdam
+
+__cdam__ = cdam.CDAM()
+__settings__ = cdam.Settings()
+
 
 true = True
 false = False
 null = None
 
-__language__ = sys.modules["__main__"].__language__
+__language__ = __cdam__.getLocalizedString
 addon_db = sys.modules["__main__"].addon_db
 resizeondownload = False  # disabled because fanart.tv API V3 doesn't deliver correct sizes
 music_path = sys.modules["__main__"].music_path
-enable_hdlogos = sys.modules["__main__"].enable_hdlogos
-fanart_limit = sys.modules["__main__"].fanart_limit
-enable_fanart_limit = sys.modules["__main__"].enable_fanart_limit
+fanart_limit = __settings__.fanart_limit()
+enable_fanart_limit = __settings__.enable_fanart_limit()
 tempgfx_folder = sys.modules["__main__"].tempgfx_folder
 
 from fanarttv_scraper import remote_banner_list, remote_hdlogo_list, remote_cdart_list, \
@@ -352,13 +356,6 @@ def auto_download(type, artist_list, background=False):
                                 log("    Path: %s" % auto_art["path"], xbmc.LOGDEBUG)
                                 d_error = True
                     else:
-                        #                        if type == "clearlogo":
-                        #                            if arthd and enable_hdlogos:
-                        #                                artwork = arthd[0]
-                        #                            else:
-                        #                                artwork = art[0]
-                        #                        else:
-                        #                            artwork = art[0]
                         artwork = art[0]
                         if type == "artistthumb":
                             if resizeondownload:
@@ -375,11 +372,6 @@ def auto_download(type, artist_list, background=False):
                                                                                                   "artistthumb", "auto",
                                                                                                   0, background)
                         elif type == "clearlogo":
-                            #                            if enable_hdlogos and resizeondownload and arthd:
-                            #                                low_res = check_size(auto_art["path"], key_label, 800, 310)
-                            #                            else:
-                            #                                low_res = False
-                            #                            if exists(os.path.join(auto_art["path"], "logo.png")) and not low_res:
                             if exists(os.path.join(auto_art["path"], "logo.png")):
                                 log("ClearLOGO already exists, skipping", xbmc.LOGDEBUG)
                                 continue
