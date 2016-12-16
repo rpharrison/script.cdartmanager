@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
-import sys
-import os
 import re
-from urllib import quote_plus, quote
+import sys
+from sqlite3 import dbapi2 as sqlite3
 from traceback import print_exc
+from urllib import quote_plus
 
 import xbmc
-from sqlite3 import dbapi2 as sqlite3
+
 import cdam
 
 __settings__ = cdam.Settings()

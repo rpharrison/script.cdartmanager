@@ -12,26 +12,25 @@ from sqlite3 import dbapi2 as sqlite3
 
 __cdam__ = cdam.CDAM()
 __settings__ = cdam.Settings()
-
 __language__ = __cdam__.getLocalizedString
+
+mbid_match_number = __settings__.mbid_match_number()
+enablecustom = __settings__.enablecustom()
+enable_all_artists = __settings__.enable_all_artists()
+enable_missing = __settings__.enable_missing()
 
 __addon__ = sys.modules["__main__"].__addon__
 addon_db = sys.modules["__main__"].addon_db
 addon_work_folder = sys.modules["__main__"].addon_work_folder
-image = sys.modules["__main__"].image
-
-mbid_match_number = __settings__.mbid_match_number()
+image = __cdam__.file_icon()
 
 music_path = sys.modules["__main__"].music_path
 backup_path = sys.modules["__main__"].backup_path
 
-enablecustom = __settings__.enablecustom()
-
 missing_cdart_image = sys.modules["__main__"].missing_cdart_image
 missing_cover_image = sys.modules["__main__"].missing_cover_image
 addon_image_path = sys.modules["__main__"].addon_image_path
-enable_all_artists = __settings__.enable_all_artists()
-enable_missing = __settings__.enable_missing()
+
 
 # script imports
 from fanarttv_scraper import first_check, remote_banner_list, remote_hdlogo_list, check_fanart_new_artwork, \

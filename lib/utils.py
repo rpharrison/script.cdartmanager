@@ -10,26 +10,24 @@ import datetime
 
 import xbmc
 import xbmcgui
-
 import cdam
+
+from xbmcvfs import delete, exists, mkdir
+from file_item import Thumbnails
 
 __cdam__ = cdam.CDAM()
 __settings__ = cdam.Settings()
 __language__ = __cdam__.getLocalizedString
 
-tempxml_folder = sys.modules["__main__"].tempxml_folder
 illegal_characters = __settings__.illegal_characters()
 replace_character = __settings__.replace_character()
 enable_replace_illegal = __settings__.enable_replace_illegal()
 change_period_atend = __settings__.change_period_atend()
-
 notify_in_background = __settings__.notify_in_background()
-image = sys.modules["__main__"].image
 
-from file_item import Thumbnails
-from xbmcvfs import delete as delete_file
-from xbmcvfs import exists as exists
-from xbmcvfs import mkdir
+tempxml_folder = sys.modules["__main__"].tempxml_folder
+image = __cdam__.file_icon()
+
 
 dialog = xbmcgui.DialogProgress()
 
@@ -151,20 +149,20 @@ def clear_image_cache(url):
     dds = os.path.splitext(thumb)[0] + ".dds"
     jpg = os.path.splitext(thumb)[0] + ".jpg"
     if exists(thumb):
-        delete_file(thumb)
+        delete(thumb)
     if exists(png):
-        delete_file(png)
+        delete(png)
     if exists(jpg):
-        delete_file(jpg)
+        delete(jpg)
     if exists(dds):
-        delete_file(dds)
+        delete(dds)
 
 
 def empty_tempxml_folder():
     # Helix: paths MUST end with trailing slash
     if exists(os.path.join(tempxml_folder, '')):
         for file_name in os.listdir(os.path.join(tempxml_folder, '')):
-            delete_file(os.path.join(tempxml_folder, file_name))
+            delete(os.path.join(tempxml_folder, file_name))
     else:
         pass
 
@@ -194,7 +192,7 @@ def get_html_source(url, path, save_file=True, overwrite=False):
                     file_age = datetime.datetime.today() - file_mtime
                     if file_age.days > 14:  # yes i know... but this is temporary and will be configurable in a later release
                         log("Cached file is %s days old, refreshing" % file_age.days, xbmc.LOGNOTICE)
-                        delete_file(file_name)
+                        delete(file_name)
 
                 if exists(file_name) and not overwrite:
                     log("Retrieving local source", xbmc.LOGDEBUG)

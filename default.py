@@ -27,30 +27,32 @@ __settings__ = lib.cdam.Settings()
 __addon__ = __cdam__.getAddon()
 __language__ = __cdam__.getLocalizedString
 
+enable_all_artists = __settings__.enable_all_artists()
+
 __addon_path__ = __cdam__.path()
 
-BASE_RESOURCE_PATH = xbmc.translatePath(os.path.join(__addon_path__, 'resources')).decode('utf-8')
-music_path = xbmc.translatePath(__addon__.getSetting("music_path")).decode('utf-8')
-addon_work_folder = xbmc.translatePath(__addon__.getAddonInfo('profile')).decode('utf-8')
+image = __cdam__.file_icon()
 
+music_path = xbmc.translatePath(__addon__.getSetting("music_path")).decode('utf-8')
+backup_path = xbmc.translatePath(__addon__.getSetting("backup_path")).decode('utf-8')
+missing_path = xbmc.translatePath(__addon__.getSetting("missing_path")).decode('utf-8')
+folder = xbmc.translatePath(__addon__.getSetting("folder")).decode('utf-8')
+
+BASE_RESOURCE_PATH = xbmc.translatePath(os.path.join(__addon_path__, 'resources')).decode('utf-8')
+addon_image_path = os.path.join(BASE_RESOURCE_PATH, "skins", "Default", "media").decode("utf8")
+missing_cdart_image = os.path.join(addon_image_path, "missing_cdart.png")
+missing_cover_image = os.path.join(addon_image_path, "missing_cover.png")
+
+addon_work_folder = xbmc.translatePath(__addon__.getAddonInfo('profile')).decode('utf-8')
+download_temp_folder = os.path.join(addon_work_folder, "temp").decode("utf8")
+tempxml_folder = os.path.join(addon_work_folder, "tempxml")
+tempgfx_folder = os.path.join(addon_work_folder, "tempgfx")
 addon_db = os.path.join(addon_work_folder, "l_cdart.db").replace("\\\\", "\\")
 addon_db_update = os.path.join(addon_work_folder, "l_cdart." + lib.cdam.Constants.db_version_old() + ".db").replace("\\\\", "\\")
 addon_db_backup = os.path.join(addon_work_folder, "l_cdart.db.bak").replace("\\\\", "\\")
 addon_db_crash = os.path.join(addon_work_folder, "l_cdart.db-journal").replace("\\\\", "\\")
 settings_file = os.path.join(addon_work_folder, "settings.xml").replace("\\\\", "\\")
-image = xbmc.translatePath(os.path.join(__addon_path__, "icon.png")).decode('utf-8')
 
-enable_all_artists = __settings__.enable_all_artists()
-
-backup_path = xbmc.translatePath(__addon__.getSetting("backup_path")).decode('utf-8')
-missing_path = xbmc.translatePath(__addon__.getSetting("missing_path")).decode('utf-8')
-folder = xbmc.translatePath(__addon__.getSetting("folder")).decode('utf-8')
-download_temp_folder = os.path.join(addon_work_folder, "temp").decode("utf8")
-addon_image_path = os.path.join(BASE_RESOURCE_PATH, "skins", "Default", "media").decode("utf8")
-missing_cdart_image = os.path.join(addon_image_path, "missing_cdart.png")
-missing_cover_image = os.path.join(addon_image_path, "missing_cover.png")
-tempxml_folder = os.path.join(addon_work_folder, "tempxml")
-tempgfx_folder = os.path.join(addon_work_folder, "tempgfx")
 
 script_fail = False
 first_run = False
@@ -288,16 +290,17 @@ def get_script_mode():
 
 if (__name__ == "__main__"):
     # xbmc.executebuiltin('Dialog.Close(all, true)')
-    log("###############################################################", xbmc.LOGNOTICE)
+    log("#############################################################", xbmc.LOGNOTICE)
     for credit in __cdam__.credits():
-        log("#  %-55s    #" % credit, xbmc.LOGNOTICE)
-    log("###############################################################", xbmc.LOGNOTICE)
+        log("#  %-55s  #" % credit, xbmc.LOGNOTICE)
+    log("#############################################################", xbmc.LOGNOTICE)
     log("Looking for settings.xml", xbmc.LOGNOTICE)
     if not exists(settings_file):  # Open Settings if settings.xml does not exists
         log("settings.xml File not found, creating path and opening settings", xbmc.LOGNOTICE)
         _makedirs(addon_work_folder)
         __addon__.openSettings()
         soft_exit = True
+
     settings_to_log(addon_work_folder, "[script.cdartmanager]")
     try:
         recognized_ = __settings__.color_recognized()

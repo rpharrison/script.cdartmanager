@@ -16,7 +16,6 @@ __cdam__ = cdam.CDAM()
 __settings__ = cdam.Settings()
 
 __language__ = __cdam__.getLocalizedString
-api_key = cdam.Constants.api_key()
 enable_all_artists = __settings__.enable_all_artists()
 tempxml_folder = sys.modules["__main__"].tempxml_folder
 
@@ -147,7 +146,7 @@ def remote_artistthumb_list(artist_menu):
 def retrieve_fanarttv_json(id):
     log("Retrieving artwork for artist id: %s" % id, xbmc.LOGDEBUG)
     # url = music_url_json % (api_key, id, "all")
-    url = music_url_json % (id, api_key)
+    url = music_url_json % (id, cdam.Constants.fanarttv_api_key())
     # htmlsource = (get_html_source(url, id, save_file=False, overwrite=False)).encode('utf-8', 'ignore')
     htmlsource = get_html_source(url, "FTV_" + str(id), save_file=True, overwrite=False)
     artist_artwork = []
@@ -242,7 +241,7 @@ def check_fanart_new_artwork(present_datecode):
     # fix: use global tempxml_folder instead of explicit definition
     if xbmcvfs.exists(os.path.join(tempxml_folder, "%s.xml" % previous_datecode)):
         xbmcvfs.delete(os.path.join(tempxml_folder, "%s.xml" % previous_datecode))
-    url = new_music % (api_key, str(previous_datecode))
+    url = new_music % (cdam.Constants.fanarttv_api_key(), str(previous_datecode))
     htmlsource = get_html_source(url, "FTV-NEW_" + str(present_datecode), save_file=True, overwrite=False)
     if htmlsource == "null":
         log("No new Artwork found on fanart.tv", xbmc.LOGNOTICE)
@@ -261,7 +260,7 @@ def check_fanart_new_artwork(present_datecode):
 def check_art(mbid, artist_type="album"):
     has_art = "False"
     # url = music_url_json % (api_key, str(mbid), "all")
-    url = music_url_json % (str(mbid), api_key)
+    url = music_url_json % (str(mbid), cdam.Constants.fanarttv_api_key())
     htmlsource = get_html_source(url, "FTV_" + str(mbid), save_file=True, overwrite=True)
     if htmlsource == "null":
         log("No artwork found for MBID: %s" % mbid, xbmc.LOGDEBUG)
@@ -277,7 +276,7 @@ def update_art(mbid, data, existing_has_art):
     for item in data:
         if item["id"] == mbid:
             # url = music_url_json % (api_key, str(mbid), "all")
-            url = music_url_json % (str(mbid), api_key)
+            url = music_url_json % (str(mbid), cdam.Constants.fanarttv_api_key())
             has_art = "True"
             #            new_art = (get_html_source(url, str(mbid), save_file=True, overwrite=True)).encode('utf-8', 'ignore')
             new_art = get_html_source(url, "FTV_" + str(mbid), save_file=True, overwrite=True)

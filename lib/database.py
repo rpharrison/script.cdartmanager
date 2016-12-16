@@ -15,24 +15,20 @@ import cdam
 
 __cdam__ = cdam.CDAM()
 __settings__ = cdam.Settings()
-
 __language__ = __cdam__.getLocalizedString
-addon_db = sys.modules["__main__"].addon_db
-addon_work_folder = sys.modules["__main__"].addon_work_folder
+
 check_mbid = __settings__.check_mbid()
 update_musicbrainz = __settings__.update_musicbrainz()
 enable_all_artists = __settings__.enable_all_artists()
 backup_during_update = __settings__.backup_during_update()
 
+addon_db = sys.modules["__main__"].addon_db
+addon_work_folder = sys.modules["__main__"].addon_work_folder
+
 from musicbrainz_utils import get_musicbrainz_artist_id, get_musicbrainz_album, mbid_check, \
     get_musicbrainz_release_group
 from utils import get_unicode, log, dialog_msg
 from jsonrpc_calls import get_all_local_artists, retrieve_album_list, retrieve_album_details, get_album_path
-
-try:
-    from xbmcvfs import mkdirs as _makedirs
-except:
-    from utils import _makedirs
 
 
 def mbid_repair():

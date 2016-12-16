@@ -64,6 +64,16 @@ class CDAM:
     def user_agent(self):
         return "%s\\%s (%s)" % (self.name(), self.version(), Constants.useragent_base())
 
+    # files and folders
+
+    @staticmethod
+    def __aspath__(path):
+        return xbmc.translatePath(path)
+
+    def file_icon(self):
+        return self.__aspath__(self.icon())
+
+
     # more
 
     def log(self, text, severity=xbmc.LOGDEBUG):
@@ -83,7 +93,7 @@ class Settings:
 
     @classmethod
     def reload(cls):
-        cls.__addon = xbmcaddon.Addon(id="script.cdartmanager")
+        cls.__addon = xbmcaddon.Addon(id=Constants.script_id())
 
     def getAddon(self):
         """:rtype : xbmcaddon.Addon"""
@@ -185,8 +195,8 @@ class Constants:
         pass
 
     @staticmethod
-    def api_key():
-        return "65169f993d552483391ca10c1ae7fb03"
+    def script_id():
+        return "script.cdartmanager"
 
     @staticmethod
     def useragent_base():
@@ -203,3 +213,7 @@ class Constants:
     @staticmethod
     def db_version_ancient():
         return "1.5.3"
+
+    @staticmethod
+    def fanarttv_api_key():
+        return "65169f993d552483391ca10c1ae7fb03"
