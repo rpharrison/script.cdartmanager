@@ -25,23 +25,13 @@ __cdam__ = lib.cdam.CDAM()
 __settings__ = lib.cdam.Settings()
 
 __addon__ = __cdam__.getAddon()
+__addon_path__ = __cdam__.path()
+
 __language__ = __cdam__.getLocalizedString
 
 enable_all_artists = __settings__.enable_all_artists()
+music_path = __settings__.path_music_path()
 
-__addon_path__ = __cdam__.path()
-
-image = __cdam__.file_icon()
-
-music_path = xbmc.translatePath(__addon__.getSetting("music_path")).decode('utf-8')
-backup_path = xbmc.translatePath(__addon__.getSetting("backup_path")).decode('utf-8')
-missing_path = xbmc.translatePath(__addon__.getSetting("missing_path")).decode('utf-8')
-folder = xbmc.translatePath(__addon__.getSetting("folder")).decode('utf-8')
-
-BASE_RESOURCE_PATH = xbmc.translatePath(os.path.join(__addon_path__, 'resources')).decode('utf-8')
-addon_image_path = os.path.join(BASE_RESOURCE_PATH, "skins", "Default", "media").decode("utf8")
-missing_cdart_image = os.path.join(addon_image_path, "missing_cdart.png")
-missing_cover_image = os.path.join(addon_image_path, "missing_cover.png")
 
 addon_work_folder = xbmc.translatePath(__addon__.getAddonInfo('profile')).decode('utf-8')
 download_temp_folder = os.path.join(addon_work_folder, "temp").decode("utf8")
@@ -535,7 +525,7 @@ if (__name__ == "__main__"):
                 elif not background_db and not soft_exit:
                     log("Problem accessing folder, exiting script", xbmc.LOGNOTICE)
                     xbmc.executebuiltin(
-                        "Notification( %s, %s, %d, %s)" % (__language__(32042), __language__(32110), 500, image))
+                        "Notification( %s, %s, %d, %s)" % (__language__(32042), __language__(32110), 500, __cdam__.file_icon()))
             clear_skin_properties()
         except:
             print "Unexpected error:", sys.exc_info()[0]

@@ -24,12 +24,11 @@ addon_db = sys.modules["__main__"].addon_db
 addon_work_folder = sys.modules["__main__"].addon_work_folder
 image = __cdam__.file_icon()
 
-music_path = sys.modules["__main__"].music_path
-backup_path = sys.modules["__main__"].backup_path
+music_path = __settings__.path_music_path()
+backup_path = __settings__.path_backup_path()
 
-missing_cdart_image = sys.modules["__main__"].missing_cdart_image
-missing_cover_image = sys.modules["__main__"].missing_cover_image
-addon_image_path = sys.modules["__main__"].addon_image_path
+missing_cdart_image = __cdam__.file_missing_cdart()
+missing_cover_image = __cdam__.file_missing_cover()
 
 
 # script imports
@@ -494,7 +493,7 @@ class GUI(xbmcgui.WindowXMLDialog):
     def single_unique_copy(self, artist, album, source):
         log("Copying to Unique Folder: %s - %s" % (artist, album), xbmc.LOGNOTICE)
         destination = ""
-        fn_format = int(__addon__.getSetting("folder"))
+        fn_format = __settings__.folder()
         unique_folder = __addon__.getSetting("unique_path")
         if not unique_folder:
             __addon__.openSettings()
@@ -830,7 +829,7 @@ class GUI(xbmcgui.WindowXMLDialog):
         percent = 0
         line = ""
         path_provided = False
-        missing_path = xbmc.translatePath(__addon__.getSetting("missing_path"))
+        missing_path = __settings__.path_missing_path()
         albums = get_local_albums_db("all artists", self.background)
         artists = get_local_artists_db(mode="local_artists")
         if not artists:
@@ -892,7 +891,7 @@ class GUI(xbmcgui.WindowXMLDialog):
             dialog_msg("update", percent=50)
             missing.write("Artists Missing Artwork\r\n")
             missing.write("\r\n")
-            music_path = xbmc.translatePath(__addon__.getSetting("music_path"))
+            music_path = __settings__.path_music_path()
             missing.write("|  %-45s| %-70s| Fanart | clearLogo | Artist Thumb | Music Banner |\r\n" % (
                 "MusicBrainz ID", "Artist Name"))
             missing.write("-" * 172)
@@ -954,8 +953,6 @@ class GUI(xbmcgui.WindowXMLDialog):
 
     # This selects which cdART image shows up in the display box (image id 210) 
     def cdart_icon(self):
-        blank_art = os.path.join(addon_image_path, "blank_artwork.png")
-        image = blank_art
         cdart_path = {}
         try:  # If there is information in label 2 of list id 140(local album list)
             local_cdart = (self.getControl(140).getSelectedItem().getLabel2()).split("&&&&")[1]
@@ -975,7 +972,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                     # image = image
         except:  # If there is not any information in any of those locations, no image.
             traceback.print_exc()
-            image = blank_art
+            image = __cdam__.file_blank_artwork()
         self.getControl(210).setImage(image)
 
     def clear_artwork(self):

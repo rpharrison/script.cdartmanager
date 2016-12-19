@@ -1,23 +1,28 @@
+import os
 import xbmc
 import xbmcaddon
 
 
-class CDAM:
+class CDAMAddon:
 
     # this is shared between all instances
-    __addon = None
+    """:rtype : xbmcaddon.Addon"""
+    _addon = None
 
     def __init__(self):
-        if self.__addon is None:
+        if self._addon is None:
             self.reload()
 
     @classmethod
     def reload(cls):
-        cls.__addon = xbmcaddon.Addon(id="script.cdartmanager")
+        cls._addon = xbmcaddon.Addon(id=Constants.script_id())
+
+
+class CDAM(CDAMAddon):
 
     def getAddon(self):
         """:rtype : xbmcaddon.Addon"""
-        return self.__addon
+        return self._addon
 
     # info
 
@@ -67,12 +72,24 @@ class CDAM:
     # files and folders
 
     @staticmethod
-    def __aspath__(path):
-        return xbmc.translatePath(path)
+    def __aspath__(path, *subpath):
+        p = os.path.join(path, *subpath)
+        return xbmc.translatePath(p).decode('utf-8') or p.decode('utf-8')
 
     def file_icon(self):
         return self.__aspath__(self.icon())
 
+    def path_resources_images(self):
+        return self.__aspath__(self.path(), "resources", "skins", "Default", "media")
+
+    def file_missing_cdart(self):
+        return self.__aspath__(self.path_resources_images(), "missing_cdart.png")
+
+    def file_missing_cover(self):
+        return self.__aspath__(self.path_resources_images(), "missing_cover.png")
+
+    def file_blank_artwork(self):
+        return self.__aspath__(self.path_resources_images(), "blank_artwork.png")
 
     # more
 
@@ -83,21 +100,11 @@ class CDAM:
         xbmc.log(msg=message, level=severity)
 
 
-class Settings:
-    # this is shared between all instances
-    __addon = None
-
-    def __init__(self):
-        if self.__addon is None:
-            self.reload()
-
-    @classmethod
-    def reload(cls):
-        cls.__addon = xbmcaddon.Addon(id=Constants.script_id())
+class Settings(CDAMAddon):
 
     def getAddon(self):
         """:rtype : xbmcaddon.Addon"""
-        return self.__addon
+        return self._addon
 
     def __getSetting__(self, setting):
         return self.getAddon().getSetting(setting)
@@ -116,6 +123,10 @@ class Settings:
             return int(float(self.__getSetting__(setting)))
         except ValueError:
             return -1
+
+    def __getSettingPath__(self, setting):
+        p = self.__getSettingString__(setting)
+        return xbmc.translatePath(p).decode('utf-8') or p.decode('utf-8')
 
     def mbid_match_number(self):
         return self.__getSettingInt__("mbid_match_number")
@@ -140,6 +151,9 @@ class Settings:
 
     def change_period_atend(self):
         return self.__getSettingBool__("change_period_atend")
+
+    def folder(self):
+        return self.__getSettingInt__("folder")
 
     def update_musicbrainz(self):
         return self.__getSettingBool__("update_musicbrainz")
@@ -168,6 +182,8 @@ class Settings:
     def fanart_limit(self):
         return self.__getSettingInt__("fanart_limit")
 
+    # colors
+
     def color_recognized(self):
         return self.__getSettingInt__("recognized")
 
@@ -188,6 +204,17 @@ class Settings:
 
     def color_localcdart(self):
         return self.__getSettingInt__("localcdart")
+
+    # paths
+
+    def path_music_path(self):
+        return self.__getSettingPath__("music_path")
+
+    def path_backup_path(self):
+        return self.__getSettingPath__("backup_path")
+
+    def path_missing_path(self):
+        return self.__getSettingPath__("missing_path")
 
 
 class Constants:
