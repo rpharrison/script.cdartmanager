@@ -11,16 +11,12 @@ import xbmc
 import xbmcvfs
 import json as simplejson
 import cdam
+from utils import get_html_source, log, dialog_msg
+from database import store_lalist, store_local_artist_table, store_fanarttv_datecode, retrieve_fanarttv_datecode
 
 __cdam__ = cdam.CDAM()
 __settings__ = cdam.Settings()
-
 __language__ = __cdam__.getLocalizedString
-enable_all_artists = __settings__.enable_all_artists()
-tempxml_folder = sys.modules["__main__"].tempxml_folder
-
-from utils import get_html_source, log, dialog_msg
-from database import store_lalist, store_local_artist_table, store_fanarttv_datecode, retrieve_fanarttv_datecode
 
 music_url_json = "http://webservice.fanart.tv/v3/music/%s?api_key=%s"
 new_music = "http://webservice.fanart.tv/v3/music/latest?api_key=%s&date=%s"
@@ -239,6 +235,7 @@ def check_fanart_new_artwork(present_datecode):
     log("Checking for new Artwork on fanart.tv since last run...", xbmc.LOGNOTICE)
     previous_datecode = retrieve_fanarttv_datecode()
     # fix: use global tempxml_folder instead of explicit definition
+    tempxml_folder = __cdam__.path_temp_xml()
     if xbmcvfs.exists(os.path.join(tempxml_folder, "%s.xml" % previous_datecode)):
         xbmcvfs.delete(os.path.join(tempxml_folder, "%s.xml" % previous_datecode))
     url = new_music % (cdam.Constants.fanarttv_api_key(), str(previous_datecode))
@@ -316,7 +313,7 @@ def first_check(all_artists, album_artists, background=False, update_db=False):
         count += 1
     log("Storing Album Artists List", xbmc.LOGDEBUG)
     store_lalist(album_artists_matched, len(album_artists_matched))
-    if enable_all_artists and all_artists:
+    if __settings__.enable_all_artists() and all_artists:
         count = 0
         for artist in all_artists:
             percent = int((float(count) / len(all_artists)) * 100)
@@ -359,7 +356,7 @@ def get_recognized(all_artists, album_artists, background=False):
             dialog_msg("update", percent=percent, line1=__language__(32185), line2="",
                        line3=__language__(32049) % artist["name"], background=background)
             count += 1
-        if enable_all_artists and all_artists:
+        if __settings__.enable_all_artists() and all_artists:
             count = 0
             for artist in all_artists:
                 percent = int((float(count) / len(all_artists)) * 100)

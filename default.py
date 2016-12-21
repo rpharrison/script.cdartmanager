@@ -17,40 +17,6 @@ from xbmcvfs import rename as file_rename
 
 import lib.cdam
 
-true = True
-false = False
-null = None
-
-__cdam__ = lib.cdam.CDAM()
-__settings__ = lib.cdam.Settings()
-
-__addon__ = __cdam__.getAddon()
-__addon_path__ = __cdam__.path()
-
-__language__ = __cdam__.getLocalizedString
-
-enable_all_artists = __settings__.enable_all_artists()
-music_path = __settings__.path_music_path()
-
-
-addon_work_folder = xbmc.translatePath(__addon__.getAddonInfo('profile')).decode('utf-8')
-download_temp_folder = os.path.join(addon_work_folder, "temp").decode("utf8")
-tempxml_folder = os.path.join(addon_work_folder, "tempxml")
-tempgfx_folder = os.path.join(addon_work_folder, "tempgfx")
-addon_db = os.path.join(addon_work_folder, "l_cdart.db").replace("\\\\", "\\")
-addon_db_update = os.path.join(addon_work_folder, "l_cdart." + lib.cdam.Constants.db_version_old() + ".db").replace("\\\\", "\\")
-addon_db_backup = os.path.join(addon_work_folder, "l_cdart.db.bak").replace("\\\\", "\\")
-addon_db_crash = os.path.join(addon_work_folder, "l_cdart.db-journal").replace("\\\\", "\\")
-settings_file = os.path.join(addon_work_folder, "settings.xml").replace("\\\\", "\\")
-
-
-script_fail = False
-first_run = False
-rebuild = False
-soft_exit = False
-background_db = False
-script_mode = ""
-
 from lib.utils import settings_to_log, get_unicode, change_characters, log, dialog_msg
 from lib.database import store_counts, new_local_count, get_local_artists_db, get_local_albums_db, update_database, \
     retrieve_album_details_full, mbid_repair, refresh_db
@@ -66,6 +32,32 @@ try:
     from xbmcvfs import mkdirs as _makedirs
 except:
     from lib.utils import _makedirs
+
+true = True
+false = False
+null = None
+
+__cdam__ = lib.cdam.CDAM()
+__settings__ = lib.cdam.Settings()
+__language__ = __cdam__.getLocalizedString
+
+__addon__ = __cdam__.getAddon()
+__addon_path__ = __cdam__.path()
+
+enable_all_artists = __settings__.enable_all_artists()
+music_path = __settings__.path_music_path()
+
+addon_work_folder = __cdam__.path_profile()
+addon_db = __cdam__.file_addon_db()
+addon_db_update = __cdam__.file_addon_db_old()
+addon_db_crash = __cdam__.file_addon_db_crash()
+
+script_fail = False
+first_run = False
+rebuild = False
+soft_exit = False
+background_db = False
+script_mode = ""
 
 
 def clear_skin_properties():
@@ -285,13 +277,13 @@ if (__name__ == "__main__"):
         log("#  %-55s  #" % credit, xbmc.LOGNOTICE)
     log("#############################################################", xbmc.LOGNOTICE)
     log("Looking for settings.xml", xbmc.LOGNOTICE)
-    if not exists(settings_file):  # Open Settings if settings.xml does not exists
+    if not exists(__cdam__.file_settings_xml()):  # Open Settings if settings.xml does not exists
         log("settings.xml File not found, creating path and opening settings", xbmc.LOGNOTICE)
         _makedirs(addon_work_folder)
         __addon__.openSettings()
         soft_exit = True
 
-    settings_to_log(addon_work_folder, "[script.cdartmanager]")
+    settings_to_log(__cdam__.file_settings_xml(), "[script.cdartmanager]")
     try:
         recognized_ = __settings__.color_recognized()
         soft_exit = False
@@ -421,7 +413,7 @@ if (__name__ == "__main__"):
             elif script_mode == "normal":
                 log("Addon Work Folder: %s" % addon_work_folder, xbmc.LOGNOTICE)
                 log("Addon Database: %s" % addon_db, xbmc.LOGNOTICE)
-                log("Addon settings: %s" % settings_file, xbmc.LOGNOTICE)
+                log("Addon settings: %s" % __cdam__.file_settings_xml(), xbmc.LOGNOTICE)
                 query = "SELECT version FROM counts"
                 if xbmcgui.Window(10000).getProperty(
                         "cdart_manager_update") == "True":  # Check to see if skin property is set, if it is, gracefully exit the script

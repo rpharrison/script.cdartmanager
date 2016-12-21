@@ -91,6 +91,33 @@ class CDAM(CDAMAddon):
     def file_blank_artwork(self):
         return self.__aspath__(self.path_resources_images(), "blank_artwork.png")
 
+    def path_profile(self, folder=None):
+        if folder:
+            return self.__aspath__(os.path.join(self.profile(), folder))
+        else:
+            return self.__aspath__(self.profile())
+
+    def path_temp(self):
+        return self.path_profile("temp")
+
+    def path_temp_xml(self):
+        return self.path_profile("tempxml")
+
+    def path_temp_gfx(self):
+        return self.path_profile("tempgfx")
+
+    def file_addon_db(self):
+        return self.path_profile("l_cdart.db")
+
+    def file_addon_db_crash(self):
+        return self.path_profile("l_cdart.db-journal")
+
+    def file_addon_db_old(self):
+        return self.path_profile("l_cdart." + Constants.db_version_old() + ".db")
+
+    def file_settings_xml(self):
+        return self.path_profile("settings.xml")
+
     # more
 
     def log(self, text, severity=xbmc.LOGDEBUG):
@@ -105,6 +132,10 @@ class Settings(CDAMAddon):
     def getAddon(self):
         """:rtype : xbmcaddon.Addon"""
         return self._addon
+
+    def open(self):
+        self.getAddon().openSettings()
+        self.reload()
 
     def __getSetting__(self, setting):
         return self.getAddon().getSetting(setting)
@@ -216,6 +247,8 @@ class Settings(CDAMAddon):
     def path_missing_path(self):
         return self.__getSettingPath__("missing_path")
 
+    def path_unique_path(self):
+        return self.__getSettingPath__("unique_path")
 
 class Constants:
     def __init__(self):

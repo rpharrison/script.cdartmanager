@@ -19,12 +19,12 @@ false = False
 null = None
 
 __language__ = __cdam__.getLocalizedString
-addon_db = sys.modules["__main__"].addon_db
+addon_db = __cdam__.file_addon_db()
 resizeondownload = False  # disabled because fanart.tv API V3 doesn't deliver correct sizes
 music_path = __settings__.path_music_path()
 fanart_limit = __settings__.fanart_limit()
 enable_fanart_limit = __settings__.enable_fanart_limit()
-tempgfx_folder = sys.modules["__main__"].tempgfx_folder
+tempgfx_folder = __cdam__.path_temp_gfx()
 
 from fanarttv_scraper import remote_banner_list, remote_hdlogo_list, remote_cdart_list, \
     remote_coverart_list, remote_fanart_list, remote_clearlogo_list, remote_artistthumb_list

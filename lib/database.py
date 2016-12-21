@@ -22,8 +22,8 @@ update_musicbrainz = __settings__.update_musicbrainz()
 enable_all_artists = __settings__.enable_all_artists()
 backup_during_update = __settings__.backup_during_update()
 
-addon_db = sys.modules["__main__"].addon_db
-addon_work_folder = sys.modules["__main__"].addon_work_folder
+addon_db = __cdam__.file_addon_db()
+addon_work_folder = __cdam__.path_profile()
 
 from musicbrainz_utils import get_musicbrainz_artist_id, get_musicbrainz_album, mbid_check, \
     get_musicbrainz_release_group

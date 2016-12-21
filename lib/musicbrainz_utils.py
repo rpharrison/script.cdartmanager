@@ -10,9 +10,10 @@ import xbmc
 
 import cdam
 
+__cdam__ = cdam.CDAM()
 __settings__ = cdam.Settings()
 
-addon_db = sys.modules["__main__"].addon_db
+addon_db = __cdam__.file_addon_db()
 
 from utils import get_html_source, unescape, log, get_unicode, smart_unicode
 

@@ -19,9 +19,8 @@ enablecustom = __settings__.enablecustom()
 enable_all_artists = __settings__.enable_all_artists()
 enable_missing = __settings__.enable_missing()
 
-__addon__ = sys.modules["__main__"].__addon__
-addon_db = sys.modules["__main__"].addon_db
-addon_work_folder = sys.modules["__main__"].addon_work_folder
+addon_db = __cdam__.file_addon_db()
+addon_work_folder = __cdam__.path_profile()
 image = __cdam__.file_icon()
 
 music_path = __settings__.path_music_path()
@@ -494,10 +493,10 @@ class GUI(xbmcgui.WindowXMLDialog):
         log("Copying to Unique Folder: %s - %s" % (artist, album), xbmc.LOGNOTICE)
         destination = ""
         fn_format = __settings__.folder()
-        unique_folder = __addon__.getSetting("unique_path")
+        unique_folder = __settings__.path_unique_path()
         if not unique_folder:
-            __addon__.openSettings()
-            unique_folder = __addon__.getSetting("unique_path")
+            __settings__.open()
+            unique_folder = __settings__.path_unique_path()
         log("Unique Folder: %s" % repr(unique_folder), xbmc.LOGNOTICE)
         if xbmcvfs.exists(source):
             log("source: %s" % repr(source), xbmc.LOGNOTICE)
@@ -526,11 +525,11 @@ class GUI(xbmcgui.WindowXMLDialog):
     def single_backup_copy(self, artist, album, source):
         log("Copying To Backup Folder: %s - %s" % (artist, album), xbmc.LOGNOTICE)
         destination = ""
-        fn_format = int(__addon__.getSetting("folder"))
-        backup_folder = __addon__.getSetting("backup_path")
+        fn_format = __settings__.folder()
+        backup_folder = __settings__.path_backup_path()
         if not backup_folder:
-            __addon__.openSettings()
-            backup_folder = __addon__.getSetting("backup_path")
+            __settings__.open()
+            backup_folder = __settings__.path_backup_path()
         log("source: %s" % source, xbmc.LOGNOTICE)
         if xbmcvfs.exists(source):
             log("source: %s" % source, xbmc.LOGNOTICE)
@@ -581,11 +580,11 @@ class GUI(xbmcgui.WindowXMLDialog):
         duplicates = 0
         destination = ""
         album = {}
-        fn_format = int(__addon__.getSetting("folder"))
-        unique_folder = __addon__.getSetting("unique_path")
+        fn_format = __settings__.folder()
+        unique_folder = __settings__.path_unique_path()
         if not unique_folder:
-            __addon__.openSettings()
-            unique_folder = __addon__.getSetting("unique_path")
+            __settings__.open()
+            unique_folder = __settings__.path_unique_path()
         log("Unique Folder: %s" % unique_folder, xbmc.LOGNOTICE)
         dialog_msg("create", heading=__language__(32060))
         for album in unique:
@@ -651,10 +650,10 @@ class GUI(xbmcgui.WindowXMLDialog):
         log("Restoring cdARTs from backup folder", xbmc.LOGNOTICE)
         dialog_msg("create", heading=__language__(32069))
         # Onscreen Dialog - Restoring cdARTs from backup...
-        bkup_folder = __addon__.getSetting("backup_path")
+        bkup_folder = __settings__.path_backup_path()
         if not bkup_folder:
-            __addon__.openSettings()
-            bkup_folder = __addon__.getSetting("backup_path")
+            __settings__.open()
+            bkup_folder = __settings__.path_backup_path()
         else:
             pass
         self.copy_cdarts(bkup_folder)
@@ -673,7 +672,7 @@ class GUI(xbmcgui.WindowXMLDialog):
         count = 0
         total_albums = 0
         total_count = 0
-        fn_format = int(__addon__.getSetting("folder"))
+        fn_format = __settings__.folder()
         log("Filename format: %s" % fn_format, xbmc.LOGNOTICE)
         log("From Folder: %s" % from_folder, xbmc.LOGNOTICE)
         local_db = get_local_albums_db("all artists", self.background)
@@ -723,7 +722,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                 log("Destination: %s" % repr(destination), xbmc.LOGNOTICE)
                 try:
                     xbmcvfs.copy(fn, destination)
-                    if from_folder != __addon__.getSetting("backup_path"):
+                    if from_folder != __settings__.path_backup_path():
                         xbmcvfs.delete(fn)  # remove file
                     count += 1
                 except:
@@ -756,13 +755,11 @@ class GUI(xbmcgui.WindowXMLDialog):
         total = 0
         album = {}
         albums = []
-        fn_format = int(__addon__.getSetting("folder"))
-        bkup_folder = __addon__.getSetting("backup_path")
-        cdart_list_folder = __addon__.getSetting("cdart_path")
+        fn_format = __settings__.folder()
+        bkup_folder = __settings__.path_backup_path()
         if not bkup_folder:
-            __addon__.openSettings()
-            bkup_folder = __addon__.getSetting("backup_path")
-            cdart_list_folder = __addon__.getSetting("cdart_path")
+            __settings__.open()
+            bkup_folder = __settings__.path_backup_path()
         albums = get_local_albums_db("all artists", self.background)
         dialog_msg("create", heading=__language__(32060))
         for album in albums:
@@ -1425,7 +1422,7 @@ class GUI(xbmcgui.WindowXMLDialog):
             self.setFocusId(130)
         if controlId == 104:  # Settings
             self.menu_mode = 5
-            __addon__.openSettings()
+            __settings__.open()
             self.setup_colors()
         if controlId == 111:  # Exit
             self.menu_mode = 0

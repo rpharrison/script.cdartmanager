@@ -19,30 +19,21 @@ __cdam__ = cdam.CDAM()
 __settings__ = cdam.Settings()
 __language__ = __cdam__.getLocalizedString
 
-illegal_characters = __settings__.illegal_characters()
-replace_character = __settings__.replace_character()
-enable_replace_illegal = __settings__.enable_replace_illegal()
-change_period_atend = __settings__.change_period_atend()
-notify_in_background = __settings__.notify_in_background()
-
-tempxml_folder = sys.modules["__main__"].tempxml_folder
-image = __cdam__.file_icon()
-
-
 dialog = xbmcgui.DialogProgress()
 
 
 def change_characters(text):
     original = list(text)
     final = []
-    if enable_replace_illegal:
+    if __settings__.enable_replace_illegal():
+        replace_character = __settings__.replace_character()
         for i in original:
-            if i in illegal_characters:
+            if i in __settings__.illegal_characters():
                 final.append(replace_character)
             else:
                 final.append(i)
         temp = "".join(final)
-        if temp.endswith(".") and change_period_atend:
+        if temp.endswith(".") and __settings__.change_period_atend():
             text = temp[:len(temp) - 1] + replace_character
         else:
             text = temp
@@ -99,10 +90,8 @@ def get_unicode(to_decode):
 def settings_to_log(settings_path, script_heading="[utils.py]"):
     try:
         log("Settings\n", xbmc.LOGDEBUG)
-        # set base watched file path
-        base_path = os.path.join(settings_path, "settings.xml")
         # open path
-        settings_file = open(base_path, "r")
+        settings_file = open(settings_path, "r")
         settings_file_read = settings_file.read()
         settings_list = settings_file_read.replace("<settings>\n", "").replace("</settings>\n", "").split("/>\n")
         # close socket
@@ -160,6 +149,7 @@ def clear_image_cache(url):
 
 def empty_tempxml_folder():
     # Helix: paths MUST end with trailing slash
+    tempxml_folder = __cdam__.path_temp_xml()
     if exists(os.path.join(tempxml_folder, '')):
         for file_name in os.listdir(os.path.join(tempxml_folder, '')):
             delete(os.path.join(tempxml_folder, file_name))
@@ -176,6 +166,7 @@ def get_html_source(url, path, save_file=True, overwrite=False):
     file_name = ""
     if save_file:
         path += ".json"
+        tempxml_folder = __cdam__.path_temp_xml()
         if not exists(os.path.join(tempxml_folder, '')):
             os.mkdir(os.path.join(tempxml_folder, ''))
         file_name = os.path.join(tempxml_folder, path)
@@ -300,8 +291,8 @@ def dialog_msg(action,
                 msg = line1
             else:
                 msg = line1 + ': ' + line2
-            if notify_in_background:
-                xbmc.executebuiltin("XBMC.Notification(%s, %s, 7500, %s)" % (heading, msg, image))
+            if __settings__.notify_in_background():
+                xbmc.executebuiltin("XBMC.Notification(%s, %s, 7500, %s)" % (heading, msg, __cdam__.file_icon()))
 
 
 def log(text, severity=xbmc.LOGDEBUG):
