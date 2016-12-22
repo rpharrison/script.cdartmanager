@@ -1,18 +1,17 @@
 # -*- coding: utf-8 -*-
+import datetime
 import errno
 import htmlentitydefs
 import os
 import re
-import sys
 import traceback
 import urllib
-import datetime
 
 import xbmc
 import xbmcgui
-import cdam
+import xbmcvfs
 
-from xbmcvfs import delete, exists, mkdir
+import cdam
 from file_item import Thumbnails
 
 __cdam__ = cdam.CDAM()
@@ -52,7 +51,8 @@ def smart_unicode(s):
                 s = unicode(str(s), 'UTF-8')
         elif not isinstance(s, unicode):
             s = unicode(s, 'UTF-8')
-    except:
+    except Exception as e:
+        log(e.message, xbmc.LOGDEBUG)
         if not isinstance(s, basestring):
             if hasattr(s, '__unicode__'):
                 s = unicode(s)
@@ -70,14 +70,13 @@ def smart_utf8(s):
 def get_unicode(to_decode):
     final = []
     try:
-        temp_string = to_decode.encode('utf8')
-        return to_decode
-    except:
+        return to_decode.encode('utf8')
+    except UnicodeError:
         while True:
             try:
                 final.append(to_decode.decode('utf8'))
                 break
-            except UnicodeDecodeError, exc:
+            except UnicodeDecodeError as exc:
                 # everything up to crazy character should be good
                 final.append(to_decode[:exc.start].decode('utf8'))
                 # crazy character is probably latin1
@@ -87,7 +86,7 @@ def get_unicode(to_decode):
         return "".join(final)
 
 
-def settings_to_log(settings_path, script_heading="[utils.py]"):
+def settings_to_log(settings_path):
     try:
         log("Settings\n", xbmc.LOGDEBUG)
         # open path
@@ -103,33 +102,9 @@ def settings_to_log(settings_path, script_heading="[utils.py]"):
             if match:
                 log("%30s: %s" % (match.group(1), str(unescape(match.group(2).decode('utf-8', 'ignore')))),
                     xbmc.LOGDEBUG)
-    except:
+    except Exception as e:
+        log(e.message, xbmc.LOGERROR)
         traceback.print_exc()
-
-
-def _makedirs(_path):
-    log("Building Directory", xbmc.LOGDEBUG)
-    success = False
-    canceled = False
-    if (exists(_path)): return True
-    # temp path
-    tmppath = _path
-    # loop thru and create each folder
-    while (not exists(tmppath)):
-        try:
-            if (dialog.iscanceled()):
-                canceled = True
-                break
-        except:
-            pass
-        success = mkdir(tmppath)
-        if not success:
-            tmppath = os.path.dirname(tmppath)
-    # call function until path exists
-    if not canceled:
-        _makedirs(_path)
-    else:
-        return canceled
 
 
 def clear_image_cache(url):
@@ -137,22 +112,22 @@ def clear_image_cache(url):
     png = os.path.splitext(thumb)[0] + ".png"
     dds = os.path.splitext(thumb)[0] + ".dds"
     jpg = os.path.splitext(thumb)[0] + ".jpg"
-    if exists(thumb):
-        delete(thumb)
-    if exists(png):
-        delete(png)
-    if exists(jpg):
-        delete(jpg)
-    if exists(dds):
-        delete(dds)
+    if xbmcvfs.exists(thumb):
+        xbmcvfs.delete(thumb)
+    if xbmcvfs.exists(png):
+        xbmcvfs.delete(png)
+    if xbmcvfs.exists(jpg):
+        xbmcvfs.delete(jpg)
+    if xbmcvfs.exists(dds):
+        xbmcvfs.delete(dds)
 
 
 def empty_tempxml_folder():
     # Helix: paths MUST end with trailing slash
     tempxml_folder = __cdam__.path_temp_xml()
-    if exists(os.path.join(tempxml_folder, '')):
+    if xbmcvfs.exists(os.path.join(tempxml_folder, '')):
         for file_name in os.listdir(os.path.join(tempxml_folder, '')):
-            delete(os.path.join(tempxml_folder, file_name))
+            xbmcvfs.delete(os.path.join(tempxml_folder, file_name))
     else:
         pass
 
@@ -167,8 +142,8 @@ def get_html_source(url, path, save_file=True, overwrite=False):
     if save_file:
         path += ".json"
         tempxml_folder = __cdam__.path_temp_xml()
-        if not exists(os.path.join(tempxml_folder, '')):
-            os.mkdir(os.path.join(tempxml_folder, ''))
+        if not xbmcvfs.exists(os.path.join(tempxml_folder, '')):
+            xbmcvfs.mkdir(os.path.join(tempxml_folder, ''))
         file_name = os.path.join(tempxml_folder, path)
 
     class AppURLopener(urllib.FancyURLopener):
@@ -178,14 +153,14 @@ def get_html_source(url, path, save_file=True, overwrite=False):
     for i in range(0, 4):
         try:
             if save_file:
-                if exists(file_name):
+                if xbmcvfs.exists(file_name):
                     file_mtime = datetime.datetime.fromtimestamp(os.path.getmtime(file_name))
                     file_age = datetime.datetime.today() - file_mtime
                     if file_age.days > 14:  # yes i know... but this is temporary and will be configurable in a later release
                         log("Cached file is %s days old, refreshing" % file_age.days, xbmc.LOGNOTICE)
-                        delete(file_name)
+                        xbmcvfs.delete(file_name)
 
-                if exists(file_name) and not overwrite:
+                if xbmcvfs.exists(file_name) and not overwrite:
                     log("Retrieving local source", xbmc.LOGDEBUG)
                     sock = open(file_name, "r")
                 else:
@@ -197,16 +172,17 @@ def get_html_source(url, path, save_file=True, overwrite=False):
                 sock = urllib.urlopen(url)
             htmlsource = sock.read()
             if save_file and htmlsource not in ("null", ""):
-                if not exists(file_name) or overwrite:
+                if not xbmcvfs.exists(file_name) or overwrite:
                     file(file_name, "w").write(htmlsource)
             sock.close()
             break
-        except IOError, e:
+        except IOError as e:
             log("error: %s" % e, xbmc.LOGERROR)
             log("e.errno: %s" % e.errno, xbmc.LOGERROR)
             if not e.errno == "socket error":
                 log("errno.errorcode: %s" % errno.errorcode[e.errno], xbmc.LOGERROR)
-        except:
+        except Exception as e:
+            log("error: %s" % e, xbmc.LOGERROR)
             traceback.print_exc()
             log("!!Unable to open page %s" % url, xbmc.LOGDEBUG)
             error = True
@@ -221,23 +197,23 @@ def get_html_source(url, path, save_file=True, overwrite=False):
 
 def unescape(text):
     def fixup(m):
-        text = m.group(0)
-        if text[:2] == "&#":
+        text_ = m.group(0)
+        if text_[:2] == "&#":
             # character reference
             try:
-                if text[:3] == "&#x":
-                    return unichr(int(text[3:-1], 16))
+                if text_[:3] == "&#x":
+                    return unichr(int(text_[3:-1], 16))
                 else:
-                    return unichr(int(text[2:-1]))
+                    return unichr(int(text_[2:-1]))
             except ValueError:
                 pass
         else:
             # named entity
             try:
-                text = unichr(htmlentitydefs.name2codepoint[text[1:-1]])
+                text_ = unichr(htmlentitydefs.name2codepoint[text_[1:-1]])
             except KeyError:
                 pass
-        return text  # leave as is
+        return text_  # leave as is
 
     return re.sub("&#?\w+;", fixup, text)
 
@@ -286,7 +262,7 @@ def dialog_msg(action,
         if action == 'yesno':
             return xbmcgui.Dialog().yesno(heading, line1, line2, line3, nolabel, yeslabel)
     if background:
-        if (action == 'create' or action == 'okdialog'):
+        if action == 'create' or action == 'okdialog':
             if line2 == '':
                 msg = line1
             else:

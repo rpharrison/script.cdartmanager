@@ -198,9 +198,6 @@ class Settings(CDAMAddon):
     def notify_in_background(self):
         return self.__getSettingBool__("notify_in_background")
 
-    def enablecustom(self):
-        return self.__getSettingBool__("enablecustom")
-
     def backup_during_update(self):
         return self.__getSettingBool__("backup_during_update")
 
@@ -212,29 +209,6 @@ class Settings(CDAMAddon):
 
     def fanart_limit(self):
         return self.__getSettingInt__("fanart_limit")
-
-    # colors
-
-    def color_recognized(self):
-        return self.__getSettingInt__("recognized")
-
-    def color_unrecognized(self):
-        return self.__getSettingInt__("unrecognized")
-
-    def color_remote(self):
-        return self.__getSettingInt__("remote")
-
-    def color_local(self):
-        return self.__getSettingInt__("local")
-
-    def color_remotelocal(self):
-        return self.__getSettingInt__("remotelocal")
-
-    def color_unmatched(self):
-        return self.__getSettingInt__("unmatched")
-
-    def color_localcdart(self):
-        return self.__getSettingInt__("localcdart")
 
     # paths
 
@@ -253,6 +227,16 @@ class Settings(CDAMAddon):
 class Constants:
     def __init__(self):
         pass
+
+    COLOR_GREEN = "FF00FF00"
+    COLOR_BLUE = "FF0000FF"
+    COLOR_RED = "FFFF0000"
+    COLOR_YELLOW = "FFFFFF00"
+    COLOR_WHITE = "FFFFFFFF"
+    COLOR_CYAN = "FF00FFFF"
+    COLOR_VIOLET = "FFEE82EE"
+    COLOR_PINK = "FFFF1493"
+    COLOR_ORANGE = "FFFF4500"
 
     @staticmethod
     def script_id():
@@ -277,3 +261,4 @@ class Constants:
     @staticmethod
     def fanarttv_api_key():
         return "65169f993d552483391ca10c1ae7fb03"
+

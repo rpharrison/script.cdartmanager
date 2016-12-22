@@ -2,17 +2,17 @@
 # fanart.tv artist artwork scraper
 
 import calendar
-import sys
+import json as simplejson
 import os
 from datetime import datetime
 from traceback import print_exc
 
 import xbmc
 import xbmcvfs
-import json as simplejson
+
 import cdam
-from utils import get_html_source, log, dialog_msg
 from database import store_lalist, store_local_artist_table, store_fanarttv_datecode, retrieve_fanarttv_datecode
+from utils import get_html_source, log, dialog_msg
 
 __cdam__ = cdam.CDAM()
 __settings__ = cdam.Settings()
@@ -33,21 +33,18 @@ def remote_cdart_list(artist_menu):
             if album_artwork:
                 for artwork in album_artwork:
                     for cdart in artwork["cdart"]:
-                        album = {}
-                        album["artistl_id"] = artist_menu["local_id"]
-                        album["artistd_id"] = artist_menu["musicbrainz_artistid"]
+                        album = {"artistl_id": artist_menu["local_id"],
+                                 "artistd_id": artist_menu["musicbrainz_artistid"],
+                                 "musicbrainz_albumid": artwork["musicbrainz_albumid"], "disc": cdart["disc"],
+                                 "size": cdart["size"], "picture": cdart["cdart"], "thumb_art": cdart["cdart"]}
                         try:
                             album["local_name"] = album["artist"] = artist_menu["name"]
                         except KeyError:
                             album["local_name"] = album["artist"] = artist_menu["artist"]
-                        album["musicbrainz_albumid"] = artwork["musicbrainz_albumid"]
-                        album["disc"] = cdart["disc"]
-                        album["size"] = cdart["size"]
-                        album["picture"] = cdart["cdart"]
-                        album["thumb_art"] = cdart["cdart"]
                         cdart_url.append(album)
                         # log( "cdart_url: %s " % cdart_url, xbmc.LOGDEBUG )
-    except:
+    except Exception as e:
+        log(e.message, xbmc.LOGERROR)
         print_exc()
     return cdart_url
 
@@ -63,17 +60,14 @@ def remote_coverart_list(artist_menu):
             if album_artwork:
                 for artwork in album_artwork:
                     if artwork["cover"]:
-                        album = {}
-                        album["artistl_id"] = artist_menu["local_id"]
-                        album["artistd_id"] = artist_menu["musicbrainz_artistid"]
-                        album["local_name"] = album["artist"] = artist_menu["name"]
-                        album["musicbrainz_albumid"] = artwork["musicbrainz_albumid"]
-                        album["size"] = 1000
-                        album["picture"] = artwork["cover"]
-                        album["thumb_art"] = artwork["cover"]
+                        album = {"artistl_id": artist_menu["local_id"],
+                                 "artistd_id": artist_menu["musicbrainz_artistid"], "local_name": artist_menu["name"],
+                                 "artist": artist_menu["name"], "musicbrainz_albumid": artwork["musicbrainz_albumid"],
+                                 "size": 1000, "picture": artwork["cover"], "thumb_art": artwork["cover"]}
                         coverart_url.append(album)
                         # log( "cdart_url: %s " % cdart_url, xbmc.LOGDEBUG )
-    except:
+    except Exception as e:
+        log(e.message, xbmc.LOGERROR)
         print_exc()
     return coverart_url
 
@@ -85,7 +79,8 @@ def remote_fanart_list(artist_menu):
         art = retrieve_fanarttv_json(artist_menu["musicbrainz_artistid"])
         if not len(art) < 3:
             backgrounds = art[0]["backgrounds"]
-    except:
+    except Exception as e:
+        log(e.message, xbmc.LOGERROR)
         print_exc()
     return backgrounds
 
@@ -97,7 +92,8 @@ def remote_clearlogo_list(artist_menu):
         art = retrieve_fanarttv_json(artist_menu["musicbrainz_artistid"])
         if not len(art) < 3:
             clearlogo = art[1]["clearlogo"]
-    except:
+    except Exception as e:
+        log(e.message, xbmc.LOGERROR)
         print_exc()
     return clearlogo
 
@@ -109,7 +105,8 @@ def remote_hdlogo_list(artist_menu):
         art = retrieve_fanarttv_json(artist_menu["musicbrainz_artistid"])
         if not len(art) < 3:
             hdlogo = art[3]["hdlogo"]
-    except:
+    except Exception as e:
+        log(e.message, xbmc.LOGERROR)
         print_exc()
     return hdlogo
 
@@ -121,7 +118,8 @@ def remote_banner_list(artist_menu):
         art = retrieve_fanarttv_json(artist_menu["musicbrainz_artistid"])
         if not len(art) < 3:
             banner = art[4]["banner"]
-    except:
+    except Exception as e:
+        log(e.message, xbmc.LOGERROR)
         print_exc()
     return banner
 
@@ -134,17 +132,18 @@ def remote_artistthumb_list(artist_menu):
         art = retrieve_fanarttv_json(artist_menu["musicbrainz_artistid"])
         if not len(art) < 3:
             artistthumb = art[2]["artistthumb"]
-    except:
+    except Exception as e:
+        log(e.message, xbmc.LOGERROR)
         print_exc()
     return artistthumb
 
 
-def retrieve_fanarttv_json(id):
-    log("Retrieving artwork for artist id: %s" % id, xbmc.LOGDEBUG)
+def retrieve_fanarttv_json(id_):
+    log("Retrieving artwork for artist id: %s" % id_, xbmc.LOGDEBUG)
     # url = music_url_json % (api_key, id, "all")
-    url = music_url_json % (id, cdam.Constants.fanarttv_api_key())
+    url = music_url_json % (id_, cdam.Constants.fanarttv_api_key())
     # htmlsource = (get_html_source(url, id, save_file=False, overwrite=False)).encode('utf-8', 'ignore')
-    htmlsource = get_html_source(url, "FTV_" + str(id), save_file=True, overwrite=False)
+    htmlsource = get_html_source(url, "FTV_" + str(id_), save_file=True, overwrite=False)
     artist_artwork = []
     backgrounds = []
     musiclogos = []
@@ -152,16 +151,13 @@ def retrieve_fanarttv_json(id):
     hdlogos = []
     banners = []
     albums = []
-    blank = {}
     fanart = {}
     clearlogo = {}
     artistthumb = {}
     album_art = {}
     hdlogo = {}
     banner = {}
-    artist = ""
-    artist_id = ""
-    IMAGE_TYPES = ['musiclogo',
+    image_types = ['musiclogo',
                    'artistthumb',
                    'artistbackground',
                    'hdmusiclogo',
@@ -170,9 +166,9 @@ def retrieve_fanarttv_json(id):
     try:
         data = simplejson.loads(htmlsource)
         # for key, value in data.iteritems():
-        for art in IMAGE_TYPES:
+        for art in image_types:
             # if value.has_key(art):
-            if data.has_key(art):
+            if art in data:
                 # for item in value[art]:
                 for item in data[art]:
                     if art == "musiclogo":
@@ -189,31 +185,31 @@ def retrieve_fanarttv_json(id):
                         # for album_id in data[artist]["albums"]:
                         for album_id, album in data["albums"].iteritems():
                             album_artwork = {"musicbrainz_albumid": album_id, "cdart": [], "cover": ""}
-                            # if value["albums"][album_id].has_key("cdart"):
-                            if album.has_key("cdart"):
-                                # for item in value["albums"][album_id]["cdart"]:
-                                for item in album["cdart"]:
+                            if "cdart" in album:
+                                for subitem in album["cdart"]:
                                     cdart = {}
-                                    if item.has_key("disc"):
-                                        cdart["disc"] = int(item["disc"])
+                                    if "disc" in subitem:
+                                        cdart["disc"] = int(subitem["disc"])
                                     else:
                                         cdart["disc"] = 1
-                                    if item.has_key("url"):
-                                        cdart["cdart"] = item["url"]
+                                    if url in subitem:
+                                        cdart["cdart"] = subitem["url"]
                                     else:
                                         cdart["cdart"] = ""
-                                    if item.has_key("size"):
-                                        cdart["size"] = int(item["size"])
+                                    if "size" in subitem:
+                                        cdart["size"] = int(subitem["size"])
                                     album_artwork["cdart"].append(cdart)
                             try:
-                                if album.has_key("albumcover"):
+                                if "albumcover" in album:
                                     # if len(album["albumcover"]) < 2:
                                     # this is a quick fix, we should download the first hit here if there are multiple covers
                                     album_artwork["cover"] = album["albumcover"][0]["url"]
-                            except:
+                            except Exception as e:
+                                log(e.message, xbmc.LOGDEBUG)
                                 album_artwork["cover"] = ""
                             albums.append(album_artwork)
-    except:
+    except Exception as e:
+        log(e.message, xbmc.LOGERROR)
         print_exc()
     fanart["backgrounds"] = backgrounds
     clearlogo["clearlogo"] = musiclogos
@@ -248,15 +244,14 @@ def check_fanart_new_artwork(present_datecode):
             log("New Artwork found on fanart.tv", xbmc.LOGNOTICE)
             data = simplejson.loads(htmlsource)
             return True, data
-        except:
+        except Exception as e:
             htmlsource = "null"
+            xbmc.log(e.message, xbmc.LOGERROR)
             print_exc()
             return False, htmlsource
 
 
-def check_art(mbid, artist_type="album"):
-    has_art = "False"
-    # url = music_url_json % (api_key, str(mbid), "all")
+def check_art(mbid):
     url = music_url_json % (str(mbid), cdam.Constants.fanarttv_api_key())
     htmlsource = get_html_source(url, "FTV_" + str(mbid), save_file=True, overwrite=True)
     if htmlsource == "null":
@@ -272,11 +267,9 @@ def update_art(mbid, data, existing_has_art):
     has_art = existing_has_art
     for item in data:
         if item["id"] == mbid:
-            # url = music_url_json % (api_key, str(mbid), "all")
             url = music_url_json % (str(mbid), cdam.Constants.fanarttv_api_key())
             has_art = "True"
-            #            new_art = (get_html_source(url, str(mbid), save_file=True, overwrite=True)).encode('utf-8', 'ignore')
-            new_art = get_html_source(url, "FTV_" + str(mbid), save_file=True, overwrite=True)
+            get_html_source(url, "FTV_" + str(mbid), save_file=True, overwrite=True)
             break
     return has_art
 
@@ -289,20 +282,13 @@ def first_check(all_artists, album_artists, background=False, update_db=False):
     d = datetime.utcnow()
     present_datecode = calendar.timegm(d.utctimetuple())
     count = 0
-    name = ""
-    artist_list = []
-    all_artist_list = []
-    recognized = []
-    recognized_album = []
-    fanart_test = ""
     dialog_msg("create", heading="", background=background)
     for artist in album_artists:
         percent = int((float(count) / len(album_artists)) * 100)
         log("Checking artist MBID: %s" % artist["musicbrainz_artistid"], xbmc.LOGDEBUG)
-        match = {}
         match = artist
         if artist["musicbrainz_artistid"] and (artist["has_art"] == "False" or update_db):
-            match["has_art"] = check_art(artist["musicbrainz_artistid"], artist_type="album")
+            match["has_art"] = check_art(artist["musicbrainz_artistid"])
         elif not artist["musicbrainz_artistid"]:
             match["has_art"] = "False"
         else:
@@ -312,16 +298,15 @@ def first_check(all_artists, album_artists, background=False, update_db=False):
                    background=background)
         count += 1
     log("Storing Album Artists List", xbmc.LOGDEBUG)
-    store_lalist(album_artists_matched, len(album_artists_matched))
+    store_lalist(album_artists_matched)
     if __settings__.enable_all_artists() and all_artists:
         count = 0
         for artist in all_artists:
-            percent = int((float(count) / len(all_artists)) * 100)
+            percent = int((float(count) / len(all_artists)) * 100) if len(all_artists) > 0 else 100
             log("Checking artist MBID: %s" % artist["musicbrainz_artistid"], xbmc.LOGDEBUG)
-            match = {}
             match = artist
             if artist["musicbrainz_artistid"] and (artist["has_art"] == "False" or update_db):
-                match["has_art"] = check_art(artist["musicbrainz_artistid"], artist_type="all_artist")
+                match["has_art"] = check_art(artist["musicbrainz_artistid"])
             elif not artist["musicbrainz_artistid"]:
                 match["has_art"] = "False"
             else:
@@ -372,7 +357,7 @@ def get_recognized(all_artists, album_artists, background=False):
         log("No new music artwork on fanart.tv", xbmc.LOGNOTICE)
         album_artists_matched = album_artists
         all_artists_matched = all_artists
-    store_lalist(album_artists_matched, len(album_artists_matched))
+    store_lalist(album_artists_matched)
     store_local_artist_table(all_artists_matched, background=background)
     store_fanarttv_datecode(present_datecode)
     dialog_msg("close", background=background)

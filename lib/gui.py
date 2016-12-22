@@ -2,20 +2,32 @@
 # system imports
 import calendar
 import os
-import sys
 import traceback
+
 from datetime import datetime
-# xbmc module imports
-import xbmcgui, xbmc, xbmcvfs
-import cdam
 from sqlite3 import dbapi2 as sqlite3
+
+import xbmc
+import xbmcgui
+import xbmcvfs
+
+import cdam
+from database import user_updates, backup_database, database_setup, get_local_albums_db, get_local_artists_db, \
+    new_local_count, refresh_db, \
+    artwork_search, update_database, check_album_mbid, check_artist_mbid, update_missing_artist_mbid, \
+    update_missing_album_mbid
+from download import download_art, auto_download
+from fanarttv_scraper import first_check, remote_banner_list, remote_hdlogo_list, check_fanart_new_artwork, \
+    get_recognized, remote_cdart_list, remote_fanart_list, remote_clearlogo_list, remote_coverart_list, \
+    remote_artistthumb_list
+from musicbrainz_utils import get_musicbrainz_album, update_musicbrainzid, get_musicbrainz_artists
+from utils import clear_image_cache, get_unicode, change_characters, log, dialog_msg, smart_unicode
 
 __cdam__ = cdam.CDAM()
 __settings__ = cdam.Settings()
 __language__ = __cdam__.getLocalizedString
 
 mbid_match_number = __settings__.mbid_match_number()
-enablecustom = __settings__.enablecustom()
 enable_all_artists = __settings__.enable_all_artists()
 enable_missing = __settings__.enable_missing()
 
@@ -29,77 +41,22 @@ backup_path = __settings__.path_backup_path()
 missing_cdart_image = __cdam__.file_missing_cdart()
 missing_cover_image = __cdam__.file_missing_cover()
 
-
-# script imports
-from fanarttv_scraper import first_check, remote_banner_list, remote_hdlogo_list, check_fanart_new_artwork, \
-    get_recognized, remote_cdart_list, remote_fanart_list, remote_clearlogo_list, remote_coverart_list, \
-    remote_artistthumb_list
-from utils import clear_image_cache, get_unicode, change_characters, log, dialog_msg, smart_unicode
-from download import download_art, auto_download
-from database import user_updates, backup_database, database_setup, get_local_albums_db, get_local_artists_db, \
-    new_local_count, refresh_db, \
-    artwork_search, update_database, check_album_mbid, check_artist_mbid, update_missing_artist_mbid, \
-    update_missing_album_mbid
-from musicbrainz_utils import get_musicbrainz_album, update_musicbrainzid, get_musicbrainz_artists
-
-try:
-    from xbmcvfs import mkdirs as _makedirs
-except:
-    from utils import _makedirs
-
 kb = xbmc.Keyboard()
 
 KEY_BUTTON_BACK = 275
 KEY_KEYBOARD_ESC = 61467
-colours = ("green", "blue", "red", "yellow", "orange", "white", "cyan", "violet", "pink")
 
 
 class GUI(xbmcgui.WindowXMLDialog):
+
     def __init__(self, *args, **kwargs):
         pass
 
     def onInit(self):
-        self.setup_colors()
         self.setup_all()
-
-    def setup_colors(self):
-        if enablecustom:
-            self.recognized_color = colours[__settings__.color_recognized()]
-            self.unrecognized_color = colours[__settings__.color_unrecognized()]
-            self.remote_color = colours[__settings__.color_remote()]
-            self.local_color = colours[__settings__.color_local()]
-            self.remotelocal_color = colours[__settings__.color_remotelocal()]
-            self.unmatched_color = colours[__settings__.color_unmatched()]
-            self.localcdart_color = colours[__settings__.color_localcdart()]
-        else:
-            self.recognized_color = "green"
-            self.unrecognized_color = "white"
-            self.remote_color = "green"
-            self.local_color = "orange"
-            self.remotelocal_color = "yellow"
-            self.unmatched_color = "white"
-            self.localcdart_color = "orange"
 
     # sets the colours for the lists
     def coloring(self, text, color, colorword):
-        if color == "white":
-            color = "FFFFFFFF"
-        if color == "blue":
-            color = "FF0000FF"
-        if color == "cyan":
-            color = "FF00FFFF"
-        if color == "violet":
-            color = "FFEE82EE"
-        if color == "pink":
-            color = "FFFF1493"
-        if color == "red":
-            color = "FFFF0000"
-        if color == "green":
-            color = "FF00FF00"
-        if color == "yellow":
-            color = "FFFFFF00"
-        if color == "orange":
-            color = "FFFF4500"
         colored_text = text.replace(colorword, "[COLOR=%s]%s[/COLOR]" % (color, colorword))
         return colored_text
 
@@ -156,10 +113,10 @@ class GUI(xbmcgui.WindowXMLDialog):
                         temp_path = os.path.join(album["path"], filename).replace("\\\\", "\\")
                         if xbmcvfs.exists(temp_path):
                             url = art_image = temp_path
-                            color = self.local_color
+                            color = cdam.Constants.COLOR_ORANGE
                         else:
                             url = art_image
-                            color = self.unrecognized_color
+                            color = cdam.Constants.COLOR_WHITE
                     else:
                         if artwork["picture"]:
                             # check to see if artwork already exists
@@ -168,18 +125,18 @@ class GUI(xbmcgui.WindowXMLDialog):
                             url = artwork["picture"]
                             if album[type]:
                                 art_image = os.path.join(album["path"], filename).replace("\\\\", "\\")
-                                color = self.remotelocal_color
+                                color = cdam.Constants.COLOR_YELLOW
                             else:
                                 art_image = url + "/preview"
-                                color = self.remote_color
+                                color = cdam.Constants.COLOR_GREEN
                         else:
                             url = ""
                             if album[type]:
                                 art_image = os.path.join(album["path"], filename).replace("\\\\", "\\")
-                                color = self.local_color
+                                color = cdam.Constants.COLOR_ORANGE
                             else:
                                 art_image = url
-                                color = self.unmatched_color
+                                color = cdam.Constants.COLOR_WHITE
                     label2 = "%s&&%s&&&&%s&&%s" % (url, album["path"], art_image, str(album["local_id"]))
                     listitem = xbmcgui.ListItem(label=label1, label2=label2, thumbnailImage=art_image)
                     self.getControl(122).addItem(listitem)
@@ -235,9 +192,9 @@ class GUI(xbmcgui.WindowXMLDialog):
                 for item in mbid_list:
                     label2 = "MBID: %s" % item["id"]
                     label1 = "%-3s%%: %s" % (item["score"], item["name"])
-                    listitem = xbmcgui.ListItem(label=self.coloring(label1, "white", label1), label2=label2)
+                    listitem = xbmcgui.ListItem(label=self.coloring(label1, cdam.Constants.COLOR_WHITE, label1), label2=label2)
                     self.getControl(161).addItem(listitem)
-                    listitem.setLabel(self.coloring(label1, "white", label1))
+                    listitem.setLabel(self.coloring(label1, cdam.Constants.COLOR_WHITE, label1))
                     listitem.setLabel2(label2)
             except:
                 traceback.print_exc()
@@ -290,13 +247,13 @@ class GUI(xbmcgui.WindowXMLDialog):
             xbmc.executebuiltin("ActivateWindow(busydialog)")
             for artist in local_artist_list:
                 if artist["has_art"] != "False":
-                    listitem = xbmcgui.ListItem(label=self.coloring(artist["name"], "green", artist["name"]))
+                    listitem = xbmcgui.ListItem(label=self.coloring(artist["name"], cdam.Constants.COLOR_GREEN, artist["name"]))
                     self.getControl(120).addItem(listitem)
-                    listitem.setLabel(self.coloring(artist["name"], self.recognized_color, artist["name"]))
+                    listitem.setLabel(self.coloring(artist["name"], cdam.Constants.COLOR_GREEN, artist["name"]))
                 else:
                     listitem = xbmcgui.ListItem(label=artist["name"])
                     self.getControl(120).addItem(listitem)
-                    listitem.setLabel(self.coloring(artist["name"], self.unrecognized_color, artist["name"]))
+                    listitem.setLabel(self.coloring(artist["name"], cdam.Constants.COLOR_WHITE, artist["name"]))
         except KeyError:
             for artist in local_artist_list:
                 label2 = "MBID: %s" % artist["musicbrainz_artistid"]
@@ -479,7 +436,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                 label1 = "%s * %s" % (album["artist"], album["title"])
                 listitem = xbmcgui.ListItem(label=label1, label2=label2, thumbnailImage=cdart_img)
                 self.getControl(140).addItem(listitem)
-                listitem.setLabel(self.coloring(label1, "orange", label1))
+                listitem.setLabel(self.coloring(label1, cdam.Constants.COLOR_YELLOW, label1))
                 listitem.setLabel2(label2)
                 work_temp.append(album)
             else:
@@ -509,8 +466,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                     (album.replace("/", "")).replace("'", "")) + ".png").lower()))
             log("destination: %s" % repr(destination), xbmc.LOGNOTICE)
             if not xbmcvfs.exists(destination):
-                # pass
-                _makedirs(destination)
+                xbmcvfs.mkdirs(destination)
             else:
                 pass
             try:
@@ -542,8 +498,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                     (album.replace("/", "")).replace("'", "")) + ".png").lower()))
             log("destination: %s" % destination, xbmc.LOGNOTICE)
             if not xbmcvfs.exists(destination):
-                # pass
-                _makedirs(destination)
+                xbmcvfs.mkdirs(destination)
             else:
                 pass
             log("filename: %s" % fn, xbmc.LOGNOTICE)
@@ -794,7 +749,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                                     album["title"].replace("/", "").replace("'", "")) + ".png").lower())
                     log("Destination Path: %s" % repr(destination), xbmc.LOGNOTICE)
                     if not xbmcvfs.exists(destination):
-                        _makedirs(destination)
+                        xbmcvfs.mkdirs(destination)
                     log("Filename: %s" % repr(fn), xbmc.LOGNOTICE)
                     if xbmcvfs.exists(fn):
                         log("################## cdART Not being copied, File exists: %s" % repr(fn), xbmc.LOGNOTICE)
@@ -1387,7 +1342,7 @@ class GUI(xbmcgui.WindowXMLDialog):
             artist_album = self.remove_color(artist_album)
             artist = artist_album.split(" * ")[0]
             album_title = artist_album.split(" * ")[1]
-            self.getControl(300).setLabel(self.getControl(140).getSelectedItem().getLabel())
+            # self.getControl(300).setLabel(self.getControl(140).getSelectedItem().getLabel())
         if controlId in (142, 143, 144):
             path = ((self.getControl(140).getSelectedItem().getLabel2()).split("&&&&")[1]).split("&&")[0]
             database_id = int(((self.getControl(140).getSelectedItem().getLabel2()).split("&&&&")[1]).split("&&")[1])
@@ -1423,7 +1378,6 @@ class GUI(xbmcgui.WindowXMLDialog):
         if controlId == 104:  # Settings
             self.menu_mode = 5
             __settings__.open()
-            self.setup_colors()
         if controlId == 111:  # Exit
             self.menu_mode = 0
             if enable_missing:
@@ -1736,7 +1690,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                 artist_details["musicbrainz_artistid"] = self.artists[self.getControl(161).getSelectedPosition()]["id"]
                 artist_details["name"] = self.artists[self.getControl(161).getSelectedPosition()]["name"]
                 artist_details["local_id"] = self.artist_menu["local_id"]
-                user_updates(artist_details, type="artist")
+                user_updates(artist_details, type_="artist")
                 self.getControl(145).reset()
                 xbmc.executebuiltin("ActivateWindow(busydialog)")
                 if enable_all_artists:
@@ -1753,7 +1707,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                 album_details["musicbrainz_albumid"] = self.albums[self.getControl(161).getSelectedPosition()]["id"]
                 album_details["path"] = self.album_menu["path"]
                 album_details["local_id"] = self.album_menu["local_id"]
-                user_updates(album_details, type="album")
+                user_updates(album_details, type_="album")
                 self.getControl(145).reset()
                 xbmc.executebuiltin("ActivateWindow(busydialog)")
                 if self.menu_mode == 12:

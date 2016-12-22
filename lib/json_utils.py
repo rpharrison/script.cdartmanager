@@ -16,14 +16,11 @@ def retrieve_json_dict(json_query, items='items', force_log=False):
     """
     empty = []
     xbmc.log("[json_utils.py] - JSONRPC Query -\n%s" % json_query, level=xbmc.LOGDEBUG)
-    true = True
-    false = False
-    null = None
     response = xbmc.executeJSONRPC(json_query)
     if force_log:
         xbmc.log("[json_utils.py] - retrieve_json_dict - JSONRPC -\n%s" % response, level=xbmc.LOGDEBUG)
     if response.startswith("{"):
-        response = eval(response)
+        response = eval(response, {"true": True, "false": False, "null": None})
         try:
             if response.has_key('result'):
                 result = response['result']
