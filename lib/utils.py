@@ -70,7 +70,8 @@ def smart_utf8(s):
 def get_unicode(to_decode):
     final = []
     try:
-        return to_decode.encode('utf8')
+        to_decode.encode('utf8')
+        return to_decode
     except UnicodeError:
         while True:
             try:
