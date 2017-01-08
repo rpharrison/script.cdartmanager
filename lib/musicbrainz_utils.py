@@ -1,40 +1,38 @@
 # -*- coding: utf-8 -*-
 
 import re
-import sys
 from sqlite3 import dbapi2 as sqlite3
 from traceback import print_exc
 from urllib import quote_plus
 
+import cdam
 import xbmc
 
-import cdam
+from utils import get_html_source, unescape, log, get_unicode, smart_unicode
 
 __cdam__ = cdam.CDAM()
 __settings__ = cdam.Settings()
 
 addon_db = __cdam__.file_addon_db()
 
-from utils import get_html_source, unescape, log, get_unicode, smart_unicode
+artist_url = '%s/ws/2/artist/?query=artist:"%s"&limit=%d'
+alias_url = '%s/ws/2/artist/?query=alias:"%s"&limit=%d'
+release_group_url = '%s/ws/2/release-group/'
+release_group_url_artist = release_group_url + '?query="%s"%s AND artist:"%s"'
+release_group_url_alias = release_group_url + '?query="%s"%s AND alias:"%s"'
+nolive_nosingles = ' NOT type:single NOT type:live'
+live_nosingles = ' NOT type:single'
+query_limit = '&limit=%d'
 
-artist_url = '''%s/ws/2/artist/?query=artist:"%s"&limit=%d'''
-alias_url = '''%s/ws/2/artist/?query=alias:"%s"&limit=%d'''
-release_group_url = '''%s/ws/2/release-group/'''
-release_group_url_artist = release_group_url + '''?query="%s"%s AND artist:"%s"'''
-release_group_url_alias = release_group_url + '''?query="%s"%s AND alias:"%s"'''
-nolive_nosingles = ''' NOT type:single NOT type:live'''
-live_nosingles = ''' NOT type:single'''
-query_limit = '''&limit=%d'''
-
-release_group_url_using_release_name = '''%s/ws/2/release-group/?query=release:"%s"%s AND artist:"%s"&limit=%d'''
-release_group_url_using_release_name_alias = '''%s/ws/2/release-group/?query=release:"%s"%s AND alias:"%s"&limit=%d'''
-release_group_url_release_mbid = '''%s/ws/2/release-group/?release=%s'''
-release_groups_url_artist_mbid = '''%s/ws/2/release-group/?artist="%s"'''
-artist_id_check = '''%s/ws/2/artist/%s'''
-release_group_id_check = '''%s/ws/2/release-group/%s'''
+release_group_url_using_release_name = '%s/ws/2/release-group/?query=release:"%s"%s AND artist:"%s"&limit=%d'
+release_group_url_using_release_name_alias = '%s/ws/2/release-group/?query=release:"%s"%s AND alias:"%s"&limit=%d'
+release_group_url_release_mbid = '%s/ws/2/release-group/?release=%s'
+release_groups_url_artist_mbid = '%s/ws/2/release-group/?artist="%s"'
+artist_id_check = '%s/ws/2/artist/%s'
+release_group_id_check = '%s/ws/2/release-group/%s'
 
 mb_delay = 910
-server = '''http://musicbrainz.org'''
+server = 'http://musicbrainz.org'
 if not __settings__.use_musicbrainz():
     server = __settings__.musicbrainz_server()
     mb_delay = __settings__.mb_delay()
@@ -47,10 +45,11 @@ def split_album_info(album_result, index):
     album = {}
     try:
         album["artist"] = album_result[index].releaseGroup.artist.name
-        album["artist_id"] = (album_result[index].releaseGroup.artist.id).replace("http://musicbrainz.org/artist/", "")
-        album["id"] = (album_result[index].releaseGroup.id).replace("http://musicbrainz.org/release-group/", "")
+        album["artist_id"] = album_result[index].releaseGroup.artist.id.replace("http://musicbrainz.org/artist/", "")
+        album["id"] = album_result[index].releaseGroup.id.replace("http://musicbrainz.org/release-group/", "")
         album["title"] = album_result[index].releaseGroup.title
-    except:
+    except Exception as e:
+        log(e.message, xbmc.LOGDEBUG)
         album["artist"] = ""
         album["artist_id"] = ""
         album["id"] = ""
@@ -98,13 +97,11 @@ def get_musicbrainz_album(album_title, artist, e_count, limit=1, with_singles=Fa
     match_within = "~2"
     album = {}
     albums = []
-    count = e_count
     album["score"] = ""
     album["id"] = ""
     album["title"] = ""
     album["artist"] = ""
     album["artist_id"] = ""
-    album_temp = smart_unicode(album_title)
     artist = smart_unicode(get_unicode(artist))
     album_title = smart_unicode(get_unicode(album_title))
     log("Artist: %s" % artist, xbmc.LOGDEBUG)
@@ -114,6 +111,7 @@ def get_musicbrainz_album(album_title, artist, e_count, limit=1, with_singles=Fa
     album_title = album_title.replace('"', '?')
     album_title = album_title.replace('&', 'and')
     if limit == 1:
+        url = None
         if not use_alias:
             url = release_group_url_artist % (
                 server, quote_plus(album_title.encode("utf-8")), match_within, quote_plus(artist.encode("utf-8")))
@@ -127,7 +125,7 @@ def get_musicbrainz_album(album_title, artist, e_count, limit=1, with_singles=Fa
             elif not by_release:
                 log("Retrieving MusicBrainz Info - Checking by Artist - Including Singles and Live albums",
                     xbmc.LOGDEBUG)
-                url = url + query_limit % limit
+                url += query_limit % limit
             elif not with_singles:
                 log("Retrieving MusicBrainz Info - Checking by Artist - Using Release Name", xbmc.LOGDEBUG)
                 url = release_group_url_artist % (server, quote_plus(album_title.encode("utf-8")), match_within,
@@ -145,7 +143,7 @@ def get_musicbrainz_album(album_title, artist, e_count, limit=1, with_singles=Fa
             elif not by_release:
                 log("Retrieving MusicBrainz Info - Checking by Artist - Including Singles and Live albums",
                     xbmc.LOGDEBUG)
-                url = url + query_limit % limit
+                url += query_limit % limit
             elif not with_singles:
                 log("Retrieving MusicBrainz Info - Checking by Artist - Using Release Name", xbmc.LOGDEBUG)
                 url = release_group_url_alias % (server, quote_plus(album_title.encode("utf-8")), match_within,
@@ -165,8 +163,8 @@ def get_musicbrainz_album(album_title, artist, e_count, limit=1, with_singles=Fa
                 album["title"] = unescape(smart_unicode(mbtitle.group(1)))
                 album["artist"] = unescape(smart_unicode(mbartist.group(1)))
                 album["artist_id"] = mbartistid.group(1)
-            except:
-                pass
+            except Exception as e:
+                log(e.message, xbmc.LOGDEBUG)
         if not album["id"]:
             xbmc.sleep(mb_delay)  # sleep for allowing proper use of webserver
             if not with_singles and not by_release and not use_alias and not use_live:
@@ -207,12 +205,7 @@ def get_musicbrainz_album(album_title, artist, e_count, limit=1, with_singles=Fa
             match_release_group = re.findall('''<release-group(.*?)</release-group>''', match.group(1))
             if match_release_group:
                 for item in match_release_group:
-                    album = {}
-                    album["score"] = ""
-                    album["id"] = ""
-                    album["title"] = ""
-                    album["artist"] = ""
-                    album["artist_id"] = ""
+                    album = {"score": "", "id": "", "title": "", "artist": "", "artist_id": ""}
                     try:
                         mbscore = re.search('''score="(.*?)"''', item)
                         mbid = re.search('''<release-group id="(.*?)"(?:.*?)">''', item)
@@ -234,7 +227,8 @@ def get_musicbrainz_album(album_title, artist, e_count, limit=1, with_singles=Fa
                         log("Artist    : %s" % album["artist"], xbmc.LOGDEBUG)
                         log("Artist ID : %s" % album["artist_id"], xbmc.LOGDEBUG)
                         albums.append(album)
-                    except:
+                    except Exception as e:
+                        log(e.message, xbmc.LOGERROR)
                         print_exc()
 
             else:
@@ -247,10 +241,6 @@ def get_musicbrainz_album(album_title, artist, e_count, limit=1, with_singles=Fa
 
 def get_musicbrainz_artists(artist_search, limit=1):
     log("Artist: %s" % artist_search, xbmc.LOGDEBUG)
-    score = ""
-    name = ""
-    id = ""
-    sortname = ""
     artists = []
     artist_name = smart_unicode((artist_search.replace('"', '?').replace('&', 'and')))
     url = artist_url % (server, quote_plus(artist_name.encode("utf-8")), limit)
@@ -258,11 +248,7 @@ def get_musicbrainz_artists(artist_search, limit=1):
     match = re.findall('''<artist(.*?)</artist>''', htmlsource)
     if match:
         for item in match:
-            artist = {}
-            artist["score"] = ""
-            artist["name"] = ""
-            artist["id"] = ""
-            artist["sortname"] = ""
+            artist = {"score": "", "name": "", "id": "", "sortname": ""}
             score_match = re.search('''score="(.*?)"''', item)
             name_match = re.search('''<name>(.*?)</name>''', item)
             id_match = re.search('''id="(.*?)"(?:.*?)>''', item)
@@ -290,7 +276,8 @@ def get_musicbrainz_artists(artist_search, limit=1):
 
 def get_musicbrainz_artist_id(artist_search, limit=1, alias=False):
     name = ""
-    id = ""
+    id_ = ""
+    score = ""
     sortname = ""
     artist_name = smart_unicode((artist_search.replace('"', '?').replace('&', 'and')))
     if not alias:
@@ -312,60 +299,63 @@ def get_musicbrainz_artist_id(artist_search, limit=1, alias=False):
         if name_match:
             name = unescape(smart_unicode(name_match.group(1)))
         if id_match:
-            id = id_match.group(1)
+            id_ = id_match.group(1)
         if sort_name_match:
             sortname = unescape(smart_unicode(sort_name_match.group(1)))
         log("Score     : %s" % score, xbmc.LOGDEBUG)
-        log("Id        : %s" % id, xbmc.LOGDEBUG)
+        log("Id        : %s" % id_, xbmc.LOGDEBUG)
         log("Name      : %s" % name, xbmc.LOGDEBUG)
         log("Sort Name : %s" % sortname, xbmc.LOGDEBUG)
     else:
         if not alias:
             log("No Artist ID found trying aliases: %s" % artist_search, xbmc.LOGDEBUG)
-            name, id, sortname = get_musicbrainz_artist_id(artist_search, limit, True)
+            name, id_, sortname = get_musicbrainz_artist_id(artist_search, limit, True)
         else:
             log("No Artist ID found for Artist: %s" % artist_search, xbmc.LOGDEBUG)
     xbmc.sleep(mb_delay)
-    return name, id, sortname
+    return name, id_, sortname
 
 
-def update_musicbrainzid(type, info):
+def update_musicbrainzid(type_, info):
     log("Updating MusicBrainz ID", xbmc.LOGDEBUG)
     artist_id = ""
     try:
-        if type == "artist":  # available data info["local_id"], info["name"], info["distant_id"]
+        if type_ == "artist":  # available data info["local_id"], info["name"], info["distant_id"]
             name, artist_id, sortname = get_musicbrainz_artist_id(info["name"])
             conn = sqlite3.connect(addon_db)
             c = conn.cursor()
             c.execute('UPDATE alblist SET musicbrainz_artistid="%s" WHERE artist="%s"' % (artist_id, info["name"]))
             try:
                 c.execute('UPDATE lalist SET musicbrainz_artistid="%s" WHERE name="%s"' % (artist_id, info["name"]))
-            except:
+            except sqlite3.Error:
                 pass
-            conn.commit
+            conn.commit()
             c.close()
-        if type == "album":
-            album_id = get_musicbrainz_album(info["title"], info["artist"], 0)["id"]
+        if type_ == "album":
+            album, discard = get_musicbrainz_album(info["title"], info["artist"], 0)
+            album_id = album["id"]
             conn = sqlite3.connect(addon_db)
             c = conn.cursor()
             c.execute("""UPDATE alblist SET musicbrainz_albumid='%s' WHERE title='%s'""" % (album_id, info["title"]))
-            conn.commit
+            conn.commit()
             c.close()
-    except:
+    except Exception as e:
+        log(e.message, xbmc.LOGERROR)
         print_exc()
     return artist_id
 
 
-def mbid_check(database_mbid, type):
-    log("Looking up %s MBID. Current MBID: %s" % (type, database_mbid), xbmc.LOGNOTICE)
+def mbid_check(database_mbid, type_):
+    log("Looking up %s MBID. Current MBID: %s" % (type_, database_mbid), xbmc.LOGNOTICE)
     new_mbid = ""
     mbid_match = False
-    if type == "release-group":
+    url = None
+    if type_ == "release-group":
         url = release_group_id_check % (server, database_mbid)
-    elif type == "artist":
+    elif type_ == "artist":
         url = artist_id_check % (server, database_mbid)
     htmlsource = get_html_source(url, "", save_file=False, overwrite=False)
-    if type == "release-group":
+    if type_ == "release-group":
         match = re.search('''<release-group id="(.*?)"(?:.*?)>''', htmlsource)
         if match:
             new_mbid = match.group(1)
@@ -381,7 +371,7 @@ def mbid_check(database_mbid, type):
             mbid_match = True
         else:
             mbid_match = False
-    elif type == "artist":
+    elif type_ == "artist":
         match = re.search('''<artist id="(.*?)"(?:.*?)>''', htmlsource)
         if match:
             new_mbid = match.group(1)

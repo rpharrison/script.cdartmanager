@@ -11,17 +11,15 @@ import xbmc
 import xbmcvfs
 
 import cdam
-from database import store_lalist, store_local_artist_table, store_fanarttv_datecode, retrieve_fanarttv_datecode
+from db import store_lalist, store_local_artist_table, store_fanarttv_datecode, retrieve_fanarttv_datecode
 from utils import get_html_source, log, dialog_msg
 
 __cdam__ = cdam.CDAM()
 __settings__ = cdam.Settings()
-__language__ = __cdam__.getLocalizedString
+__lang__ = __cdam__.getLocalizedString
 
 music_url_json = "http://webservice.fanart.tv/v3/music/%s?api_key=%s"
 new_music = "http://webservice.fanart.tv/v3/music/latest?api_key=%s&date=%s"
-lookup_id = False
-
 
 def remote_cdart_list(artist_menu):
     log("Finding remote cdARTs", xbmc.LOGDEBUG)
@@ -276,7 +274,7 @@ def update_art(mbid, data, existing_has_art):
 
 def first_check(all_artists, album_artists, background=False, update_db=False):
     log("Checking for artist match with fanart.tv - First Check", xbmc.LOGNOTICE)
-    heading = __language__(32187)
+    heading = __lang__(32187)
     album_artists_matched = []
     all_artists_matched = []
     d = datetime.utcnow()
@@ -294,7 +292,7 @@ def first_check(all_artists, album_artists, background=False, update_db=False):
         else:
             match["has_art"] = artist["has_art"]
         album_artists_matched.append(match)
-        dialog_msg("update", percent=percent, line1=heading, line2="", line3=__language__(32049) % artist["name"],
+        dialog_msg("update", percent=percent, line1=heading, line2="", line3=__lang__(32049) % artist["name"],
                    background=background)
         count += 1
     log("Storing Album Artists List", xbmc.LOGDEBUG)
@@ -312,7 +310,7 @@ def first_check(all_artists, album_artists, background=False, update_db=False):
             else:
                 match["has_art"] = artist["has_art"]
             all_artists_matched.append(match)
-            dialog_msg("update", percent=percent, line1=heading, line2="", line3=__language__(32049) % artist["name"],
+            dialog_msg("update", percent=percent, line1=heading, line2="", line3=__lang__(32049) % artist["name"],
                        background=background)
             count += 1
         store_local_artist_table(all_artists_matched, background=background)
@@ -338,8 +336,8 @@ def get_recognized(all_artists, album_artists, background=False):
             if match["musicbrainz_artistid"]:
                 match["has_art"] = update_art(match["musicbrainz_artistid"], data, artist["has_art"])
             album_artists_matched.append(match)
-            dialog_msg("update", percent=percent, line1=__language__(32185), line2="",
-                       line3=__language__(32049) % artist["name"], background=background)
+            dialog_msg("update", percent=percent, line1=__lang__(32185), line2="",
+                       line3=__lang__(32049) % artist["name"], background=background)
             count += 1
         if __settings__.enable_all_artists() and all_artists:
             count = 0
@@ -350,8 +348,8 @@ def get_recognized(all_artists, album_artists, background=False):
                 if match["musicbrainz_artistid"]:
                     match["has_art"] = update_art(match["musicbrainz_artistid"], data, artist["has_art"])
                 all_artists_matched.append(match)
-                dialog_msg("update", percent=percent, line1=__language__(32185), line2="",
-                           line3=__language__(32049) % artist["name"], background=background)
+                dialog_msg("update", percent=percent, line1=__lang__(32185), line2="",
+                           line3=__lang__(32049) % artist["name"], background=background)
                 count += 1
     else:
         log("No new music artwork on fanart.tv", xbmc.LOGNOTICE)

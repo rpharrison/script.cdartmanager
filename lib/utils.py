@@ -16,7 +16,7 @@ from file_item import Thumbnails
 
 __cdam__ = cdam.CDAM()
 __settings__ = cdam.Settings()
-__language__ = __cdam__.getLocalizedString
+__lang__ = __cdam__.getLocalizedString
 
 dialog = xbmcgui.DialogProgress()
 
@@ -157,7 +157,8 @@ def get_html_source(url, path, save_file=True, overwrite=False):
                 if xbmcvfs.exists(file_name):
                     file_mtime = datetime.datetime.fromtimestamp(os.path.getmtime(file_name))
                     file_age = datetime.datetime.today() - file_mtime
-                    if file_age.days > 14:  # yes i know... but this is temporary and will be configurable in a later release
+                    # yes i know... but this is temporary and will be configurable in a later release
+                    if file_age.days > 14:
                         log("Cached file is %s days old, refreshing" % file_age.days, xbmc.LOGNOTICE)
                         xbmcvfs.delete(file_name)
 
@@ -228,8 +229,8 @@ def dialog_msg(action,
                line2='',
                line3='',
                background=False,
-               nolabel=__language__(32179),
-               yeslabel=__language__(32178)):
+               nolabel=__lang__(32179),
+               yeslabel=__lang__(32178)):
     # Fix possible unicode errors 
     heading = heading.encode('utf-8', 'ignore')
     line1 = line1.encode('utf-8', 'ignore')

@@ -11,12 +11,12 @@ from json_utils import retrieve_json_dict
 empty = []
 
 
-def get_thumbnail_path(database_id, type):
-    utils.log("jsonrpc_calls.py - Retrieving Thumbnail Path for %s id: %s" % (type, database_id), xbmc.LOGDEBUG)
-    if type in ("cover", "cdart", "album") and database_id:
-        json_query = '''{"jsonrpc": "2.0", "method": "AudioLibrary.GetAlbumDetails", "params": {"properties": ["thumbnail"], "albumid": %d}, "id": 1}''' % database_id
+def get_thumbnail_path(database_id, type_):
+    utils.log("jsonrpc_calls.py - Retrieving Thumbnail Path for %s id: %s" % (type_, database_id), xbmc.LOGDEBUG)
+    if type_ in ("cover", "cdart", "album") and database_id:
+        json_query = '{"jsonrpc": "2.0", "method": "AudioLibrary.GetAlbumDetails", "params": {"properties": ["thumbnail"], "albumid": %d}, "id": 1}' % database_id
         json_thumb = retrieve_json_dict(json_query, items='albumdetails', force_log=False)
-    elif type in ("fanart", "clearlogo", "artistthumb", "artist") and database_id:
+    elif type_ in ("fanart", "clearlogo", "artistthumb", "artist") and database_id:
         json_query = '''{"jsonrpc": "2.0", "method": "AudioLibrary.GetArtistDetails", "params": {"properties": ["thumbnail"], "artistid": %d}, "id": 1}''' % database_id
         json_thumb = retrieve_json_dict(json_query, items='artistdetails', force_log=False)
     else:
@@ -28,12 +28,12 @@ def get_thumbnail_path(database_id, type):
         return empty
 
 
-def get_fanart_path(database_id, type):
-    utils.log("jsonrpc_calls.py - Retrieving Fanart Path for %s id: %s" % (type, database_id), xbmc.LOGDEBUG)
-    if type in ("cover", "cdart", "album") and database_id:
+def get_fanart_path(database_id, type_):
+    utils.log("jsonrpc_calls.py - Retrieving Fanart Path for %s id: %s" % (type_, database_id), xbmc.LOGDEBUG)
+    if type_ in ("cover", "cdart", "album") and database_id:
         json_query = '''{"jsonrpc": "2.0", "method": "AudioLibrary.GetAlbumDetails", "params": {"properties": ["fanart"], "albumid": %d}, "id": 1}''' % database_id
         json_fanart = retrieve_json_dict(json_query, items='albumdetails', force_log=False)
-    elif type in ("fanart", "clearlogo", "artistthumb", "artist") and database_id:
+    elif type_ in ("fanart", "clearlogo", "artistthumb", "artist") and database_id:
         json_query = '''{"jsonrpc": "2.0", "method": "AudioLibrary.GetArtistDetails", "params": {"properties": ["fanart"], "artistid": %d}, "id": 1}''' % database_id
         json_fanart = retrieve_json_dict(json_query, items='artistdetails', force_log=False)
     else:

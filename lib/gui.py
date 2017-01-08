@@ -12,7 +12,7 @@ import xbmcgui
 import xbmcvfs
 
 import cdam
-from database import user_updates, backup_database, database_setup, get_local_albums_db, get_local_artists_db, \
+from db import user_updates, backup_database, database_setup, get_local_albums_db, get_local_artists_db, \
     new_local_count, refresh_db, \
     artwork_search, update_database, check_album_mbid, check_artist_mbid, update_missing_artist_mbid, \
     update_missing_album_mbid

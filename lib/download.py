@@ -12,7 +12,7 @@ import cdam
 
 from fanarttv_scraper import remote_banner_list, remote_hdlogo_list, remote_cdart_list, \
     remote_coverart_list, remote_fanart_list, remote_clearlogo_list, remote_artistthumb_list
-from database import get_local_albums_db, artwork_search
+from db import get_local_albums_db, artwork_search
 from utils import get_unicode, change_characters, log, dialog_msg, smart_unicode
 # from jsonrpc_calls import get_thumbnail_path, get_fanart_path
 

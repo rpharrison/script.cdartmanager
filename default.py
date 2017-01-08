@@ -5,27 +5,22 @@ import datetime
 import os
 import sys
 import traceback
-from sqlite3 import dbapi2 as sqlite3
+import sqlite3
 
 import xbmc
 import xbmcgui
 import xbmcvfs
 
-from lib import cdam, gui
+from lib import *
 
 from lib.utils import settings_to_log, get_unicode, change_characters, log, dialog_msg
-from lib.database import store_counts, new_local_count, get_local_artists_db, get_local_albums_db, update_database, \
+from lib.db import store_counts, new_local_count, get_local_artists_db, get_local_albums_db, update_database, \
     retrieve_album_details_full, mbid_repair, refresh_db
 from lib.jsonrpc_calls import retrieve_album_details, retrieve_artist_details, get_fanart_path, get_thumbnail_path
 from lib.musicbrainz_utils import get_musicbrainz_artist_id
 from lib.fanarttv_scraper import first_check, remote_banner_list, remote_hdlogo_list, \
     remote_cdart_list, remote_coverart_list, remote_fanart_list, remote_clearlogo_list, \
     remote_artistthumb_list
-from lib.download import auto_download
-
-true = True
-false = False
-null = None
 
 __cdam__ = cdam.CDAM()
 __settings__ = cdam.Settings()
@@ -157,11 +152,11 @@ def update_xbmc_thumbnails(background=False):
                    line2=" %s %s" % (__lang__(32038), get_unicode(artist_["name"])), background=background)
         xbmc_thumbnail_path = ""
         xbmc_fanart_path = ""
-        fanart_path = os.path.join(music_path, change_characters(artist_["name"]), fanart)\
+        fanart_path = os.path.join(music_path, change_characters(artist_["name"]), fanart) \
             .replace("\\\\", "\\")
-        artistthumb_path = os.path.join(music_path, change_characters(artist_["name"]), artistthumb)\
+        artistthumb_path = os.path.join(music_path, change_characters(artist_["name"]), artistthumb) \
             .replace("\\\\", "\\")
-        artistthumb_rename = os.path.join(music_path, change_characters(artist_["name"]), artistthumb_temp)\
+        artistthumb_rename = os.path.join(music_path, change_characters(artist_["name"]), artistthumb_temp) \
             .replace("\\\\", "\\")
         if xbmcvfs.exists(artistthumb_rename):
             xbmcvfs.rename(artistthumb_rename, artistthumb_path)
@@ -311,11 +306,11 @@ if __name__ == "__main__":
                     log("Start method - Autodownload Artist Music Banners in background", xbmc.LOGNOTICE)
                     artwork_type = "musicbanner"
                 if artwork_type in ("fanart", "clearlogo", "artistthumb", "musicbanner") and enable_all_artists:
-                    download_count, successfully_downloaded = auto_download(artwork_type, all_artists,
-                                                                            background=True)
+                    download_count, successfully_downloaded = download.auto_download(artwork_type, all_artists,
+                                                                                     background=True)
                 else:
-                    download_count, successfully_downloaded = auto_download(artwork_type, local_artists,
-                                                                            background=True)
+                    download_count, successfully_downloaded = download.auto_download(artwork_type, local_artists,
+                                                                                     background=True)
                 log("Autodownload of %s artwork completed\nTotal artwork downloaded: %d" % (
                     artwork_type, download_count), xbmc.LOGNOTICE)
             elif script_mode == "update":
@@ -338,11 +333,11 @@ if __name__ == "__main__":
                     log("Start method - Autodownload %s in background" % artwork_type, xbmc.LOGNOTICE)
                     download_count = 0
                     if artwork_type in ("fanart", "clearlogo", "artistthumb", "musicbanner") and enable_all_artists:
-                        download_count, successfully_downloaded = auto_download(artwork_type, all_artists,
-                                                                                background=True)
+                        download_count, successfully_downloaded = download.auto_download(artwork_type, all_artists,
+                                                                                         background=True)
                     elif artwork_type:
-                        download_count, successfully_downloaded = auto_download(artwork_type, local_artists,
-                                                                                background=True)
+                        download_count, successfully_downloaded = download.auto_download(artwork_type, local_artists,
+                                                                                         background=True)
                     total_artwork += download_count
                 log("Autodownload all artwork completed\nTotal artwork downloaded: %d" % total_artwork, xbmc.LOGNOTICE)
             elif script_mode == "update_thumbs":
@@ -382,7 +377,8 @@ if __name__ == "__main__":
                 log("Addon settings: %s" % __cdam__.file_settings_xml(), xbmc.LOGNOTICE)
                 query = "SELECT version FROM counts"
                 if xbmcgui.Window(10000).getProperty(
-                        "cdart_manager_update") == "True":  # Check to see if skin property is set, if it is, gracefully exit the script
+                        "cdart_manager_update") == "True":
+                    # Check to see if skin property is set, if it is, gracefully exit the script
                     if not os.environ.get("OS", "win32") in ("win32", "Windows_NT"):
                         background_db = False
                         # message "cdART Manager, Stopping Background Database Building"
@@ -403,8 +399,8 @@ if __name__ == "__main__":
                     first_run = True
                 elif not background_db and not soft_exit:
                     log("Addon Db Found, Checking Database Version", xbmc.LOGNOTICE)
-                if xbmcvfs.exists(
-                        addon_db_crash) and not first_run and not background_db and not soft_exit:  # if l_cdart.db.journal exists, creating database must have crashed at some point, delete and start over
+                # if l_cdart.db.journal exists, creating database must have crashed at some point, delete and start over
+                if xbmcvfs.exists(addon_db_crash) and not first_run and not background_db and not soft_exit:
                     log("Detected Database Crash, Trying to delete", xbmc.LOGNOTICE)
                     try:
                         xbmcvfs.delete(addon_db)
@@ -415,6 +411,7 @@ if __name__ == "__main__":
                         script_fail = True
                 elif not first_run and not background_db and not soft_exit and not script_fail:  # Test database version
                     log("Looking for database version: %s" % cdam.Constants.db_version(), xbmc.LOGNOTICE)
+
                     try:
                         conn_l = sqlite3.connect(addon_db)
                         c = conn_l.cursor()
