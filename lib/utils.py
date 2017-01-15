@@ -278,3 +278,17 @@ def log(text, severity=xbmc.LOGDEBUG):
         text = text.encode('utf-8')
     message = ('[%s] - %s' % (__cdam__.name(), text.__str__()))
     xbmc.log(msg=message, level=severity)
+
+
+def coloring(text, color, colorword):
+    colored_text = text.replace(colorword, "[COLOR=%s]%s[/COLOR]" % (color, colorword))
+    return colored_text
+
+
+def remove_color(text):
+    clean_text = text.replace("[/COLOR]", "").replace("[COLOR=FFFFFFFF]", "").replace("[COLOR=FF0000FF]",
+                                                                                      "").replace(
+        "[COLOR=FF00FFFF]", "").replace("[COLOR=FFEE82EE]", "").replace("[COLOR=FFFF1493]", "").replace(
+        "[COLOR=FFFF0000]", "").replace("[COLOR=FF00FF00]", "").replace("[COLOR=FFFFFF00]", "").replace(
+        "[COLOR=FFFF4500]", "")
+    return clean_text
