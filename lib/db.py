@@ -149,7 +149,7 @@ def restore_user_updates():
 
 
 def artist_list_to_string(artist):
-    if not (type(artist) is list):
+    if not isinstance(artist, list):
         artist_string = artist
     else:
         if len(artist) > 1:
@@ -363,18 +363,12 @@ def retrieve_album_details_full(album_list, total, background=False, simple=Fals
 
 def get_album_cdart(album_path):
     log("Retrieving cdART status", xbmc.LOGDEBUG)
-    if xbmcvfs.exists(os.path.join(album_path, "cdart.png").replace("\\\\", "\\")):
-        return True
-    else:
-        return False
+    return bool(xbmcvfs.exists(os.path.join(album_path, "cdart.png").replace("\\\\", "\\")))
 
 
 def get_album_coverart(album_path):
     log("Retrieving cover art status", xbmc.LOGDEBUG)
-    if xbmcvfs.exists(os.path.join(album_path, "folder.jpg").replace("\\\\", "\\")):
-        return True
-    else:
-        return False
+    return bool(xbmcvfs.exists(os.path.join(album_path, "folder.jpg").replace("\\\\", "\\")))
 
 
 def store_alblist(local_album_list, background=False):
@@ -756,12 +750,12 @@ def build_local_artist_table(background=False):
             if not artist:
                 try:
                     artist["name"] = get_unicode(artist_list_to_string(local_artist["artist"]))
-                    name, artist["musicbrainz_artistid"], sort_name = get_musicbrainz_artist_id(
+                    _, artist["musicbrainz_artistid"], sort_name = get_musicbrainz_artist_id(
                         get_unicode(artist_list_to_string(local_artist["artist"])))
                 except Exception as e:
                     log(e.message, xbmc.LOGDEBUG)
                     artist["name"] = get_unicode(artist_list_to_string(local_artist["artist"]))
-                    name, artist["musicbrainz_artistid"], sort_name = get_musicbrainz_artist_id(
+                    _, artist["musicbrainz_artistid"], sort_name = get_musicbrainz_artist_id(
                         artist_list_to_string(local_artist["artist"]))
                 artist["local_id"] = artist_list_to_string(local_artist["artistid"])
                 artist["has_art"] = "False"
@@ -989,8 +983,8 @@ def update_missing_album_mbid(albums, background=False, repair=False):
             dialog_msg("update", percent=percent, line1=__lang__(32133),
                        line2="%s: %s" % (__lang__(32138), get_unicode(album["title"])),
                        line3="%s: %s" % (__lang__(32137), get_unicode(album["artist"])), background=background)
-            musicbrainz_albuminfo, discard = get_musicbrainz_album(get_unicode(album["title"]),
-                                                                   get_unicode(album["artist"]), 0, 1)
+            musicbrainz_albuminfo, _ = get_musicbrainz_album(get_unicode(album["title"]),
+                                                             get_unicode(album["artist"]), 0, 1)
             update_album["musicbrainz_albumid"] = musicbrainz_albuminfo["id"]
             update_album["musicbrainz_artistid"] = musicbrainz_albuminfo["artist_id"]
         updated_albums.append(update_album)

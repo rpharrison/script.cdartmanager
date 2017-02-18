@@ -151,7 +151,7 @@ def get_html_source(url, path, save_file=True, overwrite=False):
         version = __cdam__.user_agent()
 
     urllib._urlopener = AppURLopener()
-    for i in range(0, 4):
+    for _ in range(0, 4):
         try:
             if save_file:
                 if xbmcvfs.exists(file_name):
@@ -231,7 +231,7 @@ def dialog_msg(action,
                background=False,
                nolabel=__lang__(32179),
                yeslabel=__lang__(32178)):
-    # Fix possible unicode errors 
+    # Fix possible unicode errors
     heading = heading.encode('utf-8', 'ignore')
     line1 = line1.encode('utf-8', 'ignore')
     line2 = line2.encode('utf-8', 'ignore')
@@ -255,10 +255,7 @@ def dialog_msg(action,
         if action == 'close':
             dialog.close()
         if action == 'iscanceled':
-            if dialog.iscanceled():
-                return True
-            else:
-                return False
+            return dialog.iscanceled()
         if action == 'okdialog':
             xbmcgui.Dialog().ok(heading, line1, line2, line3)
         if action == 'yesno':

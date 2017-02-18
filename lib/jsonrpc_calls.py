@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# script.cdartmanager 
+# script.cdartmanager
 # jsonrpc_calls.py
 
 import os

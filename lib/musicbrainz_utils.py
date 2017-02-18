@@ -59,10 +59,10 @@ def split_album_info(album_result, index):
 
 def get_musicbrainz_release_group(release_mbid):
     """ Retrieves the MusicBrainz Release Group MBID from a given release MBID
-        
+
         Use:
             release_groupmbid = get_musicbrainz_release_group( release_mbid )
-        
+
         release_mbid - valid release mbid
     """
     log("Retrieving MusicBrainz Release Group MBID from Album Release MBID", xbmc.LOGDEBUG)
@@ -82,11 +82,11 @@ def get_musicbrainz_release_group(release_mbid):
 
 def get_musicbrainz_album(album_title, artist, e_count, limit=1, with_singles=False, by_release=False, use_alias=False,
                           use_live=False):
-    """ Retrieves information for Album from MusicBrainz using provided Album title and Artist name. 
-        
+    """ Retrieves information for Album from MusicBrainz using provided Album title and Artist name.
+
         Use:
             album, albums = get_musicbrainz_album( album_title, artist, e_count, limit, with_singles, by_release )
-        
+
         album_title  - the album title(must be unicode)
         artist       - the artist's name(must be unicode)
         e_count      - used internally(should be set to 0)
@@ -193,7 +193,7 @@ def get_musicbrainz_album(album_title, artist, e_count, limit=1, with_singles=Fa
                                                       False)  # try again with singles and artist alias
             else:
                 log("No releases found on MusicBrainz.", xbmc.LOGDEBUG)
-                album["artist"], album["artist_id"], sort_name = get_musicbrainz_artist_id(artist)
+                album["artist"], album["artist_id"], _ = get_musicbrainz_artist_id(artist)
     else:
         match_within = "~4"
         url = release_group_url_artist % (
@@ -321,7 +321,7 @@ def update_musicbrainzid(type_, info):
     artist_id = ""
     try:
         if type_ == "artist":  # available data info["local_id"], info["name"], info["distant_id"]
-            name, artist_id, sortname = get_musicbrainz_artist_id(info["name"])
+            _, artist_id, sortname = get_musicbrainz_artist_id(info["name"])
             conn = sqlite3.connect(addon_db)
             c = conn.cursor()
             c.execute('UPDATE alblist SET musicbrainz_artistid="%s" WHERE artist="%s"' % (artist_id, info["name"]))
@@ -367,10 +367,7 @@ def mbid_check(database_mbid, type_):
                 match = re.search('''<release-group ext:score=(?:.*?)id="(.*?)">''', htmlsource)
                 if match:
                     new_mbid = match.group(1)
-        if new_mbid == database_mbid:
-            mbid_match = True
-        else:
-            mbid_match = False
+        mbid_match = bool(new_mbid == database_mbid)
     elif type_ == "artist":
         match = re.search('''<artist id="(.*?)"(?:.*?)>''', htmlsource)
         if match:

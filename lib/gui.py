@@ -55,7 +55,7 @@ class GUI(xbmcgui.WindowXMLDialog):
         self.setup_all()
 
     # creates the album list on the skin
-    def populate_album_list(self, artist_menu, art_url, focus_item, type):
+    def populate_album_list(self, artist_menu, art_url, focus_item, _type):
         log("Populating Album List", xbmc.LOGNOTICE)
         self.getControl(122).reset()
         if not art_url:
@@ -72,7 +72,7 @@ class GUI(xbmcgui.WindowXMLDialog):
             check = False
             try:
                 for album in local_album_list:
-                    if type == "cdart":
+                    if _type == "cdart":
                         art_image = missing_cdart_image
                         filename = "cdart.png"
                     else:
@@ -90,7 +90,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                     else:
                         check = True
                     # check to see if there is a thumb
-                    artwork = artwork_search(art_url, musicbrainz_albumid, album["disc"], type)
+                    artwork = artwork_search(art_url, musicbrainz_albumid, album["disc"], _type)
                     if not artwork:
                         temp_path = os.path.join(album["path"], filename).replace("\\\\", "\\")
                         if xbmcvfs.exists(temp_path):
@@ -105,7 +105,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                             # set the matched colour local and distant colour
                             # colour the label to the matched colour if not
                             url = artwork["picture"]
-                            if album[type]:
+                            if album[_type]:
                                 art_image = os.path.join(album["path"], filename).replace("\\\\", "\\")
                                 color = cdam.Constants.COLOR_YELLOW
                             else:
@@ -113,7 +113,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                                 color = cdam.Constants.COLOR_GREEN
                         else:
                             url = ""
-                            if album[type]:
+                            if album[_type]:
                                 art_image = os.path.join(album["path"], filename).replace("\\\\", "\\")
                                 color = cdam.Constants.COLOR_ORANGE
                             else:
@@ -163,34 +163,34 @@ class GUI(xbmcgui.WindowXMLDialog):
         self.getControl(145).selectItem(selected_item)
         return
 
-    def populate_search_list_mbid(self, mbid_list, type="artist", selected_item=0):
+    def populate_search_list_mbid(self, mbid_list, _type="artist", selected_item=0):
         log("MBID Search - Populating Search List", xbmc.LOGNOTICE)
         if not mbid_list:
             xbmc.executebuiltin("Dialog.Close(busydialog)")
             return
         xbmc.executebuiltin("ActivateWindow(busydialog)")
-        if type == "artists":
+        if _type == "artists":
             try:
                 for item in mbid_list:
                     label2 = "MBID: %s" % item["id"]
                     label1 = "%-3s%%: %s" % (item["score"], item["name"])
-                    listitem = xbmcgui.ListItem(label=coloring(label1, cdam.Constants.COLOR_WHITE, label1), label2=label2)
-                    self.getControl(161).addItem(listitem)
-                    listitem.setLabel(coloring(label1, cdam.Constants.COLOR_WHITE, label1))
-                    listitem.setLabel2(label2)
+                    li = xbmcgui.ListItem(label=coloring(label1, cdam.Constants.COLOR_WHITE, label1), label2=label2)
+                    self.getControl(161).addItem(li)
+                    li.setLabel(coloring(label1, cdam.Constants.COLOR_WHITE, label1))
+                    li.setLabel2(label2)
             except:
                 traceback.print_exc()
-        elif type == "albums":
+        elif _type == "albums":
             try:
                 for item in mbid_list:
                     label2 = "%s MBID: %s[CR][COLOR=7fffffff]%s MBID: %s[/COLOR]" % (
                         __language__(32138), item["id"], __language__(32137), item["artist_id"])
                     label1 = "%-3s%%  %s: %s[CR][COLOR=7fffffff]%s: %s[/COLOR]" % (
                         item["score"], __language__(32138), item["title"], __language__(32137), item["artist"])
-                    listitem = xbmcgui.ListItem(label=label1, label2=label2)
-                    self.getControl(161).addItem(listitem)
-                    listitem.setLabel(label1)
-                    listitem.setLabel2(label2)
+                    li = xbmcgui.ListItem(label=label1, label2=label2)
+                    self.getControl(161).addItem(li)
+                    li.setLabel(label1)
+                    li.setLabel2(label2)
             except:
                 traceback.print_exc()
         xbmc.executebuiltin("Dialog.Close(busydialog)")
@@ -391,11 +391,11 @@ class GUI(xbmcgui.WindowXMLDialog):
             traceback.print_exc()
             xbmc.executebuiltin("Dialog.Close(busydialog)")
 
-    def populate_downloaded(self, successfully_downloaded, type):
+    def populate_downloaded(self, successfully_downloaded, _type):
         log("Populating ClearLOGO List", xbmc.LOGNOTICE)
         xbmc.executebuiltin("ActivateWindow(busydialog)")
         self.getControl(404).reset()
-        xbmcgui.Window(10001).setProperty("artwork", type)
+        xbmcgui.Window(10001).setProperty("artwork", _type)
         for item in successfully_downloaded:
             try:
                 try:
@@ -894,7 +894,7 @@ class GUI(xbmcgui.WindowXMLDialog):
         self.getControl(110).setLabel(__language__(32010) % local_album_count)
         self.getControl(112).setLabel(__language__(32008) % local_cdart_count)
 
-    # This selects which cdART image shows up in the display box (image id 210) 
+    # This selects which cdART image shows up in the display box (image id 210)
     def cdart_icon(self):
         cdart_path = {}
         try:  # If there is information in label 2 of list id 140(local album list)
@@ -1030,7 +1030,7 @@ class GUI(xbmcgui.WindowXMLDialog):
         else:
             all_artists = []
         present_datecode = calendar.timegm(datetime.utcnow().utctimetuple())
-        new_artwork, data = check_fanart_new_artwork(present_datecode)
+        new_artwork, _ = check_fanart_new_artwork(present_datecode)
         if new_artwork:
             self.all_artists_list, self.album_artists = get_recognized(all_artists, album_artists)
         else:
@@ -1204,17 +1204,17 @@ class GUI(xbmcgui.WindowXMLDialog):
                 self.populate_artist_list_mbid(self.local_artists)
         if controlId == 122:  # Retrieving information from Album List
             self.getControl(140).reset()
-            select = None
-            local = ""
-            url = ""
-            album = {}
-            album_search = []
-            album_selection = []
+#            select = None
+#            local = ""
+#            url = ""
+#            album = {}
+#            album_search = []
+#            album_selection = []
             cdart_path = {}
-            local_cdart = ""
-            count = 0
-            select = 0
-            local_cdart = ((self.getControl(122).getSelectedItem().getLabel2()).split("&&&&")[1]).split("&&")[0]
+#            local_cdart = ""
+#            count = 0
+#            select = 0
+#            local_cdart = ((self.getControl(122).getSelectedItem().getLabel2()).split("&&&&")[1]).split("&&")[0]
             database_id = int(((self.getControl(122).getSelectedItem().getLabel2()).split("&&&&")[1]).split("&&")[1])
             url = ((self.getControl(122).getSelectedItem().getLabel2()).split("&&&&")[0]).split("&&")[0]
             cdart_path["path"] = ((self.getControl(122).getSelectedItem().getLabel2()).split("&&&&")[0]).split("&&")[1]
@@ -1231,11 +1231,9 @@ class GUI(xbmcgui.WindowXMLDialog):
                 if url.lower().startswith("http"):
                     message = None
                     if self.menu_mode == 1:
-                        message, d_success, is_canceled = download_art(url, cdart_path, database_id, "cdart", "manual",
-                                                                       0)
+                        message, _, is_canceled = download_art(url, cdart_path, database_id, "cdart", "manual", 0)
                     elif self.menu_mode == 3:
-                        message, d_success, is_canceled = download_art(url, cdart_path, database_id, "cover", "manual",
-                                                                       0)
+                        message, _, is_canceled = download_art(url, cdart_path, database_id, "cover", "manual", 0)
                     dialog_msg("close")
                     if message is not None:  # and do not crash if there's somethin wrong with this url
                         dialog_msg("ok", heading=message[0], line1=message[1], line2=message[2], line3=message[3])
@@ -1413,8 +1411,8 @@ class GUI(xbmcgui.WindowXMLDialog):
                 artist["path"] = os.path.join(music_path, change_characters(smart_unicode(artist["artist"])))
                 selected_item = self.getControl(167).getSelectedPosition()
                 if url:
-                    message, success, is_canceled = download_art(url, artist, self.artist_menu["local_id"], "clearlogo",
-                                                                 "manual", 0)
+                    message, _, is_canceled = download_art(url, artist, self.artist_menu["local_id"], "clearlogo",
+                                                           "manual", 0)
                     dialog_msg("close")
                     dialog_msg("ok", heading=message[0], line1=message[1], line2=message[2], line3=message[3])
                 else:
@@ -1487,7 +1485,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                     self.artwork_type = "artistthumb"
                 elif controlId == 207:  # Artist banner
                     self.artwork_type = "musicbanner"
-                download_count, successfully_downloaded = auto_download(self.artwork_type, self.local_artists)
+                _, successfully_downloaded = auto_download(self.artwork_type, self.local_artists)
                 all_artist_count, local_album_count, local_artist_count, local_cdart_count = new_local_count()
                 self.refresh_counts(local_album_count, local_artist_count, local_cdart_count)
                 if successfully_downloaded:
@@ -1502,7 +1500,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                     self.artwork_type = "artistthumb_allartists"
                 elif controlId == 208:  # Artist Banners All Artists
                     self.artwork_type = "musicbanner_allartists"
-                download_count, successfully_downloaded = auto_download(self.artwork_type, self.local_artists)
+                _, successfully_downloaded = auto_download(self.artwork_type, self.local_artists)
                 all_artist_count, local_album_count, local_artist_count, local_cdart_count = new_local_count()
                 self.refresh_counts(local_album_count, local_artist_count, local_cdart_count)
                 if successfully_downloaded:
@@ -1591,8 +1589,8 @@ class GUI(xbmcgui.WindowXMLDialog):
             self.getControl(161).reset()
             artist = ""
             album = ""
-            albums = []
-            artists = []
+#            albums = []
+#            artists = []
             canceled = False
             if self.menu_mode == 10:
                 kb.setHeading(__language__(32164))
@@ -1660,10 +1658,10 @@ class GUI(xbmcgui.WindowXMLDialog):
                     self.populate_search_list_mbid(self.albums, "albums")
         if controlId == 161:
             if self.menu_mode == 10:
-                artist_details = {}
-                artist_details["musicbrainz_artistid"] = self.artists[self.getControl(161).getSelectedPosition()]["id"]
-                artist_details["name"] = self.artists[self.getControl(161).getSelectedPosition()]["name"]
-                artist_details["local_id"] = self.artist_menu["local_id"]
+                artist_details = {
+                    "musicbrainz_artistid": self.artists[self.getControl(161).getSelectedPosition()]["id"],
+                    "name": self.artists[self.getControl(161).getSelectedPosition()]["name"],
+                    "local_id": self.artist_menu["local_id"]}
                 user_updates(artist_details, type_="artist")
                 self.getControl(145).reset()
                 xbmc.executebuiltin("ActivateWindow(busydialog)")
@@ -1673,14 +1671,12 @@ class GUI(xbmcgui.WindowXMLDialog):
                     self.local_artists = get_local_artists_db("album_artists")
                 self.populate_artist_list_mbid(self.local_artists, self.selected_item)
             if self.menu_mode in (11, 12):
-                album_details = {}
-                album_details["artist"] = self.albums[self.getControl(161).getSelectedPosition()]["artist"]
-                album_details["title"] = self.albums[self.getControl(161).getSelectedPosition()]["title"]
-                album_details["musicbrainz_artistid"] = self.albums[self.getControl(161).getSelectedPosition()][
-                    "artist_id"]
-                album_details["musicbrainz_albumid"] = self.albums[self.getControl(161).getSelectedPosition()]["id"]
-                album_details["path"] = self.album_menu["path"]
-                album_details["local_id"] = self.album_menu["local_id"]
+                album_details = {"artist": self.albums[self.getControl(161).getSelectedPosition()]["artist"],
+                                 "title": self.albums[self.getControl(161).getSelectedPosition()]["title"],
+                                 "musicbrainz_artistid": self.albums[self.getControl(161).getSelectedPosition()][
+                                     "artist_id"],
+                                 "musicbrainz_albumid": self.albums[self.getControl(161).getSelectedPosition()]["id"],
+                                 "path": self.album_menu["path"], "local_id": self.album_menu["local_id"]}
                 user_updates(album_details, type_="album")
                 self.getControl(145).reset()
                 xbmc.executebuiltin("ActivateWindow(busydialog)")
