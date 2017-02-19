@@ -32,7 +32,7 @@ enable_missing = __settings__.enable_missing()
 
 addon_db = __cdam__.file_addon_db()
 addon_work_folder = __cdam__.path_profile()
-image = __cdam__.file_icon()
+
 
 music_path = __settings__.path_music_path()
 backup_path = __settings__.path_backup_path()
@@ -48,14 +48,34 @@ KEY_KEYBOARD_ESC = 61467
 
 class GUI(xbmcgui.WindowXMLDialog):
 
-    def __init__(self, *args, **kwargs):
-        pass
+    def __init__(self, xml_filename, script_path):
+        super(GUI, self).__init__(xml_filename, script_path)
+        self.image = __cdam__.file_icon()
+        self.background = False
+        log("# Setting up Script", xbmc.LOGNOTICE)
+        self.menu_mode = 0
+        self.artist_menu = {}
+        self.remote_cdart_url = []
+        self.all_artists = []
+        self.cdart_url = []
+        self.local_artists = []
+        self.local_albums = []
+        self.label_1 = ""
+        self.label_2 = self.image
+        self.cdartimg = ""
+        self.artwork_type = ""
+        self.artists = []
+        self.albums = []
+        self.album_artists = []
+        self.all_artists_list = []
+        self.recognized_artists = []
+        self.selected_item = 0
 
     def onInit(self):
         self.setup_all()
 
     # creates the album list on the skin
-    def populate_album_list(self, artist_menu, art_url, focus_item, _type):
+    def populate_album_list(self, art_url, focus_item, _type):
         log("Populating Album List", xbmc.LOGNOTICE)
         self.getControl(122).reset()
         if not art_url:
@@ -122,12 +142,14 @@ class GUI(xbmcgui.WindowXMLDialog):
                     label2 = "%s&&%s&&&&%s&&%s" % (url, album["path"], art_image, str(album["local_id"]))
                     listitem = xbmcgui.ListItem(label=label1, label2=label2, thumbnailImage=art_image)
                     self.getControl(122).addItem(listitem)
-                    listitem.setLabel(coloring(label1, color, label1))
+                    listitem.setLabel(coloring(label1, color))
                     listitem.setLabel2(label2)
                     listitem.setThumbnailImage(art_image)
                     self.cdart_url = art_url
                     clear_image_cache(art_image)
-            except:
+            except Exception as e:
+                log("Error in script occured", xbmc.LOGNOTICE)
+                log(e.message, xbmc.LOGWARNING)
                 traceback.print_exc()
             xbmc.executebuiltin("Dialog.Close(busydialog)")
             if (not empty_list) or check:
@@ -156,7 +178,9 @@ class GUI(xbmcgui.WindowXMLDialog):
                 self.getControl(145).addItem(listitem)
                 listitem.setLabel(label1)
                 listitem.setLabel2(label2)
-        except:
+        except Exception as e:
+            log("Error in script occured", xbmc.LOGNOTICE)
+            log(e.message, xbmc.LOGWARNING)
             traceback.print_exc()
         xbmc.executebuiltin("Dialog.Close(busydialog)")
         self.setFocus(self.getControl(145))
@@ -174,11 +198,13 @@ class GUI(xbmcgui.WindowXMLDialog):
                 for item in mbid_list:
                     label2 = "MBID: %s" % item["id"]
                     label1 = "%-3s%%: %s" % (item["score"], item["name"])
-                    li = xbmcgui.ListItem(label=coloring(label1, cdam.Constants.COLOR_WHITE, label1), label2=label2)
+                    li = xbmcgui.ListItem(label=coloring(label1, cdam.Constants.COLOR_WHITE), label2=label2)
                     self.getControl(161).addItem(li)
-                    li.setLabel(coloring(label1, cdam.Constants.COLOR_WHITE, label1))
+                    li.setLabel(coloring(label1, cdam.Constants.COLOR_WHITE))
                     li.setLabel2(label2)
-            except:
+            except Exception as e:
+                log("Error in script occured", xbmc.LOGNOTICE)
+                log(e.message, xbmc.LOGWARNING)
                 traceback.print_exc()
         elif _type == "albums":
             try:
@@ -191,7 +217,9 @@ class GUI(xbmcgui.WindowXMLDialog):
                     self.getControl(161).addItem(li)
                     li.setLabel(label1)
                     li.setLabel2(label2)
-            except:
+            except Exception as e:
+                log("Error in script occured", xbmc.LOGNOTICE)
+                log(e.message, xbmc.LOGWARNING)
                 traceback.print_exc()
         xbmc.executebuiltin("Dialog.Close(busydialog)")
         self.setFocus(self.getControl(161))
@@ -231,13 +259,13 @@ class GUI(xbmcgui.WindowXMLDialog):
             xbmc.executebuiltin("ActivateWindow(busydialog)")
             for artist in local_artist_list:
                 if artist["has_art"] != "False":
-                    listitem = xbmcgui.ListItem(label=coloring(artist["name"], cdam.Constants.COLOR_GREEN, artist["name"]))
+                    listitem = xbmcgui.ListItem(label=coloring(artist["name"], cdam.Constants.COLOR_GREEN))
                     self.getControl(120).addItem(listitem)
-                    listitem.setLabel(coloring(artist["name"], cdam.Constants.COLOR_GREEN, artist["name"]))
+                    listitem.setLabel(coloring(artist["name"], cdam.Constants.COLOR_GREEN))
                 else:
                     listitem = xbmcgui.ListItem(label=artist["name"])
                     self.getControl(120).addItem(listitem)
-                    listitem.setLabel(coloring(artist["name"], cdam.Constants.COLOR_WHITE, artist["name"]))
+                    listitem.setLabel(coloring(artist["name"], cdam.Constants.COLOR_WHITE))
         except KeyError:
             for artist in local_artist_list:
                 label2 = "MBID: %s" % artist["musicbrainz_artistid"]
@@ -414,7 +442,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                 traceback.print_exc()
                 xbmc.executebuiltin("Dialog.Close(busydialog)")
 
-    def populate_local_cdarts(self, focus_item):
+    def populate_local_cdarts(self, focus_item=None):
         log("Populating Local cdARTS", xbmc.LOGNOTICE)
         url = ""
         work_temp = []
@@ -428,17 +456,19 @@ class GUI(xbmcgui.WindowXMLDialog):
                 label1 = "%s * %s" % (album["artist"], album["title"])
                 listitem = xbmcgui.ListItem(label=label1, label2=label2, thumbnailImage=cdart_img)
                 self.getControl(140).addItem(listitem)
-                listitem.setLabel(coloring(label1, cdam.Constants.COLOR_YELLOW, label1))
+                listitem.setLabel(coloring(label1, cdam.Constants.COLOR_YELLOW))
                 listitem.setLabel2(label2)
                 work_temp.append(album)
             else:
                 pass
         xbmc.executebuiltin("Dialog.Close(busydialog)")
         self.setFocus(self.getControl(140))
-        self.getControl(140).selectItem(focus_item)
+        if focus_item is not None:
+            self.getControl(140).selectItem(focus_item)
         return work_temp
 
-    def single_unique_copy(self, artist, album, source):
+    @staticmethod
+    def single_unique_copy(artist, album, source):
         log("Copying to Unique Folder: %s - %s" % (artist, album), xbmc.LOGNOTICE)
         fn_format = __settings__.folder()
         unique_folder = __settings__.path_unique_path()
@@ -471,7 +501,8 @@ class GUI(xbmcgui.WindowXMLDialog):
             log("Error: cdART file does not exist..  Please check...", xbmc.LOGNOTICE)
         return
 
-    def single_backup_copy(self, artist, album, source):
+    @staticmethod
+    def single_backup_copy(artist, album, source):
         log("Copying To Backup Folder: %s - %s" % (artist, album), xbmc.LOGNOTICE)
         fn_format = __settings__.folder()
         backup_folder = __settings__.path_backup_path()
@@ -504,7 +535,8 @@ class GUI(xbmcgui.WindowXMLDialog):
             log("Error: cdART file does not exist..  Please check...", xbmc.LOGNOTICE)
         return
 
-    def single_cdart_delete(self, source, album):
+    @staticmethod
+    def single_cdart_delete(source, album):
         log("Deleting: %s" % source, xbmc.LOGNOTICE)
         conn = sqlite3.connect(addon_db)
         c = conn.cursor()
@@ -524,7 +556,8 @@ class GUI(xbmcgui.WindowXMLDialog):
         return
 
     # Copy's all the local unique cdARTs to a folder specified by the user
-    def unique_cdart_copy(self, unique):
+    @staticmethod
+    def unique_cdart_copy(unique):
         log("Copying Unique cdARTs...", xbmc.LOGNOTICE)
         count = 0
         duplicates = 0
@@ -550,10 +583,9 @@ class GUI(xbmcgui.WindowXMLDialog):
                         fn = os.path.join(destination, (((album["title"].replace("/", "")).replace("'", "")) + ".png"))
                     else:
                         destination = unique_folder
-                        fn = os.path.join(destination, ((((album["artist"].replace("/", "")).replace("'",
-                                                                                                     "")) + " - " + (
-                                                             (album["title"].replace("/", "")).replace("'",
-                                                                                                       "")) + ".png").lower()))
+                        fn = os.path.join(destination, ((((album["artist"].replace("/", "")).replace("'", "")) + " - " +
+                                                         ((album["title"].replace("/", "")).replace("'", "")) + ".png")
+                                                        .lower()))
                     if not xbmcvfs.exists(destination):
                         # pass
                         os.makedirs(destination)
@@ -630,8 +662,8 @@ class GUI(xbmcgui.WindowXMLDialog):
             log("Album Path: %s" % repr(album["path"]), xbmc.LOGNOTICE)
             percent = int(total_count / float(total_albums)) * 100
             if fn_format == 0:
-                source = os.path.join(from_folder, (album["artist"].replace("/", "").replace("'",
-                                                                                             "")))  # to fix AC/DC and other artists with a / in the name
+                # to fix AC/DC and other artists with a / in the name
+                source = os.path.join(from_folder, (album["artist"].replace("/", "").replace("'", "")))
                 if album["disc"] > 1:
                     fn = os.path.join(source, (
                         (album["title"].replace("/", "").replace("'", "")) + "_disc_" + str(album["disc"]) + ".png"))
@@ -656,8 +688,8 @@ class GUI(xbmcgui.WindowXMLDialog):
                     fn = os.path.join(source, (((album["artist"].replace("/", "").replace("'", "")) + " - " + (
                         album["title"].replace("/", "").replace("'", "")) + ".png").lower()))
                 if not xbmcvfs.exists(fn):
-                    source = os.path.join(from_folder, (album["artist"].replace("/", "").replace("'",
-                                                                                                 "")))  # to fix AC/DC and other artists with a / in the name
+                    # to fix AC/DC and other artists with a / in the name
+                    source = os.path.join(from_folder, (album["artist"].replace("/", "").replace("'", "")))
                     fn = os.path.join(source, ((album["title"].replace("/", "").replace("'", "")) + ".png"))
             log("Source folder: %s" % repr(source), xbmc.LOGNOTICE)
             log("Source filename: %s" % repr(fn), xbmc.LOGNOTICE)
@@ -835,10 +867,9 @@ class GUI(xbmcgui.WindowXMLDialog):
             missing.write("-" * 172)
             missing.write("\r\n")
             count = 0
-            percent = 1
             for artist in artists:
                 count += 1
-                percent = int((count / float(len(artists))) * 100)
+                percent = int((count / float(len(artists))) * 100) if len(artists) > 0 else 100
                 if percent < 1:
                     percent = 1
                 if percent > 100:
@@ -919,8 +950,8 @@ class GUI(xbmcgui.WindowXMLDialog):
         self.getControl(210).setImage(image)
 
     def clear_artwork(self):
-        self.getControl(211).setImage(image)
-        self.getControl(210).setImage(image)
+        self.getControl(211).setImage(self.image)
+        self.getControl(210).setImage(self.image)
 
     def popup(self, header, line1, line2, line3):
         dialog_msg("create", heading=header, line1=line1, line2=line2, line3=line3)
@@ -987,25 +1018,6 @@ class GUI(xbmcgui.WindowXMLDialog):
 
     # setup self. strings and initial local counts
     def setup_all(self):
-        self.background = False
-        log("# Setting up Script", xbmc.LOGNOTICE)
-        self.menu_mode = 0
-        self.artist_menu = {}
-        self.remote_cdart_url = []
-        self.all_artists = []
-        self.cdart_url = []
-        self.local_artists = []
-        self.local_albums = []
-        self.label_1 = ""
-        self.label_2 = image
-        self.cdartimg = ""
-        self.artwork_type = ""
-        self.artists = []
-        self.albums = []
-        self.album_artists = []
-        self.all_artists_list = []
-        self.recognized_artists = []
-        self.selected_item = 0
         # checking to see if addon_db exists, if not, run database_setup()
         if xbmcvfs.exists((addon_db).replace("\\\\", "\\").encode("utf-8")):
             log("Addon Db found - Loading Counts", xbmc.LOGNOTICE)
@@ -1069,11 +1081,11 @@ class GUI(xbmcgui.WindowXMLDialog):
             if self.menu_mode == 1:
                 self.remote_cdart_url = remote_cdart_list(self.artist_menu)
                 xbmcgui.Window(10001).setProperty("artwork", "cdart")
-                self.populate_album_list(self.artist_menu, self.remote_cdart_url, 0, "cdart")
+                self.populate_album_list(self.remote_cdart_url, 0, "cdart")
             elif self.menu_mode == 3:
                 self.remote_cdart_url = remote_coverart_list(self.artist_menu)
                 xbmcgui.Window(10001).setProperty("artwork", "cover")
-                self.populate_album_list(self.artist_menu, self.remote_cdart_url, 0, "cover")
+                self.populate_album_list(self.remote_cdart_url, 0, "cover")
             elif self.menu_mode == 6:
                 xbmcgui.Window(10001).setProperty("artwork", "fanart")
                 self.populate_fanarts(self.artist_menu, 0)
@@ -1231,9 +1243,9 @@ class GUI(xbmcgui.WindowXMLDialog):
                 if url.lower().startswith("http"):
                     message = None
                     if self.menu_mode == 1:
-                        message, _, is_canceled = download_art(url, cdart_path, database_id, "cdart", "manual", 0)
+                        message, _, _ = download_art(url, cdart_path, database_id, "cdart", "manual", 0)
                     elif self.menu_mode == 3:
-                        message, _, is_canceled = download_art(url, cdart_path, database_id, "cover", "manual", 0)
+                        message, _, _ = download_art(url, cdart_path, database_id, "cover", "manual", 0)
                     dialog_msg("close")
                     if message is not None:  # and do not crash if there's somethin wrong with this url
                         dialog_msg("ok", heading=message[0], line1=message[1], line2=message[2], line3=message[3])
@@ -1248,11 +1260,11 @@ class GUI(xbmcgui.WindowXMLDialog):
             if self.menu_mode == 1:
                 self.remote_cdart_url = remote_cdart_list(self.artist_menu)
                 xbmcgui.Window(10001).setProperty("artwork", "cdart")
-                self.populate_album_list(self.artist_menu, self.remote_cdart_url, self.selected_item, "cdart")
+                self.populate_album_list(self.remote_cdart_url, self.selected_item, "cdart")
             elif self.menu_mode == 3:
                 self.remote_cdart_url = remote_coverart_list(self.artist_menu)
                 xbmcgui.Window(10001).setProperty("artwork", "cover")
-                self.populate_album_list(self.artist_menu, self.remote_cdart_url, self.selected_item, "cover")
+                self.populate_album_list(self.remote_cdart_url, self.selected_item, "cover")
         if controlId == 132:  # Clean Music database selected from Advanced Menu
             log("#  Executing Built-in - CleanLibrary(music)", xbmc.LOGNOTICE)
             xbmc.executebuiltin("CleanLibrary(music)")
@@ -1268,7 +1280,7 @@ class GUI(xbmcgui.WindowXMLDialog):
         if controlId == 190:  # backup database
             backup_database()
             xbmc.executebuiltin(
-                "Notification( %s, %s, %d, %s)" % (__language__(32042), __language__(32139), 2000, image))
+                "Notification( %s, %s, %d, %s)" % (__language__(32042), __language__(32139), 2000, self.image))
         if controlId == 191:  # Refresh Local database selected from Advanced Menu
             refresh_db(False)
             dialog_msg("close")
@@ -1317,7 +1329,7 @@ class GUI(xbmcgui.WindowXMLDialog):
             # self.getControl(300).setLabel(self.getControl(140).getSelectedItem().getLabel())
         if controlId in (142, 143, 144):
             path = ((self.getControl(140).getSelectedItem().getLabel2()).split("&&&&")[1]).split("&&")[0]
-            database_id = int(((self.getControl(140).getSelectedItem().getLabel2()).split("&&&&")[1]).split("&&")[1])
+            #database_id = int(((self.getControl(140).getSelectedItem().getLabel2()).split("&&&&")[1]).split("&&")[1])
             artist_album = self.getControl(140).getSelectedItem().getLabel()
             artist_album = remove_color(artist_album)
             artist = artist_album.split(" * ")[0]

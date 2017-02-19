@@ -27,10 +27,10 @@ enable_fanart_limit = __settings__.enable_fanart_limit()
 tempgfx_folder = __cdam__.path_temp_gfx()
 
 
-def check_size(path, type, size_w, size_h):
+def check_size(path, _type, size_w, size_h):
     # size check is disabled because currently fanart.tv always returns size=1000
     # ref: https://forum.fanart.tv/viewtopic.php?f=4&t=403
-    file_name = get_filename(type, path, "auto")
+    file_name = get_filename(_type, path, "auto")
     source = os.path.join(path, file_name)
     if xbmcvfs.exists(source):
         log("size check n.a. in new fanart.tv API, returning False for %s" % source)
@@ -218,7 +218,8 @@ def download_art(url_cdart, album, database_id, type_, mode, size, background=Fa
         # message = [Download Problem, Check file paths - Artwork Not Downloaded]
         # print_exc()
     if mode == "auto" or mode == "single":
-        return message, download_success, final_destination, is_canceled  # returns one of the messages built based on success or lack of
+        # returns one of the messages built based on success or lack of
+        return message, download_success, final_destination, is_canceled
     else:
         dialog_msg("close", background=background)
         return message, download_success, is_canceled

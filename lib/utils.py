@@ -159,7 +159,7 @@ def get_html_source(url, path, save_file=True, overwrite=False):
                     file_age = datetime.datetime.today() - file_mtime
                     # yes i know... but this is temporary and will be configurable in a later release
                     if file_age.days > 14:
-                        log("Cached file is %s days old, refreshing" % file_age.days, xbmc.LOGNOTICE)
+                        log("Cached file is %s days old, refreshing" % file_age.days, xbmc.LOGDEBUG)
                         xbmcvfs.delete(file_name)
 
                 if xbmcvfs.exists(file_name) and not overwrite:
@@ -277,7 +277,9 @@ def log(text, severity=xbmc.LOGDEBUG):
     xbmc.log(msg=message, level=severity)
 
 
-def coloring(text, color, colorword):
+def coloring(text, color, colorword=None):
+    if colorword is None:
+        colorword = text
     colored_text = text.replace(colorword, "[COLOR=%s]%s[/COLOR]" % (color, colorword))
     return colored_text
 

@@ -21,6 +21,7 @@ __lang__ = __cdam__.getLocalizedString
 music_url_json = "http://webservice.fanart.tv/v3/music/%s?api_key=%s"
 new_music = "http://webservice.fanart.tv/v3/music/latest?api_key=%s&date=%s"
 
+
 def remote_cdart_list(artist_menu):
     log("Finding remote cdARTs", xbmc.LOGDEBUG)
     cdart_url = []
@@ -200,7 +201,7 @@ def retrieve_fanarttv_json(id_):
                             try:
                                 if "albumcover" in album:
                                     # if len(album["albumcover"]) < 2:
-                                    # this is a quick fix, we should download the first hit here if there are multiple covers
+                                    # we should download the first hit here if there are multiple covers
                                     album_artwork["cover"] = album["albumcover"][0]["url"]
                             except Exception as e:
                                 log(e.message, xbmc.LOGDEBUG)

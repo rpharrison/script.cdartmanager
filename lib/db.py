@@ -436,8 +436,8 @@ def store_lalist(local_artist_list):
     c = conn.cursor()
     artist_count = 0
     c.execute('''DROP table IF EXISTS lalist''')
-    c.execute(
-        '''CREATE TABLE lalist(local_id INTEGER, name TEXT, musicbrainz_artistid TEXT, fanarttv_has_art TEXT)''')  # create local artists database
+    # create local artists database
+    c.execute('''CREATE TABLE lalist(local_id INTEGER, name TEXT, musicbrainz_artistid TEXT, fanarttv_has_art TEXT)''')
     for artist in local_artist_list:
         try:
             try:
@@ -583,12 +583,15 @@ def database_setup(background=False):
     c = conn.cursor()
     c.execute(
         '''CREATE TABLE counts(local_artists INTEGER, artists INTEGER, albums INTEGER, cdarts INTEGER, version TEXT, datecode INTEGER)''')
+    # create local album artists database
     c.execute(
-        '''CREATE TABLE lalist(local_id INTEGER, name TEXT, musicbrainz_artistid TEXT, fanarttv_has_art TEXT)''')  # create local album artists database
+        '''CREATE TABLE lalist(local_id INTEGER, name TEXT, musicbrainz_artistid TEXT, fanarttv_has_art TEXT)''')
+    # create local album database
     c.execute(
-        '''CREATE TABLE alblist(album_id INTEGER, title TEXT, artist TEXT, path TEXT, cdart TEXT, cover TEXT, disc INTEGER, musicbrainz_albumid TEXT, musicbrainz_artistid TEXT)''')  # create local album database
+        '''CREATE TABLE alblist(album_id INTEGER, title TEXT, artist TEXT, path TEXT, cdart TEXT, cover TEXT, disc INTEGER, musicbrainz_albumid TEXT, musicbrainz_artistid TEXT)''')
+    # create unique database
     c.execute(
-        '''CREATE TABLE unqlist(title TEXT, disc INTEGER, artist TEXT, path TEXT, cdart TEXT)''')  # create unique database
+        '''CREATE TABLE unqlist(title TEXT, disc INTEGER, artist TEXT, path TEXT, cdart TEXT)''')
     c.execute(
         '''CREATE TABLE local_artists(local_id INTEGER, name TEXT, musicbrainz_artistid TEXT, fanarttv_has_art TEXT)''')
     conn.commit()
@@ -691,8 +694,9 @@ def store_local_artist_table(artist_list, background=False):
     c = conn.cursor()
     dialog_msg("create", heading=__lang__(32124), line1=__lang__(20186), background=background)
     c.execute('''DROP table IF EXISTS local_artists''')
+    # create local artists database
     c.execute(
-        '''CREATE TABLE local_artists(local_id INTEGER, name TEXT, musicbrainz_artistid TEXT, fanarttv_has_art TEXT)''')  # create local artists database
+        '''CREATE TABLE local_artists(local_id INTEGER, name TEXT, musicbrainz_artistid TEXT, fanarttv_has_art TEXT)''')
     for artist in artist_list:
         percent = int((count / float(len(artist_list))) * 100) if len(artist_list) > 0 else 100
         dialog_msg("update", percent=percent, line1=__lang__(32124),
@@ -750,12 +754,12 @@ def build_local_artist_table(background=False):
             if not artist:
                 try:
                     artist["name"] = get_unicode(artist_list_to_string(local_artist["artist"]))
-                    _, artist["musicbrainz_artistid"], sort_name = get_musicbrainz_artist_id(
+                    _, artist["musicbrainz_artistid"], _ = get_musicbrainz_artist_id(
                         get_unicode(artist_list_to_string(local_artist["artist"])))
                 except Exception as e:
                     log(e.message, xbmc.LOGDEBUG)
                     artist["name"] = get_unicode(artist_list_to_string(local_artist["artist"]))
-                    _, artist["musicbrainz_artistid"], sort_name = get_musicbrainz_artist_id(
+                    _, artist["musicbrainz_artistid"], _ = get_musicbrainz_artist_id(
                         artist_list_to_string(local_artist["artist"]))
                 artist["local_id"] = artist_list_to_string(local_artist["artistid"])
                 artist["has_art"] = "False"
@@ -1109,14 +1113,18 @@ def update_database(background=False):
         c.execute('''DROP table IF EXISTS local_artists''')
     c.execute(
         '''CREATE TABLE counts(local_artists INTEGER, artists INTEGER, albums INTEGER, cdarts INTEGER, version TEXT)''')
+    # create local album artists database
     c.execute(
-        '''CREATE TABLE lalist(local_id INTEGER, name TEXT, musicbrainz_artistid TEXT, fanarttv_has_art TEXT)''')  # create local album artists database
+        '''CREATE TABLE lalist(local_id INTEGER, name TEXT, musicbrainz_artistid TEXT, fanarttv_has_art TEXT)''')
+    # create local album database
     c.execute(
-        '''CREATE TABLE alblist(album_id INTEGER, title TEXT, artist TEXT, path TEXT, cdart TEXT, cover TEXT, disc INTEGER, musicbrainz_albumid TEXT, musicbrainz_artistid TEXT)''')  # create local album database
+        '''CREATE TABLE alblist(album_id INTEGER, title TEXT, artist TEXT, path TEXT, cdart TEXT, cover TEXT, disc INTEGER, musicbrainz_albumid TEXT, musicbrainz_artistid TEXT)''')
+    # create unique database
     c.execute(
-        '''CREATE TABLE unqlist(title TEXT, disc INTEGER, artist TEXT, path TEXT, cdart TEXT)''')  # create unique database
+        '''CREATE TABLE unqlist(title TEXT, disc INTEGER, artist TEXT, path TEXT, cdart TEXT)''')
+    # create local artists database
     c.execute(
-        '''CREATE TABLE local_artists(local_id INTEGER, name TEXT, musicbrainz_artistid TEXT, fanarttv_has_art TEXT)''')  # create local artists database
+        '''CREATE TABLE local_artists(local_id INTEGER, name TEXT, musicbrainz_artistid TEXT, fanarttv_has_art TEXT)''')
     conn.commit()
     c.close()
     store_counts(0, 0, 0, 0)
