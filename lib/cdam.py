@@ -112,9 +112,6 @@ class CDAM(CDAMAddon):
     def file_addon_db_crash(self):
         return self.path_profile("l_cdart.db-journal")
 
-    def file_addon_db_old(self):
-        return self.path_profile("l_cdart." + Constants.db_version_old() + ".db")
-
     def file_settings_xml(self):
         return self.path_profile("settings.xml")
 
@@ -224,6 +221,7 @@ class Settings(CDAMAddon):
     def path_unique_path(self):
         return self.__getSettingPath__("unique_path")
 
+
 class Constants:
     def __init__(self):
         pass
@@ -251,14 +249,5 @@ class Constants:
         return "3.0.3"
 
     @staticmethod
-    def db_version_old():
-        return "2.7.8"
-
-    @staticmethod
-    def db_version_ancient():
-        return "1.5.3"
-
-    @staticmethod
     def fanarttv_api_key():
         return "65169f993d552483391ca10c1ae7fb03"
-

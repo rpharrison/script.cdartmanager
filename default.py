@@ -14,8 +14,8 @@ import xbmcvfs
 from lib import *
 
 from lib.utils import settings_to_log, get_unicode, change_characters, log, dialog_msg
-from lib.db import store_counts, new_local_count, get_local_artists_db, get_local_albums_db, update_database, \
-    retrieve_album_details_full, mbid_repair, refresh_db
+from lib.db import get_local_artists_db, get_local_albums_db, update_database, retrieve_album_details_full, \
+    upgrade_db, refresh_db
 from lib.jsonrpc_calls import retrieve_album_details, retrieve_artist_details, get_fanart_path, get_thumbnail_path
 from lib.musicbrainz_utils import get_musicbrainz_artist_id
 from lib.fanarttv_scraper import first_check, remote_banner_list, remote_hdlogo_list, \
@@ -34,7 +34,6 @@ music_path = __settings__.path_music_path()
 
 addon_work_folder = __cdam__.path_profile()
 addon_db = __cdam__.file_addon_db()
-addon_db_update = __cdam__.file_addon_db_old()
 addon_db_crash = __cdam__.file_addon_db_crash()
 
 script_fail = False
@@ -411,7 +410,6 @@ if __name__ == "__main__":
                         script_fail = True
                 elif not first_run and not background_db and not soft_exit and not script_fail:  # Test database version
                     log("Looking for database version: %s" % cdam.Constants.db_version(), xbmc.LOGNOTICE)
-
                     try:
                         conn_l = sqlite3.connect(addon_db)
                         c = conn_l.cursor()
@@ -420,36 +418,9 @@ if __name__ == "__main__":
                         c.close()
                         if version[0][0] == cdam.Constants.db_version():
                             log("Database matched", xbmc.LOGNOTICE)
-                        elif version[0][0] == cdam.Constants.db_version_old():
-                            log("Old version found, Removing Bach MBID's from database", xbmc.LOGNOTICE)
-                            mbid_repair()
-                        elif version[0][0] == cdam.Constants.db_version_ancient():
-                            log("Ancient version found, Adding new column to Local Album Artist and Local Artists",
-                                xbmc.LOGNOTICE)
-                            all_artists = []
-                            local_artists = []
-                            xbmcvfs.copy(addon_db, addon_db_update)
-                            conn = sqlite3.connect(addon_db)
-                            c = conn.cursor()
-                            try:
-                                c.execute('ALTER TABLE lalist ADD COLUMN fanarttv_has_art;')
-                            except sqlite3.Error:
-                                traceback.print_exc()
-                            try:
-                                c.execute('ALTER TABLE local_artists ADD COLUMN fanarttv_has_art;')
-                            except sqlite3.Error:
-                                traceback.print_exc()
-                            c.close()
-                            local_artist_count, album_count, artist_count, cdart_existing = new_local_count()
-                            store_counts(local_artist_count, artist_count, album_count, cdart_existing)
-                            local_artists = get_local_artists_db(mode="album_artists")
-                            if enable_all_artists:
-                                all_artists = get_local_artists_db(mode="all_artists")
-                            first_check(all_artists, local_artists, background=False, update_db=True)
                         else:
-                            log("Database Not Matched - trying to delete", xbmc.LOGNOTICE)
-                            rebuild = dialog_msg("yesno", heading=__lang__(32108), line1=__lang__(32109))
-                            soft_exit = True
+                            log("Old version found, upgrading database", xbmc.LOGNOTICE)
+                            upgrade_db(version[0][0])
                     except StandardError, e:
                         traceback.print_exc()
                         log("# Error: %s" % e.__class__.__name__, xbmc.LOGNOTICE)
@@ -467,7 +438,7 @@ if __name__ == "__main__":
                         local_album_count, local_artist_count, local_cdart_count = refresh_db(True)
                     elif not rebuild and not soft_exit:
                         try:
-                            ui = gui.GUI("script-cdartmanager.xml", __addon__.getAddonInfo('path'), "Default")
+                            ui = gui.GUI("script-cdartmanager.xml", __addon__.getAddonInfo('path'))
                             xbmc.sleep(2000)
                             ui.doModal()
                             del ui

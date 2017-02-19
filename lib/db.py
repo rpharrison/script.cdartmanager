@@ -30,99 +30,95 @@ addon_db = __cdam__.file_addon_db()
 addon_work_folder = __cdam__.path_profile()
 
 
-def mbid_repair():
-    log("Removing all instances of Johann Sebastian Bach", xbmc.LOGNOTICE)
-    mbid_old = "24f1766e-9635-4d58-a4d4-9413f9f98a4c"
-    conn = sqlite3.connect(addon_db)
-    c = conn.cursor()
-    c.execute('''UPDATE alblist SET musicbrainz_artistid="removed" WHERE musicbrainz_artistid="%s"''' % mbid_old)
-    c.execute('''UPDATE lalist SET musicbrainz_artistid="removed" WHERE musicbrainz_artistid="%s"''' % mbid_old)
-    try:
-        c.execute(
-            '''UPDATE artist_updates SET musicbrainz_artistid="removed" WHERE musicbrainz_artistid="%s"''' % mbid_old)
-    except sqlite3.Error:
-        log("No Existing user Artist Edits", xbmc.LOGNOTICE)
-    try:
-        c.execute(
-            '''UPDATE alblist SET musicbrainz_artistid="removed", musicbrainz_albumid="" WHERE musicbrainz_artistid="%s"''' % mbid_old)
-    except sqlite3.Error:
-        log("No Existing user Album Edits", xbmc.LOGNOTICE)
-    update_missing_album_mbid("", background=False, repair=True)
-    update_missing_artist_mbid("", background=False, mode="album_artists", repair=True)
-    update_missing_artist_mbid("", background=False, mode="all_artists", repair=True)
-    conn.commit()
-    c.close()
+def upgrade_db(from_version):
+    log("Found database version %s, upgrading to current" % from_version, xbmc.LOGNOTICE)
+    # there is no upgrade path at the moment
 
 
 def user_updates(details, type_):
     log("Storing User edit", xbmc.LOGNOTICE)
     conn = sqlite3.connect(addon_db)
     c = conn.cursor()
-    c.execute('''CREATE table IF NOT EXISTS artist_updates(local_id INTEGER, name TEXT, musicbrainz_artistid TEXT)''')
-    c.execute(
-        '''CREATE table IF NOT EXISTS album_updates(album_id INTEGER, title TEXT, artist TEXT, path TEXT, musicbrainz_albumid TEXT, musicbrainz_artistid TEXT)''')
+    c.execute("""\
+        CREATE table IF NOT EXISTS artist_updates(local_id INTEGER, name TEXT, musicbrainz_artistid TEXT)
+    """)
+    c.execute("""\
+        CREATE table IF NOT EXISTS album_updates(album_id INTEGER, title TEXT, artist TEXT, path TEXT,
+        musicbrainz_albumid TEXT, musicbrainz_artistid TEXT)
+    """)
+
     if type_ == "artist":
         log("Storing artist update", xbmc.LOGNOTICE)
         try:
-            c.execute(
-                '''SELECT DISTINCT musicbrainz_artistid FROM artist_updates WHERE local_id=%s''' % details["local_id"])
+            c.execute("""\
+                SELECT DISTINCT musicbrainz_artistid FROM artist_updates WHERE local_id=?
+            """, (details["local_id"],))
             db_details = c.fetchall()
             if db_details:
                 log("Updating existing artist edit", xbmc.LOGNOTICE)
-                c.execute('''UPDATE artist_updates SET musicbrainz_artistid="%s", name="%s" WHERE local_id=%s''' % (
-                    details["musicbrainz_artistid"], details["name"], details["local_id"]))
+                c.execute("""\
+                    UPDATE artist_updates SET musicbrainz_artistid=?, name=? WHERE local_id=?
+                """, (details["musicbrainz_artistid"], details["name"], details["local_id"]))
             else:
                 log("Storing new artist edit", xbmc.LOGNOTICE)
-                c.execute('''INSERT INTO artist_updates(local_id, name, musicbrainz_artistid) values (?, ?, ?)''',
-                          (details["local_id"], details["name"], details["musicbrainz_artistid"]))
+                c.execute("""\
+                    INSERT INTO artist_updates(local_id, name, musicbrainz_artistid) values (?, ?, ?)
+                """, (details["local_id"], details["name"], details["musicbrainz_artistid"]))
         except sqlite3.Error:
             log("Error updating artist_updates table", xbmc.LOGERROR)
             traceback.print_exc()
         try:
-            c.execute('''UPDATE lalist SET musicbrainz_artistid="%s", name="%s" WHERE local_id=%s''' % (
-                details["musicbrainz_artistid"], details["name"], details["local_id"]))
+            c.execute("""\
+                UPDATE lalist SET musicbrainz_artistid=?, name=? WHERE local_id=?
+            """, (details["musicbrainz_artistid"], details["name"], details["local_id"]))
         except sqlite3.Error:
             log("Error updating album artist table", xbmc.LOGERROR)
             traceback.print_exc()
         try:
-            c.execute('''UPDATE alblist SET musicbrainz_artistid="%s", artist="%s" WHERE artist="%s"''' % (
-                details["musicbrainz_artistid"], details["name"], details["name"]))
+            c.execute("""\
+                UPDATE alblist SET musicbrainz_artistid=?, artist=? WHERE artist=?
+            """, (details["musicbrainz_artistid"], details["name"], details["name"]))
         except sqlite3.Error:
             log("Error updating album table", xbmc.LOGERROR)
             traceback.print_exc()
         try:
-            c.execute('''UPDATE local_artists SET musicbrainz_artistid="%s", name="%s" WHERE local_id=%s''' % (
-                details["musicbrainz_artistid"], details["name"], details["local_id"]))
+            c.execute("""\
+                UPDATE local_artists SET musicbrainz_artistid=?, name=? WHERE local_id=?
+            """, (details["musicbrainz_artistid"], details["name"], details["local_id"]))
         except sqlite3.Error:
             log("Error updating local artist table", xbmc.LOGERROR)
             traceback.print_exc()
     if type_ == "album":
         log("Storing album update", xbmc.LOGNOTICE)
         try:
-            c.execute('''SELECT DISTINCT album_id FROM album_updates WHERE album_id=%s and path="%s"''' % (
-                details["local_id"], get_unicode(details["path"])))
+            c.execute("""\
+                SELECT DISTINCT album_id FROM album_updates WHERE album_id=? and path=?
+            """, (details["local_id"], get_unicode(details["path"])))
             db_details = c.fetchall()
             print db_details
             if db_details:
                 log("Updating existing album edit", xbmc.LOGNOTICE)
-                c.execute(
-                    '''UPDATE album_updates SET artist="%s", title="%s", musicbrainz_albumid="%s", musicbrainz_artistid="%s" WHERE album_id=%s and path="%s"''' % (
-                        get_unicode(details["artist"]), get_unicode(details["title"]), details["musicbrainz_albumid"],
-                        details["musicbrainz_artistid"], details["local_id"], get_unicode(details["path"])))
+                c.execute("""\
+                    UPDATE album_updates SET artist=?, title=?, musicbrainz_albumid=?,
+                    musicbrainz_artistid=? WHERE album_id=? and path=?
+                """, (get_unicode(details["artist"]), get_unicode(details["title"]), details["musicbrainz_albumid"],
+                      details["musicbrainz_artistid"], details["local_id"], get_unicode(details["path"])))
             else:
                 log("Storing new album edit", xbmc.LOGNOTICE)
-                c.execute(
-                    '''INSERT INTO album_updates(album_id, title, artist, path, musicbrainz_albumid, musicbrainz_artistid) values (?, ?, ?, ?, ?, ?)''',
-                    (details["local_id"], get_unicode(details["title"]), get_unicode(details["artist"]),
-                     get_unicode(details["path"]), details["musicbrainz_albumid"], details["musicbrainz_artistid"]))
+                c.execute("""\
+                    INSERT INTO album_updates(album_id, title, artist, path, musicbrainz_albumid, musicbrainz_artistid)
+                    values (?, ?, ?, ?, ?, ?)
+                """, (details["local_id"], get_unicode(details["title"]), get_unicode(details["artist"]),
+                      get_unicode(details["path"]), details["musicbrainz_albumid"], details["musicbrainz_artistid"]))
         except sqlite3.Error:
             log("Error updating album_updates table", xbmc.LOGERROR)
             traceback.print_exc()
         try:
-            c.execute(
-                '''UPDATE alblist SET artist="%s", title="%s", musicbrainz_albumid="%s", musicbrainz_artistid="%s" WHERE album_id=%s and path="%s"''' % (
-                    get_unicode(details["artist"]), get_unicode(details["title"]), details["musicbrainz_albumid"],
-                    details["musicbrainz_artistid"], details["local_id"], get_unicode(details["path"])))
+            c.execute("""\
+                UPDATE alblist SET artist=?, title=?, musicbrainz_albumid=?, musicbrainz_artistid=?
+                WHERE album_id=? and path=?
+            """, (get_unicode(details["artist"]), get_unicode(details["title"]), details["musicbrainz_albumid"],
+                  details["musicbrainz_artistid"], details["local_id"], get_unicode(details["path"])))
         except sqlite3.Error:
             log("Error updating album table", xbmc.LOGERROR)
             traceback.print_exc()
@@ -134,14 +130,34 @@ def restore_user_updates():
     try:
         conn = sqlite3.connect(addon_db)
         c = conn.cursor()
-        c.execute(
-            '''UPDATE lalist SET musicbrainz_artistid = (SELECT artist_updates.musicbrainz_artistid FROM artist_updates WHERE artist_updates.local_id = lalist.local_id ) WHERE EXISTS ( SELECT * FROM artist_updates WHERE artist_updates.name = lalist.name )''')
-        c.execute(
-            '''UPDATE local_artists SET musicbrainz_artistid = (SELECT artist_updates.musicbrainz_artistid FROM artist_updates WHERE artist_updates.local_id = local_artists.local_id ) WHERE EXISTS ( SELECT * FROM artist_updates WHERE artist_updates.name = local_artists.name )''')
-        c.execute(
-            '''UPDATE alblist SET musicbrainz_artistid = (SELECT album_updates.musicbrainz_artistid FROM album_updates WHERE album_updates.album_id = alblist.album_id ) WHERE EXISTS ( SELECT * FROM album_updates WHERE album_updates.album_id = alblist.album_id )''')
-        c.execute(
-            '''UPDATE alblist SET musicbrainz_albumid = (SELECT album_updates.musicbrainz_albumid FROM album_updates WHERE album_updates.album_id = alblist.album_id ) WHERE EXISTS ( SELECT * FROM album_updates WHERE album_updates.album_id = alblist.album_id )''')
+        c.execute("""\
+            UPDATE lalist SET
+                musicbrainz_artistid =
+                    (SELECT artist_updates.musicbrainz_artistid FROM artist_updates
+                     WHERE artist_updates.local_id = lalist.local_id )
+                WHERE EXISTS ( SELECT * FROM artist_updates WHERE artist_updates.name = lalist.name )
+        """)
+        c.execute("""\
+            UPDATE local_artists SET
+                musicbrainz_artistid =
+                    (SELECT artist_updates.musicbrainz_artistid FROM artist_updates
+                     WHERE artist_updates.local_id = local_artists.local_id )
+                WHERE EXISTS ( SELECT * FROM artist_updates WHERE artist_updates.name = local_artists.name )
+        """)
+        c.execute("""\
+            UPDATE alblist SET
+                musicbrainz_artistid =
+                    (SELECT album_updates.musicbrainz_artistid FROM album_updates
+                     WHERE album_updates.album_id = alblist.album_id )
+                WHERE EXISTS ( SELECT * FROM album_updates WHERE album_updates.album_id = alblist.album_id )
+        """)
+        c.execute("""\
+            UPDATE alblist SET
+                musicbrainz_albumid =
+                    (SELECT album_updates.musicbrainz_albumid FROM album_updates
+                    WHERE album_updates.album_id = alblist.album_id )
+                WHERE EXISTS ( SELECT * FROM album_updates WHERE album_updates.album_id = alblist.album_id )
+        """)
         conn.commit()
         c.close()
     except sqlite3.Error:
@@ -397,12 +413,15 @@ def store_alblist(local_album_list, background=False):
                 if album["cdart"]:
                     cdart_existing += 1
                 album_count += 1
-                c.execute(
-                    '''insert into alblist(album_id, title, artist, path, cdart, cover, disc, musicbrainz_albumid, musicbrainz_artistid) values (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-                    (album["local_id"], get_unicode(album["title"]), get_unicode(album["artist"]),
-                     get_unicode(album["path"].replace("\\\\", "\\")), ("False", "True")[album["cdart"]],
-                     ("False", "True")[album["cover"]], album["disc"], album["musicbrainz_albumid"],
-                     album["musicbrainz_artistid"]))
+                c.execute("""\
+                    insert into
+                        alblist(
+                            album_id, title, artist, path, cdart, cover, disc, musicbrainz_albumid, musicbrainz_artistid
+                        ) values (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (album["local_id"], get_unicode(album["title"]), get_unicode(album["artist"]),
+                      get_unicode(album["path"].replace("\\\\", "\\")), ("False", "True")[album["cdart"]],
+                      ("False", "True")[album["cover"]], album["disc"], album["musicbrainz_albumid"],
+                      album["musicbrainz_artistid"]))
             except Exception as e:
                 log("Error Saving to Database", xbmc.LOGDEBUG)
                 log(e.message, xbmc.LOGERROR)
@@ -435,22 +454,21 @@ def store_lalist(local_artist_list):
     conn = sqlite3.connect(addon_db)
     c = conn.cursor()
     artist_count = 0
-    c.execute('''DROP table IF EXISTS lalist''')
+    c.execute("DROP table IF EXISTS lalist")
     # create local artists database
-    c.execute('''CREATE TABLE lalist(local_id INTEGER, name TEXT, musicbrainz_artistid TEXT, fanarttv_has_art TEXT)''')
+    c.execute("CREATE TABLE lalist(local_id INTEGER, name TEXT, musicbrainz_artistid TEXT, fanarttv_has_art TEXT)")
     for artist in local_artist_list:
         try:
             try:
-                c.execute(
-                    '''insert into lalist(local_id, name, musicbrainz_artistid, fanarttv_has_art) values (?, ?, ?, ?)''',
-                    (artist["local_id"], unicode(artist["name"], 'utf-8', ), artist["musicbrainz_artistid"],
-                     artist["has_art"]))
+                c.execute("""\
+                    insert into lalist(local_id, name, musicbrainz_artistid, fanarttv_has_art) values (?, ?, ?, ?)
+                """, (artist["local_id"], unicode(artist["name"], 'utf-8'), artist["musicbrainz_artistid"],
+                      artist["has_art"]))
             except TypeError:
-                c.execute(
-                    '''insert into lalist(local_id, name, musicbrainz_artistid, fanarttv_has_art) values (?, ?, ?, ?)''',
-                    (
-                        artist["local_id"], get_unicode(artist["name"]), artist["musicbrainz_artistid"],
-                        artist["has_art"]))
+                c.execute("""\
+                    insert into lalist(local_id, name, musicbrainz_artistid, fanarttv_has_art) values (?, ?, ?, ?)
+                """, (artist["local_id"], get_unicode(artist["name"]), artist["musicbrainz_artistid"],
+                      artist["has_art"]))
             except Exception as e:
                 log(e.message, xbmc.LOGERROR)
                 traceback.print_exc()
@@ -465,10 +483,9 @@ def store_lalist(local_artist_list):
 
 
 def retrieve_fanarttv_datecode():
-    query = "SELECT datecode FROM counts"
     conn_l = sqlite3.connect(addon_db)
     c = conn_l.cursor()
-    c.execute(query)
+    c.execute("SELECT datecode FROM counts")
     result = c.fetchall()
     c.close()
     datecode = result[0][0]
@@ -510,17 +527,20 @@ def store_counts(local_artists_count, artist_count, album_count, cdart_existing,
         # table missing
         traceback.print_exc()
     try:
-        c.execute(
-            '''CREATE TABLE counts(local_artists INTEGER, artists INTEGER, albums INTEGER, cdarts INTEGER, version TEXT, datecode INTEGER)''')
+        c.execute("""\
+            CREATE TABLE counts(local_artists INTEGER, artists INTEGER,
+                                albums INTEGER, cdarts INTEGER, version TEXT, datecode INTEGER)
+        """)
     except sqlite3.Error:
         traceback.print_exc()
     if datecode == 0:
-        c.execute('''insert into counts(local_artists, artists, albums, cdarts, version) values (?, ?, ?, ?, ?)''',
-                  (local_artists_count, artist_count, album_count, cdart_existing, cdam.Constants.db_version()))
+        c.execute("""\
+            insert into counts(local_artists, artists, albums, cdarts, version) values (?, ?, ?, ?, ?)
+        """, (local_artists_count, artist_count, album_count, cdart_existing, cdam.Constants.db_version()))
     else:
-        c.execute(
-            '''insert into counts(local_artists, artists, albums, cdarts, version, datecode) values (?, ?, ?, ?, ?, ?)''',
-            (local_artists_count, artist_count, album_count, cdart_existing, cdam.Constants.db_version(), datecode))
+        c.execute("""\
+            insert into counts(local_artists, artists, albums, cdarts, version, datecode) values (?, ?, ?, ?, ?, ?)
+        """, (local_artists_count, artist_count, album_count, cdart_existing, cdam.Constants.db_version(), datecode))
     conn.commit()
     c.close()
     log("Finished Storing Counts", xbmc.LOGDEBUG)
@@ -581,19 +601,26 @@ def database_setup(background=False):
     dialog_msg("create", heading=__lang__(32021), line1=__lang__(20186), background=background)
     conn = sqlite3.connect(addon_db)
     c = conn.cursor()
-    c.execute(
-        '''CREATE TABLE counts(local_artists INTEGER, artists INTEGER, albums INTEGER, cdarts INTEGER, version TEXT, datecode INTEGER)''')
+    c.execute("""\
+        CREATE TABLE counts(local_artists INTEGER, artists INTEGER, albums INTEGER,
+                            cdarts INTEGER, version TEXT, datecode INTEGER)
+    """)
     # create local album artists database
-    c.execute(
-        '''CREATE TABLE lalist(local_id INTEGER, name TEXT, musicbrainz_artistid TEXT, fanarttv_has_art TEXT)''')
+    c.execute("""\
+        CREATE TABLE lalist(local_id INTEGER, name TEXT, musicbrainz_artistid TEXT, fanarttv_has_art TEXT)
+    """)
     # create local album database
-    c.execute(
-        '''CREATE TABLE alblist(album_id INTEGER, title TEXT, artist TEXT, path TEXT, cdart TEXT, cover TEXT, disc INTEGER, musicbrainz_albumid TEXT, musicbrainz_artistid TEXT)''')
+    c.execute("""\
+        CREATE TABLE alblist(album_id INTEGER, title TEXT, artist TEXT, path TEXT, cdart TEXT,
+                             cover TEXT, disc INTEGER, musicbrainz_albumid TEXT, musicbrainz_artistid TEXT)
+    """)
     # create unique database
-    c.execute(
-        '''CREATE TABLE unqlist(title TEXT, disc INTEGER, artist TEXT, path TEXT, cdart TEXT)''')
-    c.execute(
-        '''CREATE TABLE local_artists(local_id INTEGER, name TEXT, musicbrainz_artistid TEXT, fanarttv_has_art TEXT)''')
+    c.execute("""\
+        CREATE TABLE unqlist(title TEXT, disc INTEGER, artist TEXT, path TEXT, cdart TEXT)
+    """)
+    c.execute("""\
+        CREATE TABLE local_artists(local_id INTEGER, name TEXT, musicbrainz_artistid TEXT, fanarttv_has_art TEXT)
+    """)
     conn.commit()
     c.close()
     store_counts(0, 0, 0, 0)
@@ -624,19 +651,27 @@ def get_local_albums_db(artist_name, background=False):
     try:
         if artist_name == "all artists":
             dialog_msg("create", heading=__lang__(32102), line1=__lang__(20186), background=background)
-            query = '''SELECT DISTINCT album_id, title, artist, path, cdart, cover, disc, musicbrainz_albumid, musicbrainz_artistid FROM alblist ORDER BY artist, title ASC'''
-            c.execute(query)
+            c.execute("""\
+                SELECT DISTINCT album_id, title, artist, path, cdart, cover, disc, musicbrainz_albumid,
+                musicbrainz_artistid FROM alblist ORDER BY artist, title ASC
+            """)
         else:
-            query = '''SELECT DISTINCT album_id, title, artist, path, cdart, cover, disc, musicbrainz_albumid, musicbrainz_artistid FROM alblist WHERE artist="%s" ORDER BY title ASC''' % artist_name
             try:
-                c.execute(query)
+                c.execute("""\
+                    SELECT DISTINCT album_id, title, artist, path, cdart, cover, disc, musicbrainz_albumid,
+                    musicbrainz_artistid FROM alblist WHERE artist=? ORDER BY title ASC
+                """, (artist_name,))
             except sqlite3.OperationalError:
                 try:
-                    query = '''SELECT DISTINCT album_id, title, artist, path, cdart, cover, disc, musicbrainz_albumid, musicbrainz_artistid FROM alblist WHERE artist="%s" ORDER BY title ASC''' % artist_name
-                    c.execute(query)
+                    c.execute("""\
+                        SELECT DISTINCT album_id, title, artist, path, cdart, cover, disc, musicbrainz_albumid,
+                        musicbrainz_artistid FROM alblist WHERE artist=? ORDER BY title ASC
+                    """, (artist_name,))
                 except sqlite3.OperationalError:
-                    query = '''SELECT DISTINCT album_id, title, artist, path, cdart, cover, disc, musicbrainz_albumid, musicbrainz_artistid FROM alblist WHERE artist='%s' ORDER BY title ASC''' % artist_name
-                    c.execute(query)
+                    c.execute("""\
+                        SELECT DISTINCT album_id, title, artist, path, cdart, cover, disc, musicbrainz_albumid,
+                        musicbrainz_artistid FROM alblist WHERE artist=? ORDER BY title ASC
+                    """, (artist_name,))
             except Exception as e:
                 log(e.message, xbmc.LOGERROR)
                 traceback.print_exc()
@@ -664,10 +699,14 @@ def get_local_artists_db(mode="album_artists"):
     local_artist_list = []
     if mode == "album_artists":
         log("Retrieving Local Album Artists from Database", xbmc.LOGDEBUG)
-        query = '''SELECT DISTINCT local_id, name, musicbrainz_artistid, fanarttv_has_art FROM lalist ORDER BY name ASC'''
+        query = """\
+            SELECT DISTINCT local_id, name, musicbrainz_artistid, fanarttv_has_art FROM lalist ORDER BY name ASC
+        """
     else:
         log("Retrieving All Local Artists from Database", xbmc.LOGDEBUG)
-        query = '''SELECT DISTINCT local_id, name, musicbrainz_artistid, fanarttv_has_art FROM local_artists ORDER BY name ASC'''
+        query = """\
+            SELECT DISTINCT local_id, name, musicbrainz_artistid, fanarttv_has_art FROM local_artists ORDER BY name ASC
+        """
     conn_l = sqlite3.connect(addon_db)
     c = conn_l.cursor()
     try:
@@ -695,22 +734,23 @@ def store_local_artist_table(artist_list, background=False):
     dialog_msg("create", heading=__lang__(32124), line1=__lang__(20186), background=background)
     c.execute('''DROP table IF EXISTS local_artists''')
     # create local artists database
-    c.execute(
-        '''CREATE TABLE local_artists(local_id INTEGER, name TEXT, musicbrainz_artistid TEXT, fanarttv_has_art TEXT)''')
+    c.execute("""\
+        CREATE TABLE local_artists(local_id INTEGER, name TEXT, musicbrainz_artistid TEXT, fanarttv_has_art TEXT)
+    """)
     for artist in artist_list:
         percent = int((count / float(len(artist_list))) * 100) if len(artist_list) > 0 else 100
         dialog_msg("update", percent=percent, line1=__lang__(32124),
                    line2="%s%s" % (__lang__(32125), artist["local_id"]),
                    line3="%s%s" % (__lang__(32028), get_unicode(artist["name"])), background=background)
         try:
-            c.execute(
-                '''insert into local_artists(local_id, name, musicbrainz_artistid, fanarttv_has_art) values (?, ?, ?, ?)''',
-                (artist["local_id"], get_unicode(artist["name"]), artist["musicbrainz_artistid"], artist["has_art"]))
+            c.execute("""\
+                insert into local_artists(local_id, name, musicbrainz_artistid, fanarttv_has_art) values (?, ?, ?, ?)
+            """, (artist["local_id"], get_unicode(artist["name"]), artist["musicbrainz_artistid"], artist["has_art"]))
             count += 1
         except KeyError:
-            c.execute(
-                '''insert into local_artists(local_id, name, musicbrainz_artistid, fanarttv_has_art) values (?, ?, ?, ?)''',
-                (artist["local_id"], get_unicode(artist["name"]), artist["musicbrainz_artistid"], "False"))
+            c.execute("""\
+                insert into local_artists(local_id, name, musicbrainz_artistid, fanarttv_has_art) values (?, ?, ?, ?)
+            """, (artist["local_id"], get_unicode(artist["name"]), artist["musicbrainz_artistid"], "False"))
             count += 1
         except Exception as e:
             log(e.message, xbmc.LOGERROR)
@@ -786,8 +826,7 @@ def new_local_count():
         album_count = 0
         cdart_existing = recount_cdarts()
 
-        query = "SELECT local_artists, artists, albums, cdarts FROM counts"
-        c.execute(query)
+        c.execute("SELECT local_artists, artists, albums, cdarts FROM counts")
         counts = c.fetchall()
         c.close()
         for item in counts:
@@ -827,11 +866,11 @@ def refresh_db(background=False):
                 # if database file still exists even after trying to delete it. Wipe out its contents
                 conn = sqlite3.connect(addon_db)
                 c = conn.cursor()
-                c.execute('''DROP table IF EXISTS counts''')
-                c.execute('''DROP table IF EXISTS lalist''')  # drop local album artists database
-                c.execute('''DROP table IF EXISTS alblist''')  # drop local album database
-                c.execute('''DROP table IF EXISTS unqlist''')  # drop unique database
-                c.execute('''DROP table IF EXISTS local_artists''')
+                c.execute("DROP table IF EXISTS counts")
+                c.execute("DROP table IF EXISTS lalist")  # drop local album artists database
+                c.execute("DROP table IF EXISTS alblist")  # drop local album database
+                c.execute("DROP table IF EXISTS unqlist")  # drop unique database
+                c.execute("DROP table IF EXISTS local_artists")
                 conn.commit()
                 c.close()
             local_album_count, local_artist_count, local_cdart_count = database_setup(background=background)
@@ -1101,30 +1140,31 @@ def update_database(background=False):
     conn = sqlite3.connect(addon_db)
     c = conn.cursor()
     if xbmcvfs.exists(addon_db):  # if database file still exists even after trying to delete it. Wipe out its contents
-        c.execute('''DROP table IF EXISTS lalist_bk''')  # drop the local artists list backup table
-        c.execute('''DROP table IF EXISTS local_artists_bk''')  # drop local artists backup table
-        c.execute('''CREATE TABLE lalist_bk AS SELECT * FROM lalist''')  # create a backup of the Album artist table
-        c.execute(
-            '''CREATE TABLE local_artists_bk AS SELECT * FROM local_artists''')  # create a backup of the Local Artist table
-        c.execute('''DROP table IF EXISTS counts''')  # drop the count table
-        c.execute('''DROP table IF EXISTS lalist''')  # drop local album artists table
-        c.execute('''DROP table IF EXISTS alblist''')  # drop local album table
-        c.execute('''DROP table IF EXISTS unqlist''')  # drop unique table
-        c.execute('''DROP table IF EXISTS local_artists''')
-    c.execute(
-        '''CREATE TABLE counts(local_artists INTEGER, artists INTEGER, albums INTEGER, cdarts INTEGER, version TEXT)''')
+        c.execute("DROP table IF EXISTS lalist_bk")  # drop the local artists list backup table
+        c.execute("DROP table IF EXISTS local_artists_bk")  # drop local artists backup table
+        c.execute("CREATE TABLE lalist_bk AS SELECT * FROM lalist")  # create a backup of the Album artist table
+        c.execute("CREATE TABLE local_artists_bk AS SELECT * FROM local_artists")  # create backup of the Local Artists
+        c.execute("DROP table IF EXISTS counts")  # drop the count table
+        c.execute("DROP table IF EXISTS lalist")  # drop local album artists table
+        c.execute("DROP table IF EXISTS alblist")  # drop local album table
+        c.execute("DROP table IF EXISTS unqlist")  # drop unique table
+        c.execute("DROP table IF EXISTS local_artists")
+    c.execute("""\
+        CREATE TABLE counts(local_artists INTEGER, artists INTEGER, albums INTEGER, cdarts INTEGER, version TEXT)
+    """)
     # create local album artists database
-    c.execute(
-        '''CREATE TABLE lalist(local_id INTEGER, name TEXT, musicbrainz_artistid TEXT, fanarttv_has_art TEXT)''')
+    c.execute("CREATE TABLE lalist(local_id INTEGER, name TEXT, musicbrainz_artistid TEXT, fanarttv_has_art TEXT)")
     # create local album database
-    c.execute(
-        '''CREATE TABLE alblist(album_id INTEGER, title TEXT, artist TEXT, path TEXT, cdart TEXT, cover TEXT, disc INTEGER, musicbrainz_albumid TEXT, musicbrainz_artistid TEXT)''')
+    c.execute("""\
+        CREATE TABLE alblist(album_id INTEGER, title TEXT, artist TEXT, path TEXT, cdart TEXT, cover TEXT,
+        disc INTEGER, musicbrainz_albumid TEXT, musicbrainz_artistid TEXT)
+    """)
     # create unique database
-    c.execute(
-        '''CREATE TABLE unqlist(title TEXT, disc INTEGER, artist TEXT, path TEXT, cdart TEXT)''')
+    c.execute("CREATE TABLE unqlist(title TEXT, disc INTEGER, artist TEXT, path TEXT, cdart TEXT)")
     # create local artists database
-    c.execute(
-        '''CREATE TABLE local_artists(local_id INTEGER, name TEXT, musicbrainz_artistid TEXT, fanarttv_has_art TEXT)''')
+    c.execute("""\
+        CREATE TABLE local_artists(local_id INTEGER, name TEXT, musicbrainz_artistid TEXT, fanarttv_has_art TEXT)
+    """)
     conn.commit()
     c.close()
     store_counts(0, 0, 0, 0)
@@ -1148,12 +1188,21 @@ def update_database(background=False):
     conn = sqlite3.connect(addon_db)
     c = conn.cursor()
     # copy fanarttv_has_art values from backup tables if MBIDs match
-    c.execute(
-        '''UPDATE lalist SET fanarttv_has_art = (SELECT lalist_bk.fanarttv_has_art FROM lalist_bk WHERE lalist_bk.musicbrainz_artistid = lalist.musicbrainz_artistid ) WHERE EXISTS ( SELECT * FROM lalist_bk WHERE lalist_bk.musicbrainz_artistid = lalist.musicbrainz_artistid )''')
-    c.execute(
-        '''UPDATE local_artists SET fanarttv_has_art = (SELECT local_artists_bk.fanarttv_has_art FROM local_artists_bk WHERE local_artists_bk.musicbrainz_artistid = local_artists.musicbrainz_artistid ) WHERE EXISTS ( SELECT * FROM local_artists_bk WHERE local_artists_bk.musicbrainz_artistid = local_artists.musicbrainz_artistid )''')
-    c.execute('''DROP table IF EXISTS lalist_bk''')  # drop local album artists backup table
-    c.execute('''DROP table IF EXISTS local_artists_bk''')
+    c.execute("""\
+        UPDATE lalist SET fanarttv_has_art =
+            (SELECT lalist_bk.fanarttv_has_art FROM lalist_bk
+                WHERE lalist_bk.musicbrainz_artistid = lalist.musicbrainz_artistid )
+            WHERE EXISTS ( SELECT * FROM lalist_bk WHERE lalist_bk.musicbrainz_artistid = lalist.musicbrainz_artistid )
+    """)
+    c.execute("""\
+        UPDATE local_artists SET fanarttv_has_art =
+            (SELECT local_artists_bk.fanarttv_has_art FROM local_artists_bk
+                WHERE local_artists_bk.musicbrainz_artistid = local_artists.musicbrainz_artistid )
+            WHERE EXISTS ( SELECT * FROM local_artists_bk
+                WHERE local_artists_bk.musicbrainz_artistid = local_artists.musicbrainz_artistid )
+    """)
+    c.execute("DROP table IF EXISTS lalist_bk")  # drop local album artists backup table
+    c.execute("DROP table IF EXISTS local_artists_bk")
     conn.commit()
     c.close()
     restore_user_updates()
