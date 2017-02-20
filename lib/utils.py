@@ -15,7 +15,7 @@ import cdam
 from file_item import Thumbnails
 
 __cdam__ = cdam.CDAM()
-__settings__ = cdam.Settings()
+__cfg__ = cdam.Settings()
 __lang__ = __cdam__.getLocalizedString
 
 dialog = xbmcgui.DialogProgress()
@@ -24,15 +24,15 @@ dialog = xbmcgui.DialogProgress()
 def change_characters(text):
     original = list(text)
     final = []
-    if __settings__.enable_replace_illegal():
-        replace_character = __settings__.replace_character()
+    if __cfg__.enable_replace_illegal():
+        replace_character = __cfg__.replace_character()
         for i in original:
-            if i in __settings__.illegal_characters():
+            if i in __cfg__.illegal_characters():
                 final.append(replace_character)
             else:
                 final.append(i)
         temp = "".join(final)
-        if temp.endswith(".") and __settings__.change_period_atend():
+        if temp.endswith(".") and __cfg__.change_period_atend():
             text = temp[:len(temp) - 1] + replace_character
         else:
             text = temp
@@ -266,7 +266,7 @@ def dialog_msg(action,
                 msg = line1
             else:
                 msg = line1 + ': ' + line2
-            if __settings__.notify_in_background():
+            if __cfg__.notify_in_background():
                 xbmc.executebuiltin("XBMC.Notification(%s, %s, 7500, %s)" % (heading, msg, __cdam__.file_icon()))
 
 

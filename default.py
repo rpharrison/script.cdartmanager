@@ -17,22 +17,15 @@ from lib.utils import settings_to_log, get_unicode, change_characters, log, dial
 from lib.db import get_local_artists_db, get_local_albums_db, update_database, retrieve_album_details_full, \
     upgrade_db, refresh_db
 from lib.jsonrpc_calls import retrieve_album_details, retrieve_artist_details, get_fanart_path, get_thumbnail_path
-from lib.musicbrainz_utils import get_musicbrainz_artist_id
+# from lib.musicbrainz_utils import get_musicbrainz_artist_id
 from lib.fanarttv_scraper import first_check, remote_banner_list, remote_hdlogo_list, \
     remote_cdart_list, remote_coverart_list, remote_fanart_list, remote_clearlogo_list, \
     remote_artistthumb_list
 
 __cdam__ = cdam.CDAM()
-__settings__ = cdam.Settings()
+__cfg__ = cdam.Settings()
 __lang__ = __cdam__.getLocalizedString
 
-__addon__ = __cdam__.getAddon()
-__addon_path__ = __cdam__.path()
-
-enable_all_artists = __settings__.enable_all_artists()
-music_path = __settings__.path_music_path()
-
-addon_work_folder = __cdam__.path_profile()
 addon_db = __cdam__.file_addon_db()
 addon_db_crash = __cdam__.file_addon_db_crash()
 
@@ -54,8 +47,8 @@ def artist_musicbrainz_id(artist_id, artist_mbid):
     artist_details = retrieve_artist_details(artist_id)
     artist_ = {}
     if not artist_details["musicbrainzartistid"] or not artist_mbid:
-        name, artist_["musicbrainz_artistid"], sortname = get_musicbrainz_artist_id(
-            get_unicode(artist_details["label"]))
+        # name, artist_["musicbrainz_artistid"], sortname = get_musicbrainz_artist_id(
+        #     get_unicode(artist_details["label"]))
         artist_["name"] = get_unicode(artist_details["label"])
     else:
         artist_["name"] = get_unicode(artist_details["label"])
@@ -151,12 +144,12 @@ def update_xbmc_thumbnails(background=False):
                    line2=" %s %s" % (__lang__(32038), get_unicode(artist_["name"])), background=background)
         xbmc_thumbnail_path = ""
         xbmc_fanart_path = ""
-        fanart_path = os.path.join(music_path, change_characters(artist_["name"]), fanart) \
-            .replace("\\\\", "\\")
-        artistthumb_path = os.path.join(music_path, change_characters(artist_["name"]), artistthumb) \
-            .replace("\\\\", "\\")
-        artistthumb_rename = os.path.join(music_path, change_characters(artist_["name"]), artistthumb_temp) \
-            .replace("\\\\", "\\")
+        fanart_path = os.path.join(__cfg__.path_music_path(),
+                                   change_characters(artist_["name"]), fanart).replace("\\\\", "\\")
+        artistthumb_path = os.path.join(__cfg__.path_music_path(),
+                                        change_characters(artist_["name"]), artistthumb).replace("\\\\", "\\")
+        artistthumb_rename = os.path.join(__cfg__.path_music_path(),
+                                          change_characters(artist_["name"]), artistthumb_temp).replace("\\\\", "\\")
         if xbmcvfs.exists(artistthumb_rename):
             xbmcvfs.rename(artistthumb_rename, artistthumb_path)
         if xbmcvfs.exists(fanart_path):
@@ -233,8 +226,8 @@ if __name__ == "__main__":
     log("Looking for settings.xml", xbmc.LOGNOTICE)
     if not xbmcvfs.exists(__cdam__.file_settings_xml()):  # Open Settings if settings.xml does not exists
         log("settings.xml File not found, creating path and opening settings", xbmc.LOGNOTICE)
-        xbmcvfs.mkdirs(addon_work_folder)
-        __addon__.openSettings()
+        xbmcvfs.mkdirs(__cdam__.path_profile())
+        __cfg__.open()
         soft_exit = True
 
     settings_to_log(__cdam__.file_settings_xml())
@@ -257,7 +250,7 @@ if __name__ == "__main__":
 
     if not soft_exit:
         try:
-            if enable_all_artists:
+            if __cfg__.enable_all_artists():
                 xbmcgui.Window(10000).setProperty("cdart_manager_allartist", "True")
             else:
                 xbmcgui.Window(10000).setProperty("cdart_manager_allartist", "False")
@@ -270,7 +263,7 @@ if __name__ == "__main__":
                 xbmcgui.Window(10000).setProperty("cdartmanager_update", "True")
                 local_album_count, local_artist_count, local_cdart_count = refresh_db(background=True)
                 local_artists = get_local_artists_db(mode="album_artists")
-                if enable_all_artists:
+                if __cfg__.enable_all_artists():
                     all_artists = get_local_artists_db(mode="all_artists")
                 else:
                     all_artists = []
@@ -279,7 +272,7 @@ if __name__ == "__main__":
             elif script_mode in ("autocdart", "autocover", "autofanart", "autologo",
                                  "autothumb", "autobanner", "autoall", "update"):
                 local_artists = get_local_artists_db(mode="album_artists")
-                if enable_all_artists:
+                if __cfg__.enable_all_artists():
                     all_artists = get_local_artists_db(mode="all_artists")
                 else:
                     all_artists = []
@@ -304,7 +297,8 @@ if __name__ == "__main__":
                 elif script_mode == "autobanner":
                     log("Start method - Autodownload Artist Music Banners in background", xbmc.LOGNOTICE)
                     artwork_type = "musicbanner"
-                if artwork_type in ("fanart", "clearlogo", "artistthumb", "musicbanner") and enable_all_artists:
+                if artwork_type in ("fanart", "clearlogo", "artistthumb", "musicbanner") \
+                        and __cfg__.enable_all_artists():
                     download_count, successfully_downloaded = download.auto_download(artwork_type, all_artists,
                                                                                      background=True)
                 else:
@@ -317,7 +311,7 @@ if __name__ == "__main__":
                 xbmcgui.Window(10000).setProperty("cdart_manager_update", "True")
                 update_database(background=True)
                 local_artists = get_local_artists_db(mode="album_artists")
-                if enable_all_artists:
+                if __cfg__.enable_all_artists():
                     all_artists = get_local_artists_db(mode="all_artists")
                 else:
                     all_artists = []
@@ -331,7 +325,8 @@ if __name__ == "__main__":
                 for artwork_type in ("cdart", "cover", "fanart", "clearlogo", "artistthumb", "musicbanner"):
                     log("Start method - Autodownload %s in background" % artwork_type, xbmc.LOGNOTICE)
                     download_count = 0
-                    if artwork_type in ("fanart", "clearlogo", "artistthumb", "musicbanner") and enable_all_artists:
+                    if artwork_type in ("fanart", "clearlogo", "artistthumb", "musicbanner") \
+                            and __cfg__.enable_all_artists():
                         download_count, successfully_downloaded = download.auto_download(artwork_type, all_artists,
                                                                                          background=True)
                     elif artwork_type:
@@ -371,10 +366,9 @@ if __name__ == "__main__":
                 else:
                     log("A Database ID or MusicBrainz ID needed")
             elif script_mode == "normal":
-                log("Addon Work Folder: %s" % addon_work_folder, xbmc.LOGNOTICE)
+                log("Addon Work Folder: %s" % __cdam__.path_profile(), xbmc.LOGNOTICE)
                 log("Addon Database: %s" % addon_db, xbmc.LOGNOTICE)
                 log("Addon settings: %s" % __cdam__.file_settings_xml(), xbmc.LOGNOTICE)
-                query = "SELECT version FROM counts"
                 if xbmcgui.Window(10000).getProperty(
                         "cdart_manager_update") == "True":
                     # Check to see if skin property is set, if it is, gracefully exit the script
@@ -413,7 +407,7 @@ if __name__ == "__main__":
                     try:
                         conn_l = sqlite3.connect(addon_db)
                         c = conn_l.cursor()
-                        c.execute(query)
+                        c.execute("SELECT version FROM counts")
                         version = c.fetchall()
                         c.close()
                         if version[0][0] == cdam.Constants.db_version():
@@ -432,13 +426,12 @@ if __name__ == "__main__":
                             log("# unable to remove folder", xbmc.LOGNOTICE)
                             log("# Error: %s" % e.__class__.__name__, xbmc.LOGNOTICE)
                             script_fail = True
-                path = __addon__.getAddonInfo('path')
                 if not script_fail and not background_db:
                     if rebuild:
                         local_album_count, local_artist_count, local_cdart_count = refresh_db(True)
                     elif not rebuild and not soft_exit:
                         try:
-                            ui = gui.GUI("script-cdartmanager.xml", __addon__.getAddonInfo('path'))
+                            ui = gui.GUI("script-cdartmanager.xml", __cdam__.path())
                             xbmc.sleep(2000)
                             ui.doModal()
                             del ui

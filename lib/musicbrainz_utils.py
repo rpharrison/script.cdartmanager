@@ -11,7 +11,7 @@ import xbmc
 from utils import get_html_source, unescape, log, get_unicode, smart_unicode
 
 __cdam__ = cdam.CDAM()
-__settings__ = cdam.Settings()
+__cfg__ = cdam.Settings()
 
 addon_db = __cdam__.file_addon_db()
 
@@ -33,9 +33,9 @@ release_group_id_check = '%s/ws/2/release-group/%s'
 
 mb_delay = 910
 server = 'http://musicbrainz.org'
-if not __settings__.use_musicbrainz():
-    server = __settings__.musicbrainz_server()
-    mb_delay = __settings__.mb_delay()
+if not __cfg__.use_musicbrainz():
+    server = __cfg__.musicbrainz_server()
+    mb_delay = __cfg__.mb_delay()
     if mb_delay < 1:
         mb_delay = 1
     mb_delay *= 100
@@ -321,12 +321,16 @@ def update_musicbrainzid(type_, info):
     artist_id = ""
     try:
         if type_ == "artist":  # available data info["local_id"], info["name"], info["distant_id"]
-            _, artist_id, sortname = get_musicbrainz_artist_id(info["name"])
+            _, artist_id, _ = get_musicbrainz_artist_id(info["name"])
             conn = sqlite3.connect(addon_db)
             c = conn.cursor()
-            c.execute('UPDATE alblist SET musicbrainz_artistid="%s" WHERE artist="%s"' % (artist_id, info["name"]))
+            c.execute("""\
+                UPDATE alblist SET musicbrainz_artistid=? WHERE artist=?
+            """, (artist_id, info["name"]))
             try:
-                c.execute('UPDATE lalist SET musicbrainz_artistid="%s" WHERE name="%s"' % (artist_id, info["name"]))
+                c.execute("""\
+                    UPDATE lalist SET musicbrainz_artistid=? WHERE name=?
+                """, (artist_id, info["name"]))
             except sqlite3.Error:
                 pass
             conn.commit()
@@ -336,7 +340,9 @@ def update_musicbrainzid(type_, info):
             album_id = album["id"]
             conn = sqlite3.connect(addon_db)
             c = conn.cursor()
-            c.execute("""UPDATE alblist SET musicbrainz_albumid='%s' WHERE title='%s'""" % (album_id, info["title"]))
+            c.execute("""\
+                UPDATE alblist SET musicbrainz_albumid=? WHERE title=?
+            """, (album_id, info["title"]))
             conn.commit()
             c.close()
     except Exception as e:

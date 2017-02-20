@@ -14,16 +14,15 @@ from fanarttv_scraper import remote_banner_list, remote_hdlogo_list, remote_cdar
     remote_coverart_list, remote_fanart_list, remote_clearlogo_list, remote_artistthumb_list
 from db import get_local_albums_db, artwork_search
 from utils import get_unicode, change_characters, log, dialog_msg, smart_unicode
-# from jsonrpc_calls import get_thumbnail_path, get_fanart_path
 
 __cdam__ = cdam.CDAM()
-__settings__ = cdam.Settings()
+__cfg__ = cdam.Settings()
 __lang__ = __cdam__.getLocalizedString
 addon_db = __cdam__.file_addon_db()
 resizeondownload = False  # disabled because fanart.tv API V3 doesn't deliver correct sizes
-music_path = __settings__.path_music_path()
-fanart_limit = __settings__.fanart_limit()
-enable_fanart_limit = __settings__.enable_fanart_limit()
+music_path = __cfg__.path_music_path()
+fanart_limit = __cfg__.fanart_limit()
+enable_fanart_limit = __cfg__.enable_fanart_limit()
 tempgfx_folder = __cdam__.path_temp_gfx()
 
 
@@ -38,39 +37,6 @@ def check_size(path, _type, size_w, size_h):
     else:
         log("size check n.a. in new fanart.tv API, returning True for %s" % source)
         return True
-
-
-# # first copy from source to work directory since Python does not support SMB://
-#    file_name = get_filename(type, path, "auto")
-#    destination = os.path.join(addon_work_folder, "temp", file_name)
-#    source = os.path.join(path, file_name)
-#    log("Checking Size", xbmc.LOGDEBUG)
-#    if exists(source):
-#        file_copy(source, destination)
-#    else:
-#        return True
-#    try:
-#        # Helix: PIL is not available in Helix 14.1 on Android
-#        if (pil_is_available):
-#            # Helix: not really a Helix problem but file cannot be removed after Image.open locking it
-#            with open(str(destination), 'rb') as destf:
-#                artwork = Image.open(destf)
-#            log("Image Size: %s px(W) X %s px(H)" % (artwork.size[0], artwork.size[1]), xbmc.LOGDEBUG)
-#            if artwork.size[0] < size_w and artwork.size[
-#                1] < size_h:  # if image is smaller than 1000 x 1000 and the image on fanart.tv = 1000
-#                delete_file(destination)
-#                log("Image is smaller", xbmc.LOGDEBUG)
-#                return True
-#            else:
-#                delete_file(destination)
-#                log("Image is same size or larger", xbmc.LOGDEBUG)
-#                return False
-#        else:
-#            log("PIL not available, skipping size check", xbmc.LOGDEBUG)
-#            return False
-#    except:
-#        log("artwork does not exist. Source: %s" % source, xbmc.LOGDEBUG)
-#        return True
 
 
 def get_filename(type_, url, mode):
@@ -116,7 +82,7 @@ def make_music_path(artist):
                 return False
 
 
-def download_art(url_cdart, album, database_id, type_, mode, size, background=False):
+def download_art(url_cdart, album, type_, mode, background=False):
     log("Downloading artwork... ", xbmc.LOGDEBUG)
     download_success = False
 #    percent = 1
@@ -134,12 +100,6 @@ def download_art(url_cdart, album, database_id, type_, mode, size, background=Fa
         message = [__lang__(32026), __lang__(32025), "File: %s" % get_unicode(path),
                    "Url: %s" % get_unicode(url_cdart)]
         return message, download_success
-#    if type_ in ("artistthumb", "cover"):
-#        thumbnail_path = get_thumbnail_path(database_id, type_)
-#    else:
-#        thumbnail_path = ""
-#    if type_ == "fanart" and mode in ("manual", "single"):
-#        thumbnail_path = get_fanart_path(database_id, type_)
     if not xbmcvfs.exists(path):
         try:
             xbmcvfs.mkdirs(album["path"].replace("\\\\", "\\"))
@@ -190,9 +150,13 @@ def download_art(url_cdart, album, database_id, type_, mode, size, background=Fa
                 conn = sqlite3.connect(addon_db)
                 c = conn.cursor()
                 if type_ == "cdart":
-                    c.execute('''UPDATE alblist SET cdart="True" WHERE path="%s"''' % (get_unicode(album["path"])))
+                    c.execute("""\
+                        UPDATE alblist SET cdart="True" WHERE path=?
+                    """, (get_unicode(album["path"]),))
                 elif type_ == "cover":
-                    c.execute('''UPDATE alblist SET cover="True" WHERE path="%s"''' % (get_unicode(album["path"])))
+                    c.execute("""\
+                        UPDATE alblist SET cover="True" WHERE path=?
+                    """, (get_unicode(album["path"]),))
                 conn.commit()
                 c.close()
             except Exception as e:
@@ -308,14 +272,13 @@ def auto_download(type_, artist_list, background=False):
                         auto_art["path"] = path
                     if type_ == "fanart":
                         if enable_fanart_limit:
-                            fanart_dir, fanart_files = xbmcvfs.listdir(auto_art["path"])
+                            _, fanart_files = xbmcvfs.listdir(auto_art["path"])
                             fanart_number = len(fanart_files)
                             if fanart_number == fanart_limit:
                                 continue
                         if not xbmcvfs.exists(os.path.join(path, "fanart.jpg").replace("\\\\", "\\")):
                             message, d_success, final_destination, is_canceled = download_art(art[0], temp_art,
-                                                                                              artist["local_id"],
-                                                                                              "fanart", "single", 0,
+                                                                                              "fanart", "single",
                                                                                               background)
                         for artwork in art:
                             fanart = {}
@@ -328,8 +291,7 @@ def auto_download(type_, artist_list, background=False):
                                 continue
                             else:
                                 message, d_success, final_destination, is_canceled = download_art(artwork, auto_art,
-                                                                                                  artist["local_id"],
-                                                                                                  "fanart", "auto", 0,
+                                                                                                  "fanart", "auto",
                                                                                                   background)
                             if d_success == 1:
                                 if enable_fanart_limit:
@@ -352,27 +314,24 @@ def auto_download(type_, artist_list, background=False):
                                 continue
                             else:
                                 message, d_success, final_destination, is_canceled = download_art(artwork, auto_art,
-                                                                                                  artist["local_id"],
                                                                                                   "artistthumb", "auto",
-                                                                                                  0, background)
+                                                                                                  background)
                         elif type_ == "clearlogo":
                             if xbmcvfs.exists(os.path.join(auto_art["path"], "logo.png")):
                                 log("ClearLOGO already exists, skipping", xbmc.LOGDEBUG)
                                 continue
                             else:
                                 message, d_success, final_destination, is_canceled = download_art(artwork, auto_art,
-                                                                                                  artist["local_id"],
                                                                                                   "clearlogo", "auto",
-                                                                                                  0, background)
+                                                                                                  background)
                         elif type_ == "musicbanner":
                             if xbmcvfs.exists(os.path.join(auto_art["path"], "banner.jpg")):
                                 log("Music Banner already exists, skipping", xbmc.LOGDEBUG)
                                 continue
                             else:
                                 message, d_success, final_destination, is_canceled = download_art(artwork, auto_art,
-                                                                                                  artist["local_id"],
                                                                                                   "musicbanner", "auto",
-                                                                                                  0, background)
+                                                                                                  background)
                         if d_success == 1:
                             download_count += 1
                             auto_art["path"] = final_destination
@@ -416,9 +375,8 @@ def auto_download(type_, artist_list, background=False):
                                 if low_res:
                                     message, d_success, final_destination, is_canceled = download_art(art["picture"],
                                                                                                       album,
-                                                                                                      album["local_id"],
                                                                                                       key_label, "auto",
-                                                                                                      0, background)
+                                                                                                      background)
                                     if d_success == 1:
                                         download_count += 1
                                         album[key_label] = True
