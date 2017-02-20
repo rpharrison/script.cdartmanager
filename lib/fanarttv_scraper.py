@@ -18,8 +18,8 @@ __cdam__ = cdam.CDAM()
 __settings__ = cdam.Settings()
 __lang__ = __cdam__.getLocalizedString
 
-music_url_json = "http://webservice.fanart.tv/v3/music/%s?api_key=%s"
-new_music = "http://webservice.fanart.tv/v3/music/latest?api_key=%s&date=%s"
+music_url_json = "http://webservice.fanart.tv/v3/music/%s?api_key=%s&client_key=%s"
+new_music = "http://webservice.fanart.tv/v3/music/latest?api_key=%s&client_key=%s&date=%s"
 
 
 def remote_cdart_list(artist_menu):
@@ -140,7 +140,7 @@ def remote_artistthumb_list(artist_menu):
 def retrieve_fanarttv_json(id_):
     log("Retrieving artwork for artist id: %s" % id_, xbmc.LOGDEBUG)
     # url = music_url_json % (api_key, id, "all")
-    url = music_url_json % (id_, cdam.Constants.fanarttv_api_key())
+    url = music_url_json % (id_, cdam.Constants.fanarttv_api_key(), __settings__.client_key())
     # htmlsource = (get_html_source(url, id, save_file=False, overwrite=False)).encode('utf-8', 'ignore')
     htmlsource = get_html_source(url, "FTV_" + str(id_), save_file=True, overwrite=False)
     artist_artwork = []
@@ -233,7 +233,7 @@ def check_fanart_new_artwork(present_datecode):
     tempxml_folder = __cdam__.path_temp_xml()
     if xbmcvfs.exists(os.path.join(tempxml_folder, "%s.xml" % previous_datecode)):
         xbmcvfs.delete(os.path.join(tempxml_folder, "%s.xml" % previous_datecode))
-    url = new_music % (cdam.Constants.fanarttv_api_key(), str(previous_datecode))
+    url = new_music % (cdam.Constants.fanarttv_api_key(), __settings__.client_key(), str(previous_datecode))
     htmlsource = get_html_source(url, "FTV-NEW_" + str(present_datecode), save_file=True, overwrite=False)
     if htmlsource == "null":
         log("No new Artwork found on fanart.tv", xbmc.LOGNOTICE)
@@ -251,7 +251,7 @@ def check_fanart_new_artwork(present_datecode):
 
 
 def check_art(mbid):
-    url = music_url_json % (str(mbid), cdam.Constants.fanarttv_api_key())
+    url = music_url_json % (str(mbid), cdam.Constants.fanarttv_api_key(), __settings__.client_key())
     htmlsource = get_html_source(url, "FTV_" + str(mbid), save_file=True, overwrite=True)
     if htmlsource == "null":
         log("No artwork found for MBID: %s" % mbid, xbmc.LOGDEBUG)
@@ -266,7 +266,7 @@ def update_art(mbid, data, existing_has_art):
     has_art = existing_has_art
     for item in data:
         if item["id"] == mbid:
-            url = music_url_json % (str(mbid), cdam.Constants.fanarttv_api_key())
+            url = music_url_json % (str(mbid), cdam.Constants.fanarttv_api_key(), __settings__.client_key())
             has_art = "True"
             get_html_source(url, "FTV_" + str(mbid), save_file=True, overwrite=True)
             break

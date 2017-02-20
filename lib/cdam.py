@@ -207,6 +207,9 @@ class Settings(CDAMAddon):
     def fanart_limit(self):
         return self.__getSettingInt__("fanart_limit")
 
+    def client_key(self):
+        return self.__getSettingString__("client_key")
+
     # paths
 
     def path_music_path(self):

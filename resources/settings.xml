@@ -42,4 +42,14 @@
         <setting label="32106" type="bool" id="resizeondownload" default="false" enable="false"/>
         <setting label="32171" type="bool" id="enable_hdlogos" default="true" enable="false" />
     </category>
+    <category label="32250">
+    	<setting type="sep" />
+    	<setting label="32250" type="lsep" />
+    	<setting type="sep" />
+    	<setting label="" type="lsep" />
+    	<setting label="32251" type="text" id="client_key" />
+    	<setting type="sep" />
+    	<setting label="32252" type="lsep" />
+    	<setting label="32253" type="lsep" />
+    </category>
 </settings>
