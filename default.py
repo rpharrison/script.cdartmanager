@@ -5,22 +5,13 @@ import datetime
 import os
 import sys
 import traceback
-import sqlite3
 
 import xbmc
 import xbmcgui
 import xbmcvfs
 
 from lib import *
-
-from lib.utils import settings_to_log, get_unicode, change_characters, log, dialog_msg
-from lib.db import get_local_artists_db, get_local_albums_db, update_database, retrieve_album_details_full, \
-    upgrade_db, refresh_db
-from lib.jsonrpc_calls import retrieve_album_details, retrieve_artist_details, get_fanart_path, get_thumbnail_path
-# from lib.musicbrainz_utils import get_musicbrainz_artist_id
-from lib.fanarttv_scraper import first_check, remote_banner_list, remote_hdlogo_list, \
-    remote_cdart_list, remote_coverart_list, remote_fanart_list, remote_clearlogo_list, \
-    remote_artistthumb_list
+from lib.utils import log, dialog_msg
 
 __cdam__ = cdam.CDAM()
 __cfg__ = cdam.Settings()
@@ -44,14 +35,12 @@ def clear_skin_properties():
 
 
 def artist_musicbrainz_id(artist_id, artist_mbid):
-    artist_details = retrieve_artist_details(artist_id)
+    artist_details = jsonrpc_calls.retrieve_artist_details(artist_id)
     artist_ = {}
     if not artist_details["musicbrainzartistid"] or not artist_mbid:
-        # name, artist_["musicbrainz_artistid"], sortname = get_musicbrainz_artist_id(
-        #     get_unicode(artist_details["label"]))
-        artist_["name"] = get_unicode(artist_details["label"])
+        artist_["name"] = utils.get_unicode(artist_details["label"])
     else:
-        artist_["name"] = get_unicode(artist_details["label"])
+        artist_["name"] = utils.get_unicode(artist_details["label"])
         if artist_mbid:
             artist_["musicbrainz_artistid"] = artist_mbid
         else:
@@ -60,9 +49,9 @@ def artist_musicbrainz_id(artist_id, artist_mbid):
 
 
 def album_musicbrainz_id(album_id):
-    album_list = retrieve_album_details(album_id)
+    album_list = jsonrpc_calls.retrieve_album_details(album_id)
     if album_list:
-        album_detail_list = retrieve_album_details_full(album_list, 1, background=True)
+        album_detail_list = db.jsonrpc_calls.retrieve_album_details_full(album_list, 1, background=True)
         return album_detail_list
     else:
         return []
@@ -73,9 +62,9 @@ def select_artwork(details, media_type_):
     selection = None
     if media_type_ in ("cdart", "cover"):
         if media_type_ == "cdart":
-            artwork = remote_cdart_list(details)
+            artwork = ftv_scraper.remote_cdart_list(details)
         else:
-            artwork = remote_coverart_list(details)
+            artwork = ftv_scraper.remote_coverart_list(details)
         if artwork:
             for art in artwork:
                 if art["musicbrainz_albumid"] == details["musicbrainz_albumid"]:
@@ -88,15 +77,15 @@ def select_artwork(details, media_type_):
                        background=False)
     else:
         if media_type_ == "fanart":
-            artwork = remote_fanart_list(details)
+            artwork = ftv_scraper.remote_fanart_list(details)
         elif media_type_ == "clearlogo":
-            artwork = remote_clearlogo_list(details)
+            artwork = ftv_scraper.remote_clearlogo_list(details)
         elif media_type_ == "hdlogo":
-            artwork = remote_hdlogo_list(details)
+            artwork = ftv_scraper.remote_hdlogo_list(details)
         elif media_type_ == "artistthumb":
-            artwork = remote_artistthumb_list(details)
+            artwork = ftv_scraper.remote_artistthumb_list(details)
         elif media_type_ == "musicbanner":
-            artwork = remote_banner_list(details)
+            artwork = ftv_scraper.remote_banner_list(details)
         if artwork:
             for art in artwork:
                 print art
@@ -124,11 +113,11 @@ def update_xbmc_thumbnails(background=False):
     xbmc.sleep(1000)
     dialog_msg("create", heading=__lang__(32042), background=background)
     # Artists
-    artists = get_local_artists_db(mode="local_artists")
+    artists = db.get_local_artists_db(mode="local_artists")
     if not artists:
-        artists = get_local_artists_db(mode="album_artists")
+        artists = db.get_local_artists_db(mode="album_artists")
     # Albums
-    albums = get_local_albums_db("all artists", False)
+    albums = db.get_local_albums_db("all artists", False)
 
     count = 0
     for artist_ in artists:
@@ -141,21 +130,22 @@ def update_xbmc_thumbnails(background=False):
         if dialog_msg("iscanceled"):
             break
         dialog_msg("update", percent=percent, line1=__lang__(32112),
-                   line2=" %s %s" % (__lang__(32038), get_unicode(artist_["name"])), background=background)
+                   line2=" %s %s" % (__lang__(32038), utils.get_unicode(artist_["name"])), background=background)
         xbmc_thumbnail_path = ""
         xbmc_fanart_path = ""
         fanart_path = os.path.join(__cfg__.path_music_path(),
-                                   change_characters(artist_["name"]), fanart).replace("\\\\", "\\")
+                                   utils.change_characters(artist_["name"]), fanart).replace("\\\\", "\\")
         artistthumb_path = os.path.join(__cfg__.path_music_path(),
-                                        change_characters(artist_["name"]), artistthumb).replace("\\\\", "\\")
+                                        utils.change_characters(artist_["name"]), artistthumb).replace("\\\\", "\\")
         artistthumb_rename = os.path.join(__cfg__.path_music_path(),
-                                          change_characters(artist_["name"]), artistthumb_temp).replace("\\\\", "\\")
+                                          utils.change_characters(artist_["name"]),
+                                          artistthumb_temp).replace("\\\\", "\\")
         if xbmcvfs.exists(artistthumb_rename):
             xbmcvfs.rename(artistthumb_rename, artistthumb_path)
         if xbmcvfs.exists(fanart_path):
-            xbmc_fanart_path = get_fanart_path(artist_["local_id"], "artist")
+            xbmc_fanart_path = jsonrpc_calls.get_fanart_path(artist_["local_id"], "artist")
         elif xbmcvfs.exists(artistthumb_path):
-            xbmc_thumbnail_path = get_thumbnail_path(artist_["local_id"], "artist")
+            xbmc_thumbnail_path = jsonrpc_calls.get_thumbnail_path(artist_["local_id"], "artist")
         else:
             continue
         if xbmc_fanart_path:  # copy to XBMC supplied fanart path
@@ -173,11 +163,11 @@ def update_xbmc_thumbnails(background=False):
         if dialog_msg("iscanceled"):
             break
         dialog_msg("update", percent=percent, line1=__lang__(32042), line2=__lang__(32112),
-                   line3=" %s %s" % (__lang__(32039), get_unicode(album_["title"])), background=background)
+                   line3=" %s %s" % (__lang__(32039), utils.get_unicode(album_["title"])), background=background)
         xbmc_thumbnail_path = ""
         coverart_path = os.path.join(album_["path"], albumthumb).replace("\\\\", "\\")
         if xbmcvfs.exists(coverart_path):
-            xbmc_thumbnail_path = get_thumbnail_path(album_["local_id"], "album")
+            xbmc_thumbnail_path = jsonrpc_calls.get_thumbnail_path(album_["local_id"], "album")
         if xbmc_thumbnail_path:
             thumbnail_copy(coverart_path, xbmc_thumbnail_path, "album cover")
         count += 1
@@ -230,7 +220,7 @@ if __name__ == "__main__":
         __cfg__.open()
         soft_exit = True
 
-    settings_to_log(__cdam__.file_settings_xml())
+    utils.settings_to_log(__cdam__.file_settings_xml())
 
     #    try:
     #        recognized_ = __settings__.color_recognized()
@@ -261,19 +251,19 @@ if __name__ == "__main__":
             if script_mode == "database":
                 log("Start method - Build Database in background", xbmc.LOGNOTICE)
                 xbmcgui.Window(10000).setProperty("cdartmanager_update", "True")
-                local_album_count, local_artist_count, local_cdart_count = refresh_db(background=True)
-                local_artists = get_local_artists_db(mode="album_artists")
+                local_album_count, local_artist_count, local_cdart_count = db.refresh_db(background=True)
+                local_artists = db.get_local_artists_db(mode="album_artists")
                 if __cfg__.enable_all_artists():
-                    all_artists = get_local_artists_db(mode="all_artists")
+                    all_artists = db.get_local_artists_db(mode="all_artists")
                 else:
                     all_artists = []
-                first_check(all_artists, local_artists, background=True)
+                ftv_scraper.first_check(all_artists, local_artists, background=True)
                 xbmcgui.Window(10000).setProperty("cdartmanager_update", "False")
             elif script_mode in ("autocdart", "autocover", "autofanart", "autologo",
                                  "autothumb", "autobanner", "autoall", "update"):
-                local_artists = get_local_artists_db(mode="album_artists")
+                local_artists = db.get_local_artists_db(mode="album_artists")
                 if __cfg__.enable_all_artists():
-                    all_artists = get_local_artists_db(mode="all_artists")
+                    all_artists = db.get_local_artists_db(mode="all_artists")
                 else:
                     all_artists = []
             if script_mode in ("autocdart", "autocover", "autofanart", "autologo", "autothumb", "autobanner"):
@@ -309,15 +299,15 @@ if __name__ == "__main__":
             elif script_mode == "update":
                 log("Start method - Update Database in background", xbmc.LOGNOTICE)
                 xbmcgui.Window(10000).setProperty("cdart_manager_update", "True")
-                update_database(background=True)
-                local_artists = get_local_artists_db(mode="album_artists")
+                db.update_database(background=True)
+                local_artists = db.get_local_artists_db(mode="album_artists")
                 if __cfg__.enable_all_artists():
-                    all_artists = get_local_artists_db(mode="all_artists")
+                    all_artists = db.get_local_artists_db(mode="all_artists")
                 else:
                     all_artists = []
                 d = datetime.datetime.utcnow()
                 present_datecode = calendar.timegm(d.utctimetuple())
-                first_check(all_artists, local_artists, background=True, update_db=True)
+                ftv_scraper.first_check(all_artists, local_artists, background=True, update_db=True)
             elif script_mode == "autoall":
                 xbmcgui.Window(10000).setProperty("cdart_manager_running", "True")
                 log("Start method - Autodownload all artwork in background", xbmc.LOGNOTICE)
@@ -405,16 +395,12 @@ if __name__ == "__main__":
                 elif not first_run and not background_db and not soft_exit and not script_fail:  # Test database version
                     log("Looking for database version: %s" % cdam.Constants.db_version(), xbmc.LOGNOTICE)
                     try:
-                        conn_l = sqlite3.connect(addon_db)
-                        c = conn_l.cursor()
-                        c.execute("SELECT version FROM counts")
-                        version = c.fetchall()
-                        c.close()
-                        if version[0][0] == cdam.Constants.db_version():
+                        version = db.get_db_version()
+                        if version == cdam.Constants.db_version():
                             log("Database matched", xbmc.LOGNOTICE)
                         else:
                             log("Old version found, upgrading database", xbmc.LOGNOTICE)
-                            upgrade_db(version[0][0])
+                            db.upgrade_db(version)
                     except StandardError, e:
                         traceback.print_exc()
                         log("# Error: %s" % e.__class__.__name__, xbmc.LOGNOTICE)
@@ -428,7 +414,7 @@ if __name__ == "__main__":
                             script_fail = True
                 if not script_fail and not background_db:
                     if rebuild:
-                        local_album_count, local_artist_count, local_cdart_count = refresh_db(True)
+                        local_album_count, local_artist_count, local_cdart_count = db.refresh_db(True)
                     elif not rebuild and not soft_exit:
                         try:
                             ui = gui.GUI("script-cdartmanager.xml", __cdam__.path())

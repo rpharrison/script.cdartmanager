@@ -5,14 +5,16 @@ import os
 import re
 import time
 import traceback
-import sqlite3
+
+import sqlite3 as sql
+from sqlite3 import Error as SQLError
 
 import xbmc
 import xbmcvfs
 
 import cdam
 
-from musicbrainz_utils import get_musicbrainz_artist_id, get_musicbrainz_album, mbid_check, \
+from mb_utils import get_musicbrainz_artist_id, get_musicbrainz_album, mbid_check, \
     get_musicbrainz_release_group
 from utils import get_unicode, log, dialog_msg
 from jsonrpc_calls import get_all_local_artists, retrieve_album_list, retrieve_album_details, get_album_path
@@ -24,6 +26,10 @@ __lang__ = __cdam__.getLocalizedString
 addon_db = __cdam__.file_addon_db()
 
 
+def connect():
+    return sql.connect(addon_db)
+
+
 def upgrade_db(from_version):
     log("Found database version %s, upgrading to current" % from_version, xbmc.LOGNOTICE)
     # there is no upgrade path at the moment
@@ -31,7 +37,7 @@ def upgrade_db(from_version):
 
 def user_updates(details, type_):
     log("Storing User edit", xbmc.LOGNOTICE)
-    conn = sqlite3.connect(addon_db)
+    conn = connect()
     c = conn.cursor()
     c.execute("""\
         CREATE table IF NOT EXISTS artist_updates(local_id INTEGER, name TEXT, musicbrainz_artistid TEXT)
@@ -58,28 +64,28 @@ def user_updates(details, type_):
                 c.execute("""\
                     INSERT INTO artist_updates(local_id, name, musicbrainz_artistid) values (?, ?, ?)
                 """, (details["local_id"], details["name"], details["musicbrainz_artistid"]))
-        except sqlite3.Error:
+        except SQLError:
             log("Error updating artist_updates table", xbmc.LOGERROR)
             traceback.print_exc()
         try:
             c.execute("""\
                 UPDATE lalist SET musicbrainz_artistid=?, name=? WHERE local_id=?
             """, (details["musicbrainz_artistid"], details["name"], details["local_id"]))
-        except sqlite3.Error:
+        except SQLError:
             log("Error updating album artist table", xbmc.LOGERROR)
             traceback.print_exc()
         try:
             c.execute("""\
                 UPDATE alblist SET musicbrainz_artistid=?, artist=? WHERE artist=?
             """, (details["musicbrainz_artistid"], details["name"], details["name"]))
-        except sqlite3.Error:
+        except SQLError:
             log("Error updating album table", xbmc.LOGERROR)
             traceback.print_exc()
         try:
             c.execute("""\
                 UPDATE local_artists SET musicbrainz_artistid=?, name=? WHERE local_id=?
             """, (details["musicbrainz_artistid"], details["name"], details["local_id"]))
-        except sqlite3.Error:
+        except SQLError:
             log("Error updating local artist table", xbmc.LOGERROR)
             traceback.print_exc()
     if type_ == "album":
@@ -104,7 +110,7 @@ def user_updates(details, type_):
                     values (?, ?, ?, ?, ?, ?)
                 """, (details["local_id"], get_unicode(details["title"]), get_unicode(details["artist"]),
                       get_unicode(details["path"]), details["musicbrainz_albumid"], details["musicbrainz_artistid"]))
-        except sqlite3.Error:
+        except SQLError:
             log("Error updating album_updates table", xbmc.LOGERROR)
             traceback.print_exc()
         try:
@@ -113,7 +119,7 @@ def user_updates(details, type_):
                 WHERE album_id=? and path=?
             """, (get_unicode(details["artist"]), get_unicode(details["title"]), details["musicbrainz_albumid"],
                   details["musicbrainz_artistid"], details["local_id"], get_unicode(details["path"])))
-        except sqlite3.Error:
+        except SQLError:
             log("Error updating album table", xbmc.LOGERROR)
             traceback.print_exc()
     conn.commit()
@@ -122,7 +128,7 @@ def user_updates(details, type_):
 
 def restore_user_updates():
     try:
-        conn = sqlite3.connect(addon_db)
+        conn = connect()
         c = conn.cursor()
         c.execute("""\
             UPDATE lalist SET
@@ -154,7 +160,7 @@ def restore_user_updates():
         """)
         conn.commit()
         c.close()
-    except sqlite3.Error:
+    except SQLError:
         traceback.print_exc()
 
 
@@ -385,7 +391,7 @@ def store_alblist(local_album_list, background=False):
     log("Storing alblist", xbmc.LOGDEBUG)
     album_count = 0
     cdart_existing = 0
-    conn = sqlite3.connect(addon_db)
+    conn = connect()
     c = conn.cursor()
     percent = 0
     try:
@@ -434,7 +440,7 @@ def store_alblist(local_album_list, background=False):
 
 def recount_cdarts():
     log("Recounting cdARTS", xbmc.LOGDEBUG)
-    conn = sqlite3.connect(addon_db)
+    conn = connect()
     c = conn.cursor()
     c.execute("""\
         SELECT count(*) FROM alblist where cdart='True'
@@ -447,7 +453,7 @@ def recount_cdarts():
 
 def store_lalist(local_artist_list):
     log("Storing lalist", xbmc.LOGDEBUG)
-    conn = sqlite3.connect(addon_db)
+    conn = connect()
     c = conn.cursor()
     artist_count = 0
     c.execute("""\
@@ -483,7 +489,7 @@ def store_lalist(local_artist_list):
 
 
 def retrieve_fanarttv_datecode():
-    conn_l = sqlite3.connect(addon_db)
+    conn_l = connect()
     c = conn_l.cursor()
     c.execute("""\
         SELECT datecode FROM counts
@@ -502,7 +508,7 @@ def store_fanarttv_datecode(datecode):
 def retrieve_distinct_album_artists():
     log("Retrieving Distinct Album Artist", xbmc.LOGDEBUG)
     album_artists = []
-    conn = sqlite3.connect(addon_db)
+    conn = connect()
     c = conn.cursor()
     c.execute("""\
         SELECT DISTINCT artist, musicbrainz_artistid FROM alblist
@@ -523,13 +529,13 @@ def store_counts(local_artists_count, artist_count, album_count, cdart_existing,
     log("    Local Artist Count: %s" % local_artists_count, xbmc.LOGNOTICE)
     log("    cdARTs Existing Count: %s" % cdart_existing, xbmc.LOGNOTICE)
     log("    Unix Date Code: %s" % datecode, xbmc.LOGNOTICE)
-    conn = sqlite3.connect(addon_db)
+    conn = connect()
     c = conn.cursor()
     try:
         c.execute("""\
             DROP table IF EXISTS counts
         """)
-    except sqlite3.Error:
+    except sql.Error:
         # table missing
         traceback.print_exc()
     try:
@@ -537,7 +543,7 @@ def store_counts(local_artists_count, artist_count, album_count, cdart_existing,
             CREATE TABLE counts(local_artists INTEGER, artists INTEGER,
                                 albums INTEGER, cdarts INTEGER, version TEXT, datecode INTEGER)
         """)
-    except sqlite3.Error:
+    except SQLError:
         traceback.print_exc()
     if datecode == 0:
         c.execute("""\
@@ -605,7 +611,7 @@ def database_setup(background=False):
         log("XBMC Music Library does not exist, aborting database creation", xbmc.LOGDEBUG)
         return album_count, artist_count, cdart_existing
     dialog_msg("create", heading=__lang__(32021), line1=__lang__(20186), background=background)
-    conn = sqlite3.connect(addon_db)
+    conn = connect()
     c = conn.cursor()
     c.execute("""\
         CREATE TABLE counts(local_artists INTEGER, artists INTEGER, albums INTEGER,
@@ -652,7 +658,7 @@ def database_setup(background=False):
 def get_local_albums_db(artist_name, background=False):
     log("Retrieving Local Albums Database", xbmc.LOGDEBUG)
     local_album_list = []
-    conn_l = sqlite3.connect(addon_db)
+    conn_l = connect()
     c = conn_l.cursor()
     try:
         if artist_name == "all artists":
@@ -667,13 +673,13 @@ def get_local_albums_db(artist_name, background=False):
                     SELECT DISTINCT album_id, title, artist, path, cdart, cover, disc, musicbrainz_albumid,
                     musicbrainz_artistid FROM alblist WHERE artist=? ORDER BY title ASC
                 """, (artist_name,))
-            except sqlite3.OperationalError:
+            except SQLError:
                 try:
                     c.execute("""\
                         SELECT DISTINCT album_id, title, artist, path, cdart, cover, disc, musicbrainz_albumid,
                         musicbrainz_artistid FROM alblist WHERE artist=? ORDER BY title ASC
                     """, (artist_name,))
-                except sqlite3.OperationalError:
+                except SQLError:
                     c.execute("""\
                         SELECT DISTINCT album_id, title, artist, path, cdart, cover, disc, musicbrainz_albumid,
                         musicbrainz_artistid FROM alblist WHERE artist=? ORDER BY title ASC
@@ -713,7 +719,7 @@ def get_local_artists_db(mode="album_artists"):
         query = """\
             SELECT DISTINCT local_id, name, musicbrainz_artistid, fanarttv_has_art FROM local_artists ORDER BY name ASC
         """
-    conn_l = sqlite3.connect(addon_db)
+    conn_l = connect()
     c = conn_l.cursor()
     try:
         c.execute(query)
@@ -735,7 +741,7 @@ def get_local_artists_db(mode="album_artists"):
 
 def store_local_artist_table(artist_list, background=False):
     count = 0
-    conn = sqlite3.connect(addon_db)
+    conn = connect()
     c = conn.cursor()
     dialog_msg("create", heading=__lang__(32124), line1=__lang__(20186), background=background)
     c.execute("""\
@@ -776,7 +782,7 @@ def build_local_artist_table(background=False):
     local_album_artist_list = get_local_artists_db()
     count = 1
     total = len(local_artist_list)
-    conn = sqlite3.connect(addon_db)
+    conn = connect()
     c = conn.cursor()
     dialog_msg("create", heading=__lang__(32124), line1=__lang__(20186), background=background)
     try:
@@ -826,7 +832,7 @@ def build_local_artist_table(background=False):
 # retrieves counts for local album, artist and cdarts
 def new_local_count():
     log("Counting Local Artists, Albums and cdARTs", xbmc.LOGDEBUG)
-    conn_l = sqlite3.connect(addon_db)
+    conn_l = connect()
     c = conn_l.cursor()
     try:
         local_artist_count = 0
@@ -874,7 +880,7 @@ def refresh_db(background=False):
                     log("Unable to delete Database", xbmc.LOGDEBUG)
             if xbmcvfs.exists(addon_db):
                 # if database file still exists even after trying to delete it. Wipe out its contents
-                conn = sqlite3.connect(addon_db)
+                conn = connect()
                 c = conn.cursor()
                 c.execute("""\
                     DROP table IF EXISTS counts
@@ -1156,7 +1162,7 @@ def update_database(background=False):
     if canceled:
         dialog_msg("close", background=background)
         return
-    conn = sqlite3.connect(addon_db)
+    conn = connect()
     c = conn.cursor()
     if xbmcvfs.exists(addon_db):  # if database file still exists even after trying to delete it. Wipe out its contents
         c.execute("""\
@@ -1226,7 +1232,7 @@ def update_database(background=False):
             log("Updating Addon's DB - Adding All Artists to Database", xbmc.LOGNOTICE)
             dialog_msg("create", heading=__lang__(32135), background=background)
             store_local_artist_table(combined_artists, background=background)
-    conn = sqlite3.connect(addon_db)
+    conn = connect()
     c = conn.cursor()
     # copy fanarttv_has_art values from backup tables if MBIDs match
     c.execute("""\
@@ -1271,3 +1277,172 @@ def backup_database():
     except Exception as e:
         log(e.message, xbmc.LOGERROR)
         log("Unable to make Database Backup", xbmc.LOGDEBUG)
+
+
+def unset_cdart(album):
+    conn = connect()
+    c = conn.cursor()
+    c.execute("""\
+        UPDATE alblist SET cdart=? WHERE title=?
+    """, (False, album))
+    conn.commit()
+    c.close()
+
+
+def get_db_version():
+    conn = connect()
+    c = conn.cursor()
+    c.execute("""\
+        SELECT version FROM counts
+    """)
+    version = c.fetchall()
+    c.close()
+    return version[0][0]
+
+
+def set_artist_mbid(artist_id, artist_name):
+    conn = connect()
+    c = conn.cursor()
+    c.execute("""\
+        UPDATE alblist SET musicbrainz_artistid=? WHERE artist=?
+    """, (artist_id, artist_name))
+    try:
+        c.execute("""\
+            UPDATE lalist SET musicbrainz_artistid=? WHERE name=?
+        """, (artist_id, artist_name))
+    except SQLError:
+        pass
+    conn.commit()
+    c.close()
+
+
+def update_artist_mbid(new_mbid, local_id, old_mbid=None, artist_name=None):
+    conn = connect()
+    c = conn.cursor()
+
+    # update artist by id
+    try:
+        c.execute("""\
+            UPDATE lalist SET musicbrainz_artistid=? WHERE local_id=?
+        """, (new_mbid, local_id))
+    except Exception as ex:
+        log(ex.message, xbmc.LOGDEBUG)
+        log("Error updating database(lalist)", xbmc.LOGERROR)
+        traceback.print_exc()
+
+    # update local artist by id
+    try:
+        c.execute("""\
+            UPDATE local_artists SET musicbrainz_artistid=? WHERE local_id=?
+        """, (new_mbid, local_id))
+    except Exception as ex:
+        log(ex.message, xbmc.LOGDEBUG)
+        log("Error updating database(local_artists)", xbmc.LOGERROR)
+        traceback.print_exc()
+
+    # update albums by mbid
+    if old_mbid is not None:
+        try:
+            c.execute("""\
+                UPDATE alblist SET musicbrainz_artistid=? WHERE musicbrainz_artistid=?
+            """, (new_mbid, old_mbid))
+        except Exception as ex:
+            log(ex.message, xbmc.LOGDEBUG)
+            log("Error updating database(lalist)", xbmc.LOGERROR)
+            traceback.print_exc()
+
+    # update albums by artist_name
+    if artist_name is not None:
+        try:
+            c.execute("""\
+                UPDATE alblist SET musicbrainz_artistid=? WHERE artist=?
+            """, (new_mbid, artist_name))
+        except Exception as ex:
+            log(ex.message, xbmc.LOGDEBUG)
+            log("Error updating database", xbmc.LOGERROR)
+            traceback.print_exc()
+
+    conn.commit()
+    c.close()
+
+
+def set_album_mbid(album_mbid, album_title):
+    conn = connect()
+    c = conn.cursor()
+    c.execute("""\
+        UPDATE alblist SET musicbrainz_albumid=? WHERE title=?
+    """, (album_mbid, album_title))
+    conn.commit()
+    c.close()
+
+
+def set_album_mbids(local_id, album_mbid, artist_mbid):
+    conn = connect()
+    c = conn.cursor()
+    try:
+        c.execute("""\
+            UPDATE alblist SET musicbrainz_albumid=?, musicbrainz_artistid=? WHERE album_id=?
+        """, (album_mbid, artist_mbid, local_id))
+    except Exception as ex:
+        log(ex.message, xbmc.LOGDEBUG)
+        log("Error updating database", xbmc.LOGERROR)
+        traceback.print_exc()
+    conn.commit()
+    c.close()
+
+
+def set_has_art(type_, album_path):
+    conn = connect()
+    c = conn.cursor()
+    if type_ == "cdart":
+        c.execute("""\
+            UPDATE alblist SET cdart="True" WHERE path=?
+        """, (album_path,))
+    elif type_ == "cover":
+        c.execute("""\
+            UPDATE alblist SET cover="True" WHERE path=?
+        """, (album_path,))
+    conn.commit()
+    c.close()
+
+
+def insert_unique(title, artist, path, cdart):
+    conn = connect()
+    c = conn.cursor()
+    c.execute("""\
+        insert into unqlist(title, artist, path, cdart) values (?, ?, ?, ?)
+    """, (title, artist, path, cdart))
+    conn.commit()
+    c.close()
+
+
+def manual_update_album(album_mbid, artist_mbid, local_id, path):
+    conn = connect()
+    c = conn.cursor()
+    try:
+        c.execute("""\
+            UPDATE alblist SET musicbrainz_albumid=?, musicbrainz_artistid=?
+            WHERE album_id=? and path=?
+        """, (album_mbid, artist_mbid, local_id, path))
+    except Exception as ex:
+        log(ex.message, xbmc.LOGDEBUG)
+        log("Error updating database(alblist)", xbmc.LOGERROR)
+        traceback.print_exc()
+    try:
+        c.execute("""\
+            UPDATE lalist SET musicbrainz_artistid=? WHERE local_id=?
+        """, (artist_mbid, local_id))
+    except Exception as ex:
+        log(ex.message, xbmc.LOGDEBUG)
+        log("Error updating database(lalist)", xbmc.LOGERROR)
+        traceback.print_exc()
+    try:
+        c.execute("""\
+            UPDATE local_artists SET musicbrainz_artistid=? WHERE local_id=?
+        """, (artist_mbid, local_id))
+    except Exception as ex:
+        log(ex.message, xbmc.LOGDEBUG)
+        log("Error updating database(local_artists)", xbmc.LOGERROR)
+        traceback.print_exc()
+    conn.commit()
+    c.close()

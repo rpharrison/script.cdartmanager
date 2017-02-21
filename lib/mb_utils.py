@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import re
-from sqlite3 import dbapi2 as sqlite3
 from traceback import print_exc
 from urllib import quote_plus
 
-import cdam
 import xbmc
+import cdam
+import db
 
 from utils import get_html_source, unescape, log, get_unicode, smart_unicode
 
@@ -316,35 +316,16 @@ def get_musicbrainz_artist_id(artist_search, limit=1, alias=False):
     return name, id_, sortname
 
 
-def update_musicbrainzid(type_, info):
+def update_musicbrainz_id(type_, info):
     log("Updating MusicBrainz ID", xbmc.LOGDEBUG)
     artist_id = ""
     try:
         if type_ == "artist":  # available data info["local_id"], info["name"], info["distant_id"]
             _, artist_id, _ = get_musicbrainz_artist_id(info["name"])
-            conn = sqlite3.connect(addon_db)
-            c = conn.cursor()
-            c.execute("""\
-                UPDATE alblist SET musicbrainz_artistid=? WHERE artist=?
-            """, (artist_id, info["name"]))
-            try:
-                c.execute("""\
-                    UPDATE lalist SET musicbrainz_artistid=? WHERE name=?
-                """, (artist_id, info["name"]))
-            except sqlite3.Error:
-                pass
-            conn.commit()
-            c.close()
+            db.set_artist_mbid(artist_id, info["name"])
         if type_ == "album":
-            album, discard = get_musicbrainz_album(info["title"], info["artist"], 0)
-            album_id = album["id"]
-            conn = sqlite3.connect(addon_db)
-            c = conn.cursor()
-            c.execute("""\
-                UPDATE alblist SET musicbrainz_albumid=? WHERE title=?
-            """, (album_id, info["title"]))
-            conn.commit()
-            c.close()
+            album, _ = get_musicbrainz_album(info["title"], info["artist"], 0)
+            db.set_album_mbid(album["id"], info["title"])
     except Exception as e:
         log(e.message, xbmc.LOGERROR)
         print_exc()

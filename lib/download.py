@@ -7,13 +7,12 @@ from traceback import print_exc
 import xbmc
 import xbmcvfs
 
-from sqlite3 import dbapi2 as sqlite3
 import cdam
+import db
+import utils
+import ftv_scraper
 
-from fanarttv_scraper import remote_banner_list, remote_hdlogo_list, remote_cdart_list, \
-    remote_coverart_list, remote_fanart_list, remote_clearlogo_list, remote_artistthumb_list
-from db import get_local_albums_db, artwork_search
-from utils import get_unicode, change_characters, log, dialog_msg, smart_unicode
+from utils import log, dialog_msg
 
 __cdam__ = cdam.CDAM()
 __cfg__ = cdam.Settings()
@@ -97,8 +96,8 @@ def download_art(url_cdart, album, type_, mode, background=False):
     path = os.path.join(album["path"].replace("\\\\", "\\"), '')
     if file_name == "unknown":
         log("Unknown Type ", xbmc.LOGDEBUG)
-        message = [__lang__(32026), __lang__(32025), "File: %s" % get_unicode(path),
-                   "Url: %s" % get_unicode(url_cdart)]
+        message = [__lang__(32026), __lang__(32025), "File: %s" % utils.get_unicode(path),
+                   "Url: %s" % utils.get_unicode(url_cdart)]
         return message, download_success
     if not xbmcvfs.exists(path):
         try:
@@ -129,11 +128,11 @@ def download_art(url_cdart, album, type_, mode, background=False):
                 percent = 1
             if type_ in ("fanart", "clearlogo", "artistthumb", "musicbanner"):
                 dialog_msg("update", percent=percent,
-                           line1="%s%s" % (__lang__(32038), get_unicode(album["artist"])), background=background)
+                           line1="%s%s" % (__lang__(32038), utils.get_unicode(album["artist"])), background=background)
             else:
                 dialog_msg("update", percent=percent,
-                           line1="%s%s" % (__lang__(32038), get_unicode(album["artist"])),
-                           line2="%s%s" % (__lang__(32039), get_unicode(album["title"])), background=background)
+                           line1="%s%s" % (__lang__(32038), utils.get_unicode(album["artist"])),
+                           line2="%s%s" % (__lang__(32039), utils.get_unicode(album["title"])), background=background)
 #            if mode == "auto":
 #                if dialog_msg("iscanceled", background=background):
 #                    is_canceled = True
@@ -142,23 +141,12 @@ def download_art(url_cdart, album, type_, mode, background=False):
             log("Fetching image: %s" % url_cdart, xbmc.LOGDEBUG)
             urllib.urlretrieve(url_cdart, destination, _report_hook)
             # message = ["Download Sucessful!"]
-            message = [__lang__(32023), __lang__(32024), "File: %s" % get_unicode(path),
-                       "Url: %s" % get_unicode(url_cdart)]
+            message = [__lang__(32023), __lang__(32024), "File: %s" % utils.get_unicode(path),
+                       "Url: %s" % utils.get_unicode(url_cdart)]
             xbmcvfs.copy(destination, final_destination)  # copy it to album folder
             # update database
             try:
-                conn = sqlite3.connect(addon_db)
-                c = conn.cursor()
-                if type_ == "cdart":
-                    c.execute("""\
-                        UPDATE alblist SET cdart="True" WHERE path=?
-                    """, (get_unicode(album["path"]),))
-                elif type_ == "cover":
-                    c.execute("""\
-                        UPDATE alblist SET cover="True" WHERE path=?
-                    """, (get_unicode(album["path"]),))
-                conn.commit()
-                c.close()
+                db.set_has_art(type_, utils.get_unicode(album["path"]))
             except Exception as e:
                 log(e.message, xbmc.LOGERROR)
                 log("Error updating database", xbmc.LOGDEBUG)
@@ -168,8 +156,8 @@ def download_art(url_cdart, album, type_, mode, background=False):
         else:
             log("Path error", xbmc.LOGDEBUG)
             log("    file path: %s" % repr(destination), xbmc.LOGDEBUG)
-            message = [__lang__(32026), __lang__(32025), "File: %s" % get_unicode(path),
-                       "Url: %s" % get_unicode(url_cdart)]
+            message = [__lang__(32026), __lang__(32025), "File: %s" % utils.get_unicode(path),
+                       "Url: %s" % utils.get_unicode(url_cdart)]
             # message = Download Problem, Check file paths - Artwork Not Downloaded]
         # always cleanup downloaded files
         # if type == "fanart":
@@ -177,8 +165,8 @@ def download_art(url_cdart, album, type_, mode, background=False):
     except Exception as e:
         log(e.message, xbmc.LOGWARNING)
         log("General download error", xbmc.LOGDEBUG)
-        message = [__lang__(32026), __lang__(32025), "File: %s" % get_unicode(path),
-                   "Url: %s" % get_unicode(url_cdart)]
+        message = [__lang__(32026), __lang__(32025), "File: %s" % utils.get_unicode(path),
+                   "Url: %s" % utils.get_unicode(url_cdart)]
         # message = [Download Problem, Check file paths - Artwork Not Downloaded]
         # print_exc()
     if mode == "auto" or mode == "single":
@@ -236,23 +224,25 @@ def auto_download(type_, artist_list, background=False):
             log("Artist: %-40s Local ID: %-10s   Distant MBID: %s" % (
                 artist["name"], artist["local_id"], artist["musicbrainz_artistid"]), xbmc.LOGNOTICE)
             if type_ in ("fanart", "clearlogo", "artistthumb", "musicbanner") and artist["has_art"]:
-                dialog_msg("update", percent=percent, line1="%s%s" % (__lang__(32038), get_unicode(artist["name"])),
+                dialog_msg("update",
+                           percent=percent,
+                           line1="%s%s" % (__lang__(32038), utils.get_unicode(artist["name"])),
                            background=background)
 
                 temp_art = {"musicbrainz_artistid": artist["musicbrainz_artistid"], "artist": artist["name"]}
                 auto_art = {"musicbrainz_artistid": artist["musicbrainz_artistid"], "artist": artist["name"]}
 
-                path = os.path.join(music_path, change_characters(smart_unicode(artist["name"])))
+                path = os.path.join(music_path, utils.change_characters(utils.smart_unicode(artist["name"])))
                 if type_ == "fanart":
-                    art = remote_fanart_list(auto_art)
+                    art = ftv_scraper.remote_fanart_list(auto_art)
                 elif type_ == "clearlogo":
-                    art = remote_hdlogo_list(auto_art)
+                    art = ftv_scraper.remote_hdlogo_list(auto_art)
                     if not art:
-                        art = remote_clearlogo_list(auto_art)
+                        art = ftv_scraper.remote_clearlogo_list(auto_art)
                 elif type_ == "musicbanner":
-                    art = remote_banner_list(auto_art)
+                    art = ftv_scraper.remote_banner_list(auto_art)
                 else:
-                    art = remote_artistthumb_list(auto_art)
+                    art = ftv_scraper.remote_artistthumb_list(auto_art)
                 if art:
                     if type_ == "fanart":
                         temp_art["path"] = path
@@ -343,11 +333,11 @@ def auto_download(type_, artist_list, background=False):
                 else:
                     log("Artist Match not found", xbmc.LOGDEBUG)
             elif type_ in ("cdart", "cover") and artist["has_art"]:
-                local_album_list = get_local_albums_db(artist["name"], background)
+                local_album_list = db.get_local_albums_db(artist["name"], background)
                 if type_ == "cdart":
-                    remote_art_url = remote_cdart_list(artist)
+                    remote_art_url = ftv_scraper.remote_cdart_list(artist)
                 else:
-                    remote_art_url = remote_coverart_list(artist)
+                    remote_art_url = ftv_scraper.remote_coverart_list(artist)
                 for album in local_album_list:
                     low_res = True
                     if dialog_msg("iscanceled", background=background):
@@ -359,12 +349,13 @@ def auto_download(type_, artist_list, background=False):
                     if not album["musicbrainz_albumid"]:
                         continue
                     dialog_msg("update", percent=percent,
-                               line1="%s%s" % (__lang__(32038), get_unicode(artist["name"])),
-                               line2="%s%s" % (__lang__(32039), get_unicode(album["title"])), background=background)
+                               line1="%s%s" % (__lang__(32038), utils.get_unicode(artist["name"])),
+                               line2="%s%s" % (__lang__(32039), utils.get_unicode(album["title"])),
+                               background=background)
                     log("Album: %s" % album["title"], xbmc.LOGDEBUG)
                     if not album[key_label] or resizeondownload:
                         musicbrainz_albumid = album["musicbrainz_albumid"]
-                        art = artwork_search(remote_art_url, musicbrainz_albumid, album["disc"], key_label)
+                        art = db.artwork_search(remote_art_url, musicbrainz_albumid, album["disc"], key_label)
                         if art:
                             if resizeondownload:
                                 low_res = check_size(album["path"].replace("\\\\", "\\"), key_label, art["size"],
