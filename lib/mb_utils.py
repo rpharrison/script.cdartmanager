@@ -13,8 +13,6 @@ from utils import get_html_source, unescape, log, get_unicode, smart_unicode
 __cdam__ = cdam.CDAM()
 __cfg__ = cdam.Settings()
 
-addon_db = __cdam__.file_addon_db()
-
 artist_url = '%s/ws/2/artist/?query=artist:"%s"&limit=%d'
 alias_url = '%s/ws/2/artist/?query=alias:"%s"&limit=%d'
 release_group_url = '%s/ws/2/release-group/'

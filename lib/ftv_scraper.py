@@ -2,7 +2,7 @@
 # fanart.tv artist artwork scraper
 
 import calendar
-import json as simplejson
+import json
 import os
 from datetime import datetime
 from traceback import print_exc
@@ -16,7 +16,7 @@ from utils import get_html_source, log, dialog_msg
 
 __cdam__ = cdam.CDAM()
 __cfg__ = cdam.Settings()
-__lang__ = __cdam__.getLocalizedString
+__lng__ = __cdam__.lng
 
 music_url_json = "http://webservice.fanart.tv/v3/music/%s?api_key=%s&client_key=%s"
 new_music = "http://webservice.fanart.tv/v3/music/latest?api_key=%s&client_key=%s&date=%s"
@@ -163,7 +163,7 @@ def retrieve_fanarttv_json(id_):
                    'musicbanner',
                    'albums']
     try:
-        data = simplejson.loads(htmlsource)
+        data = json.loads(htmlsource)
         # for key, value in data.iteritems():
         for art in image_types:
             # if value.has_key(art):
@@ -241,7 +241,7 @@ def check_fanart_new_artwork(present_datecode):
     else:
         try:
             log("New Artwork found on fanart.tv", xbmc.LOGNOTICE)
-            data = simplejson.loads(htmlsource)
+            data = json.loads(htmlsource)
             return True, data
         except Exception as e:
             htmlsource = "null"
@@ -275,7 +275,7 @@ def update_art(mbid, data, existing_has_art):
 
 def first_check(all_artists, album_artists, background=False, update_db=False):
     log("Checking for artist match with fanart.tv - First Check", xbmc.LOGNOTICE)
-    heading = __lang__(32187)
+    heading = __lng__(32187)
     album_artists_matched = []
     all_artists_matched = []
     d = datetime.utcnow()
@@ -293,7 +293,7 @@ def first_check(all_artists, album_artists, background=False, update_db=False):
         else:
             match["has_art"] = artist["has_art"]
         album_artists_matched.append(match)
-        dialog_msg("update", percent=percent, line1=heading, line2="", line3=__lang__(32049) % artist["name"],
+        dialog_msg("update", percent=percent, line1=heading, line2="", line3=__lng__(32049) % artist["name"],
                    background=background)
         count += 1
     log("Storing Album Artists List", xbmc.LOGDEBUG)
@@ -311,7 +311,7 @@ def first_check(all_artists, album_artists, background=False, update_db=False):
             else:
                 match["has_art"] = artist["has_art"]
             all_artists_matched.append(match)
-            dialog_msg("update", percent=percent, line1=heading, line2="", line3=__lang__(32049) % artist["name"],
+            dialog_msg("update", percent=percent, line1=heading, line2="", line3=__lng__(32049) % artist["name"],
                        background=background)
             count += 1
         store_local_artist_table(all_artists_matched, background=background)
@@ -337,8 +337,8 @@ def get_recognized(all_artists, album_artists, background=False):
             if match["musicbrainz_artistid"]:
                 match["has_art"] = update_art(match["musicbrainz_artistid"], data, artist["has_art"])
             album_artists_matched.append(match)
-            dialog_msg("update", percent=percent, line1=__lang__(32185), line2="",
-                       line3=__lang__(32049) % artist["name"], background=background)
+            dialog_msg("update", percent=percent, line1=__lng__(32185), line2="",
+                       line3=__lng__(32049) % artist["name"], background=background)
             count += 1
         if __cfg__.enable_all_artists() and all_artists:
             count = 0
@@ -349,8 +349,8 @@ def get_recognized(all_artists, album_artists, background=False):
                 if match["musicbrainz_artistid"]:
                     match["has_art"] = update_art(match["musicbrainz_artistid"], data, artist["has_art"])
                 all_artists_matched.append(match)
-                dialog_msg("update", percent=percent, line1=__lang__(32185), line2="",
-                           line3=__lang__(32049) % artist["name"], background=background)
+                dialog_msg("update", percent=percent, line1=__lng__(32185), line2="",
+                           line3=__lng__(32049) % artist["name"], background=background)
                 count += 1
     else:
         log("No new music artwork on fanart.tv", xbmc.LOGNOTICE)

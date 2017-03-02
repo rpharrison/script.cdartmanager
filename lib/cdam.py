@@ -29,7 +29,7 @@ class CDAM(CDAMAddon):
     def __getAddonInfo__(self, info):
         return self.getAddon().getAddonInfo(info)
 
-    def getLocalizedString(self, string):
+    def lng(self, string):
         return self.getAddon().getLocalizedString(string)
 
     def name(self):
@@ -106,10 +106,10 @@ class CDAM(CDAMAddon):
     def path_temp_gfx(self):
         return self.path_profile("tempgfx")
 
-    def file_addon_db(self):
+    def file_db(self):
         return self.path_profile("l_cdart.db")
 
-    def file_addon_db_crash(self):
+    def file_db_crash(self):
         return self.path_profile("l_cdart.db-journal")
 
     def file_settings_xml(self):

@@ -15,10 +15,9 @@ from lib.utils import log, dialog_msg
 
 __cdam__ = cdam.CDAM()
 __cfg__ = cdam.Settings()
-__lang__ = __cdam__.getLocalizedString
+__lng__ = __cdam__.lng
 
-addon_db = __cdam__.file_addon_db()
-addon_db_crash = __cdam__.file_addon_db_crash()
+addon_db_crash = __cdam__.file_db_crash()
 
 script_fail = False
 first_run = False
@@ -70,10 +69,10 @@ def select_artwork(details, media_type_):
                 if art["musicbrainz_albumid"] == details["musicbrainz_albumid"]:
                     selection = art
             if not selection:
-                dialog_msg("okdialog", heading=__lang__(32033), line1=__lang__(32030),
-                           line2=__lang__(32031), background=False)
+                dialog_msg("okdialog", heading=__lng__(32033), line1=__lng__(32030),
+                           line2=__lng__(32031), background=False)
         else:
-            dialog_msg("okdialog", heading=__lang__(32033), line1=__lang__(32030), line2=__lang__(32031),
+            dialog_msg("okdialog", heading=__lng__(32033), line1=__lng__(32030), line2=__lng__(32031),
                        background=False)
     else:
         if media_type_ == "fanart":
@@ -111,7 +110,7 @@ def update_xbmc_thumbnails(background=False):
     artistthumb = "folder.jpg"
     albumthumb = "folder.jpg"
     xbmc.sleep(1000)
-    dialog_msg("create", heading=__lang__(32042), background=background)
+    dialog_msg("create", heading=__lng__(32042), background=background)
     # Artists
     artists = db.get_local_artists_db(mode="local_artists")
     if not artists:
@@ -129,8 +128,8 @@ def update_xbmc_thumbnails(background=False):
             percent = 100
         if dialog_msg("iscanceled"):
             break
-        dialog_msg("update", percent=percent, line1=__lang__(32112),
-                   line2=" %s %s" % (__lang__(32038), utils.get_unicode(artist_["name"])), background=background)
+        dialog_msg("update", percent=percent, line1=__lng__(32112),
+                   line2=" %s %s" % (__lng__(32038), utils.get_unicode(artist_["name"])), background=background)
         xbmc_thumbnail_path = ""
         xbmc_fanart_path = ""
         fanart_path = os.path.join(__cfg__.path_music_path(),
@@ -162,8 +161,8 @@ def update_xbmc_thumbnails(background=False):
             percent = 100
         if dialog_msg("iscanceled"):
             break
-        dialog_msg("update", percent=percent, line1=__lang__(32042), line2=__lang__(32112),
-                   line3=" %s %s" % (__lang__(32039), utils.get_unicode(album_["title"])), background=background)
+        dialog_msg("update", percent=percent, line1=__lng__(32042), line2=__lng__(32112),
+                   line3=" %s %s" % (__lng__(32039), utils.get_unicode(album_["title"])), background=background)
         xbmc_thumbnail_path = ""
         coverart_path = os.path.join(album_["path"], albumthumb).replace("\\\\", "\\")
         if xbmcvfs.exists(coverart_path):
@@ -357,7 +356,7 @@ if __name__ == "__main__":
                     log("A Database ID or MusicBrainz ID needed")
             elif script_mode == "normal":
                 log("Addon Work Folder: %s" % __cdam__.path_profile(), xbmc.LOGNOTICE)
-                log("Addon Database: %s" % addon_db, xbmc.LOGNOTICE)
+                log("Addon Database: %s" % __cdam__.file_db(), xbmc.LOGNOTICE)
                 log("Addon settings: %s" % __cdam__.file_settings_xml(), xbmc.LOGNOTICE)
                 if xbmcgui.Window(10000).getProperty(
                         "cdart_manager_update") == "True":
@@ -365,29 +364,30 @@ if __name__ == "__main__":
                     if not os.environ.get("OS", "win32") in ("win32", "Windows_NT"):
                         background_db = False
                         # message "cdART Manager, Stopping Background Database Building"
-                        dialog_msg("okdialog", heading=__lang__(32042), line1=__lang__(32119))
+                        dialog_msg("okdialog", heading=__lng__(32042), line1=__lng__(32119))
                         log("Background Database Was in Progress, Stopping, allowing script to continue",
                             xbmc.LOGNOTICE)
                         xbmcgui.Window(10000).setProperty("cdartmanager_update", "False")
                     else:
                         background_db = True
                         # message "cdART Manager, Background Database building in progress...  Exiting Script..."
-                        dialog_msg("okdialog", heading=__lang__(32042), line1=__lang__(32118))
+                        dialog_msg("okdialog", heading=__lng__(32042), line1=__lng__(32118))
                         log("Background Database Building in Progress, exiting", xbmc.LOGNOTICE)
                         xbmcgui.Window(10000).setProperty("cdartmanager_update", "False")
                 if not background_db and not soft_exit:  # If Settings exists and not in background_db mode, continue on
                     log("Addon Work Folder Found, Checking For Database", xbmc.LOGNOTICE)
-                if not xbmcvfs.exists(addon_db) and not background_db:  # if l_cdart.db missing, must be first run
+                # if l_cdart.db missing, must be first run
+                if not xbmcvfs.exists(__cdam__.file_db()) and not background_db:
                     log("Addon Db not found, Must Be First Run", xbmc.LOGNOTICE)
                     first_run = True
                 elif not background_db and not soft_exit:
                     log("Addon Db Found, Checking Database Version", xbmc.LOGNOTICE)
                 # if l_cdart.db.journal exists, creating database must have crashed at some point, delete and start over
-                if xbmcvfs.exists(addon_db_crash) and not first_run and not background_db and not soft_exit:
+                if xbmcvfs.exists(__cdam__.file_db_crash()) and not first_run and not background_db and not soft_exit:
                     log("Detected Database Crash, Trying to delete", xbmc.LOGNOTICE)
                     try:
-                        xbmcvfs.delete(addon_db)
-                        xbmcvfs.delete(addon_db_crash)
+                        xbmcvfs.delete(__cdam__.file_db())
+                        xbmcvfs.delete(__cdam__.file_db_crash())
                     except StandardError, e:
                         log("Error Occurred: %s " % e.__class__.__name__, xbmc.LOGNOTICE)
                         traceback.print_exc()
@@ -406,7 +406,7 @@ if __name__ == "__main__":
                         log("# Error: %s" % e.__class__.__name__, xbmc.LOGNOTICE)
                         try:
                             log("Trying To Delete Database", xbmc.LOGNOTICE)
-                            xbmcvfs.delete(addon_db)
+                            xbmcvfs.delete(__cdam__.file_db())
                         except StandardError, e:
                             traceback.print_exc()
                             log("# unable to remove folder", xbmc.LOGNOTICE)
@@ -434,7 +434,7 @@ if __name__ == "__main__":
                     log("Problem accessing folder, exiting script", xbmc.LOGNOTICE)
                     xbmc.executebuiltin(
                         "Notification( %s, %s, %d, %s)" % (
-                            __lang__(32042), __lang__(32110), 500, __cdam__.file_icon()))
+                            __lng__(32042), __lng__(32110), 500, __cdam__.file_icon()))
             clear_skin_properties()
         except:
             print "Unexpected error:", sys.exc_info()[0]

@@ -16,7 +16,7 @@ from file_item import Thumbnails
 
 __cdam__ = cdam.CDAM()
 __cfg__ = cdam.Settings()
-__lang__ = __cdam__.getLocalizedString
+__lng__ = __cdam__.lng
 
 dialog = xbmcgui.DialogProgress()
 
@@ -229,8 +229,8 @@ def dialog_msg(action,
                line2='',
                line3='',
                background=False,
-               nolabel=__lang__(32179),
-               yeslabel=__lang__(32178)):
+               nolabel=__lng__(32179),
+               yeslabel=__lng__(32178)):
     # Fix possible unicode errors
     heading = heading.encode('utf-8', 'ignore')
     line1 = line1.encode('utf-8', 'ignore')
