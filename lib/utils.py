@@ -16,7 +16,7 @@ from file_item import Thumbnails
 
 __cdam__ = cdam.CDAM()
 __cfg__ = cdam.Settings()
-__lng__ = __cdam__.lng
+__lng__ = __cdam__.getLocalizedString
 
 dialog = xbmcgui.DialogProgress()
 
@@ -97,9 +97,9 @@ def settings_to_log(settings_path):
         # close socket
         settings_file.close()
         for setting in settings_list:
-            match = re.search('    <setting id="(.*?)" value="(.*?)"', setting)
+            match = re.search(' {4}<setting id="(.*?)" value="(.*?)"', setting)
             if not match:
-                match = re.search("""    <setting id="(.*?)" value='(.*?)'""", setting)
+                match = re.search(""" {4}<setting id="(.*?)" value='(.*?)'""", setting)
             if match:
                 log("%30s: %s" % (match.group(1), str(unescape(match.group(2).decode('utf-8', 'ignore')))),
                     xbmc.LOGDEBUG)

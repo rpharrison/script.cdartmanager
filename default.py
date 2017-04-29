@@ -9,15 +9,13 @@ import traceback
 import xbmc
 import xbmcgui
 import xbmcvfs
-
-from lib import *
+from lib import cdam, db, download, ftv_scraper, gui, jsonrpc_calls, utils
+from lib.cdam import Def, MediaType, ArtType
 from lib.utils import log, dialog_msg
 
 __cdam__ = cdam.CDAM()
 __cfg__ = cdam.Settings()
-__lng__ = __cdam__.lng
-
-addon_db_crash = __cdam__.file_db_crash()
+__lng__ = __cdam__.getLocalizedString
 
 script_fail = False
 first_run = False
@@ -50,7 +48,7 @@ def artist_musicbrainz_id(artist_id, artist_mbid):
 def album_musicbrainz_id(album_id):
     album_list = jsonrpc_calls.retrieve_album_details(album_id)
     if album_list:
-        album_detail_list = db.jsonrpc_calls.retrieve_album_details_full(album_list, 1, background=True)
+        album_detail_list = db.retrieve_album_details_full(album_list, 1, background=True)
         return album_detail_list
     else:
         return []
@@ -59,8 +57,8 @@ def album_musicbrainz_id(album_id):
 def select_artwork(details, media_type_):
     artwork = None
     selection = None
-    if media_type_ in ("cdart", "cover"):
-        if media_type_ == "cdart":
+    if media_type_ in (ArtType.CDART, ArtType.COVER):
+        if media_type_ == ArtType.CDART:
             artwork = ftv_scraper.remote_cdart_list(details)
         else:
             artwork = ftv_scraper.remote_coverart_list(details)
@@ -75,15 +73,15 @@ def select_artwork(details, media_type_):
             dialog_msg("okdialog", heading=__lng__(32033), line1=__lng__(32030), line2=__lng__(32031),
                        background=False)
     else:
-        if media_type_ == "fanart":
+        if media_type_ == ArtType.FANART:
             artwork = ftv_scraper.remote_fanart_list(details)
-        elif media_type_ == "clearlogo":
+        elif media_type_ == ArtType.CLEARLOGO:
             artwork = ftv_scraper.remote_clearlogo_list(details)
-        elif media_type_ == "hdlogo":
+        elif media_type_ == ArtType.HDLOGO:
             artwork = ftv_scraper.remote_hdlogo_list(details)
-        elif media_type_ == "artistthumb":
+        elif media_type_ == ArtType.THUMB:
             artwork = ftv_scraper.remote_artistthumb_list(details)
-        elif media_type_ == "musicbanner":
+        elif media_type_ == ArtType.BANNER:
             artwork = ftv_scraper.remote_banner_list(details)
         if artwork:
             for art in artwork:
@@ -142,13 +140,13 @@ def update_xbmc_thumbnails(background=False):
         if xbmcvfs.exists(artistthumb_rename):
             xbmcvfs.rename(artistthumb_rename, artistthumb_path)
         if xbmcvfs.exists(fanart_path):
-            xbmc_fanart_path = jsonrpc_calls.get_fanart_path(artist_["local_id"], "artist")
+            xbmc_fanart_path = jsonrpc_calls.get_fanart_path(artist_["local_id"])
         elif xbmcvfs.exists(artistthumb_path):
-            xbmc_thumbnail_path = jsonrpc_calls.get_thumbnail_path(artist_["local_id"], "artist")
+            xbmc_thumbnail_path = jsonrpc_calls.get_thumbnail_path(artist_["local_id"], MediaType.ARTIST)
         else:
             continue
         if xbmc_fanart_path:  # copy to XBMC supplied fanart path
-            thumbnail_copy(fanart_path, xbmc_fanart_path, "fanart")
+            thumbnail_copy(fanart_path, xbmc_fanart_path, ArtType.FANART)
         if xbmc_thumbnail_path:  # copy to XBMC supplied artist image path
             thumbnail_copy(artistthumb_path, xbmc_thumbnail_path, "artist thumb")
 
@@ -220,15 +218,6 @@ if __name__ == "__main__":
         soft_exit = True
 
     utils.settings_to_log(__cdam__.file_settings_xml())
-
-    #    try:
-    #        recognized_ = __settings__.color_recognized()
-    #        soft_exit = False
-    #    except:
-    #        dialog_msg("okdialog", heading=__language__(32181), line1=__language__(32182))
-    #        __settings__.open()
-    #        soft_exit = True
-
     script_mode, provided_mbid, provided_dbid, media_type = get_script_mode()
 
     if xbmcgui.Window(10000).getProperty("cdart_manager_running") == "True":
@@ -270,23 +259,23 @@ if __name__ == "__main__":
                 artwork_type = None
                 if script_mode == "autocdart":
                     log("Start method - Autodownload Album cdARTs in background", xbmc.LOGNOTICE)
-                    artwork_type = "cdart"
+                    artwork_type = ArtType.CDART
                 elif script_mode == "autocover":
                     log("Start method - Autodownload Album Cover art in background", xbmc.LOGNOTICE)
-                    artwork_type = "cover"
+                    artwork_type = ArtType.COVER
                 elif script_mode == "autofanart":
                     log("Start method - Autodownload Artist Fanarts in background", xbmc.LOGNOTICE)
-                    artwork_type = "fanart"
+                    artwork_type = ArtType.FANART
                 elif script_mode == "autologo":
                     log("Start method - Autodownload Artist Logos in background", xbmc.LOGNOTICE)
-                    artwork_type = "clearlogo"
+                    artwork_type = ArtType.CLEARLOGO
                 elif script_mode == "autothumb":
                     log("Start method - Autodownload Artist Thumbnails in background", xbmc.LOGNOTICE)
-                    artwork_type = "artistthumb"
+                    artwork_type = ArtType.THUMB
                 elif script_mode == "autobanner":
                     log("Start method - Autodownload Artist Music Banners in background", xbmc.LOGNOTICE)
-                    artwork_type = "musicbanner"
-                if artwork_type in ("fanart", "clearlogo", "artistthumb", "musicbanner") \
+                    artwork_type = ArtType.BANNER
+                if artwork_type in (ArtType.FANART, ArtType.CLEARLOGO, ArtType.THUMB, ArtType.BANNER) \
                         and __cfg__.enable_all_artists():
                     download_count, successfully_downloaded = download.auto_download(artwork_type, all_artists,
                                                                                      background=True)
@@ -311,10 +300,11 @@ if __name__ == "__main__":
                 xbmcgui.Window(10000).setProperty("cdart_manager_running", "True")
                 log("Start method - Autodownload all artwork in background", xbmc.LOGNOTICE)
                 total_artwork = 0
-                for artwork_type in ("cdart", "cover", "fanart", "clearlogo", "artistthumb", "musicbanner"):
+                for artwork_type in (ArtType.CDART, ArtType.COVER, ArtType.FANART,
+                                     ArtType.CLEARLOGO, ArtType.THUMB, ArtType.BANNER):
                     log("Start method - Autodownload %s in background" % artwork_type, xbmc.LOGNOTICE)
                     download_count = 0
-                    if artwork_type in ("fanart", "clearlogo", "artistthumb", "musicbanner") \
+                    if artwork_type in (ArtType.FANART, ArtType.CLEARLOGO, ArtType.THUMB, ArtType.BANNER) \
                             and __cfg__.enable_all_artists():
                         download_count, successfully_downloaded = download.auto_download(artwork_type, all_artists,
                                                                                          background=True)
@@ -329,7 +319,7 @@ if __name__ == "__main__":
             elif script_mode == "oneshot":
                 log("Start method - One Shot Download method", xbmc.LOGNOTICE)
                 if provided_dbid or provided_mbid:
-                    if media_type[0] in ("clearlogo", "fanart", "artistthumb", "musicbanner"):
+                    if media_type[0] in (ArtType.CLEARLOGO, ArtType.FANART, ArtType.THUMB, ArtType.BANNER):
                         artist = artist_musicbrainz_id(provided_dbid, provided_mbid)
                         if not artist:
                             log("No MBID found", xbmc.LOGNOTICE)
@@ -338,7 +328,7 @@ if __name__ == "__main__":
                             log("Artist: %s" % artist["artist"], xbmc.LOGDEBUG)
                             log("MBID: %s" % artist["musicbrainz_artistid"], xbmc.LOGDEBUG)
                             select_artwork(artist, media_type[0])
-                    elif media_type[0] in ("cdart", "cover"):
+                    elif media_type[0] in (ArtType.CDART, ArtType.COVER):
                         if provided_dbid:
                             album_details = album_musicbrainz_id(provided_dbid)
                             if not album_details:
@@ -356,7 +346,7 @@ if __name__ == "__main__":
                     log("A Database ID or MusicBrainz ID needed")
             elif script_mode == "normal":
                 log("Addon Work Folder: %s" % __cdam__.path_profile(), xbmc.LOGNOTICE)
-                log("Addon Database: %s" % __cdam__.file_db(), xbmc.LOGNOTICE)
+                log("Addon Database: %s" % __cdam__.file_addon_db(), xbmc.LOGNOTICE)
                 log("Addon settings: %s" % __cdam__.file_settings_xml(), xbmc.LOGNOTICE)
                 if xbmcgui.Window(10000).getProperty(
                         "cdart_manager_update") == "True":
@@ -365,8 +355,7 @@ if __name__ == "__main__":
                         background_db = False
                         # message "cdART Manager, Stopping Background Database Building"
                         dialog_msg("okdialog", heading=__lng__(32042), line1=__lng__(32119))
-                        log("Background Database Was in Progress, Stopping, allowing script to continue",
-                            xbmc.LOGNOTICE)
+                        log("BackgroundDB was in Progress, Stopping, allowing script to continue", xbmc.LOGNOTICE)
                         xbmcgui.Window(10000).setProperty("cdartmanager_update", "False")
                     else:
                         background_db = True
@@ -377,26 +366,27 @@ if __name__ == "__main__":
                 if not background_db and not soft_exit:  # If Settings exists and not in background_db mode, continue on
                     log("Addon Work Folder Found, Checking For Database", xbmc.LOGNOTICE)
                 # if l_cdart.db missing, must be first run
-                if not xbmcvfs.exists(__cdam__.file_db()) and not background_db:
+                if not xbmcvfs.exists(__cdam__.file_addon_db()) and not background_db:
                     log("Addon Db not found, Must Be First Run", xbmc.LOGNOTICE)
                     first_run = True
                 elif not background_db and not soft_exit:
                     log("Addon Db Found, Checking Database Version", xbmc.LOGNOTICE)
                 # if l_cdart.db.journal exists, creating database must have crashed at some point, delete and start over
-                if xbmcvfs.exists(__cdam__.file_db_crash()) and not first_run and not background_db and not soft_exit:
+                if xbmcvfs.exists(__cdam__.file_addon_db_crash()) \
+                        and not first_run and not background_db and not soft_exit:
                     log("Detected Database Crash, Trying to delete", xbmc.LOGNOTICE)
                     try:
-                        xbmcvfs.delete(__cdam__.file_db())
-                        xbmcvfs.delete(__cdam__.file_db_crash())
+                        xbmcvfs.delete(__cdam__.file_addon_db())
+                        xbmcvfs.delete(__cdam__.file_addon_db_crash())
                     except StandardError, e:
                         log("Error Occurred: %s " % e.__class__.__name__, xbmc.LOGNOTICE)
                         traceback.print_exc()
                         script_fail = True
                 elif not first_run and not background_db and not soft_exit and not script_fail:  # Test database version
-                    log("Looking for database version: %s" % cdam.Constants.db_version(), xbmc.LOGNOTICE)
+                    log("Looking for database version: %s" % Def.DB_VERSION, xbmc.LOGNOTICE)
                     try:
                         version = db.get_db_version()
-                        if version == cdam.Constants.db_version():
+                        if version == Def.DB_VERSION:
                             log("Database matched", xbmc.LOGNOTICE)
                         else:
                             log("Old version found, upgrading database", xbmc.LOGNOTICE)
@@ -406,7 +396,7 @@ if __name__ == "__main__":
                         log("# Error: %s" % e.__class__.__name__, xbmc.LOGNOTICE)
                         try:
                             log("Trying To Delete Database", xbmc.LOGNOTICE)
-                            xbmcvfs.delete(__cdam__.file_db())
+                            xbmcvfs.delete(__cdam__.file_addon_db())
                         except StandardError, e:
                             traceback.print_exc()
                             log("# unable to remove folder", xbmc.LOGNOTICE)

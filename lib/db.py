@@ -13,6 +13,7 @@ import xbmc
 import xbmcvfs
 
 import cdam
+from cdam import Def
 
 from mb_utils import get_musicbrainz_artist_id, get_musicbrainz_album, mbid_check, \
     get_musicbrainz_release_group
@@ -21,11 +22,11 @@ from jsonrpc_calls import get_all_local_artists, retrieve_album_list, retrieve_a
 
 __cdam__ = cdam.CDAM()
 __cfg__ = cdam.Settings()
-__lng__ = __cdam__.lng
+__lng__ = __cdam__.getLocalizedString
 
 
 def connect():
-    return sql.connect(__cdam__.file_db())
+    return sql.connect(__cdam__.file_addon_db())
 
 
 def upgrade_db(from_version):
@@ -546,11 +547,11 @@ def store_counts(local_artists_count, artist_count, album_count, cdart_existing,
     if datecode == 0:
         c.execute("""\
             insert into counts(local_artists, artists, albums, cdarts, version) values (?, ?, ?, ?, ?)
-        """, (local_artists_count, artist_count, album_count, cdart_existing, cdam.Constants.db_version()))
+        """, (local_artists_count, artist_count, album_count, cdart_existing, Def.DB_VERSION))
     else:
         c.execute("""\
             insert into counts(local_artists, artists, albums, cdarts, version, datecode) values (?, ?, ?, ?, ?, ?)
-        """, (local_artists_count, artist_count, album_count, cdart_existing, cdam.Constants.db_version(), datecode))
+        """, (local_artists_count, artist_count, album_count, cdart_existing, Def.DB_VERSION, datecode))
     conn.commit()
     c.close()
     log("Finished Storing Counts", xbmc.LOGDEBUG)
@@ -860,23 +861,23 @@ def refresh_db(background=False):
     local_album_count = 0
     local_artist_count = 0
     local_cdart_count = 0
-    if xbmcvfs.exists(__cdam__.file_db()):
+    if xbmcvfs.exists(__cdam__.file_addon_db()):
         # File exists needs to be deleted
         if not background:
             db_delete = dialog_msg("yesno", line1=__lng__(32042), line2=__lng__(32015), background=background)
         else:
             db_delete = True
         if db_delete:
-            if xbmcvfs.exists(__cdam__.file_db()):
+            if xbmcvfs.exists(__cdam__.file_addon_db()):
                 # backup database
                 backup_database()
                 try:
                     # try to delete exsisting database
-                    xbmcvfs.delete(__cdam__.file_db())
+                    xbmcvfs.delete(__cdam__.file_addon_db())
                 except Exception as e:
                     log(e.message, xbmc.LOGERROR)
                     log("Unable to delete Database", xbmc.LOGDEBUG)
-            if xbmcvfs.exists(__cdam__.file_db()):
+            if xbmcvfs.exists(__cdam__.file_addon_db()):
                 # if database file still exists even after trying to delete it. Wipe out its contents
                 conn = connect()
                 c = conn.cursor()
@@ -1061,7 +1062,7 @@ def update_missing_album_mbid(albums, background=False, repair=False):
 def update_database(background=False):
     log("Updating Addon's DB", xbmc.LOGNOTICE)
     log("Checking to see if DB already exists", xbmc.LOGDEBUG)
-    if not xbmcvfs.exists(__cdam__.file_db()):
+    if not xbmcvfs.exists(__cdam__.file_addon_db()):
         refresh_db(background)
         return
     if __cfg__.backup_during_update():
@@ -1163,7 +1164,7 @@ def update_database(background=False):
     conn = connect()
     c = conn.cursor()
     # if database file still exists even after trying to delete it. Wipe out its contents
-    if xbmcvfs.exists(__cdam__.file_db()):
+    if xbmcvfs.exists(__cdam__.file_addon_db()):
         c.execute("""\
             DROP table IF EXISTS lalist_bk
         """)  # drop the local artists list backup table
@@ -1263,7 +1264,7 @@ def backup_database():
     current_time = time.strftime('%H%M')
     db_backup_file = "l_cdart-%s-%s.bak" % (todays_date, current_time)
     addon_backup_path = os.path.join(__cdam__.path_profile(), db_backup_file).replace("\\\\", "\\")
-    xbmcvfs.copy(__cdam__.file_db(), addon_backup_path)
+    xbmcvfs.copy(__cdam__.file_addon_db(), addon_backup_path)
     if xbmcvfs.exists(addon_backup_path):
         try:
             xbmcvfs.delete(addon_backup_path)
@@ -1271,7 +1272,7 @@ def backup_database():
             log(e.message, xbmc.LOGERROR)
             log("Unable to delete Database Backup", xbmc.LOGDEBUG)
     try:
-        xbmcvfs.copy(__cdam__.file_db(), addon_backup_path)
+        xbmcvfs.copy(__cdam__.file_addon_db(), addon_backup_path)
         log("Backing up old Local Database", xbmc.LOGDEBUG)
     except Exception as e:
         log(e.message, xbmc.LOGERROR)

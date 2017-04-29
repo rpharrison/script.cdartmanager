@@ -16,10 +16,11 @@ import ftv_scraper
 import mb_utils
 import utils
 from utils import log, dialog_msg
+from cdam import Color
 
 __cdam__ = cdam.CDAM()
 __cfg__ = cdam.Settings()
-__lng__ = __cdam__.lng
+__lng__ = __cdam__.getLocalizedString
 
 kb = xbmc.Keyboard()
 KEY_BUTTON_BACK = 275
@@ -54,7 +55,7 @@ class GUI(xbmcgui.WindowXMLDialog):
 
     def onInit(self):
         # checking to see if addon_db exists, if not, run database_setup()
-        if xbmcvfs.exists(__cdam__.file_db().replace("\\\\", "\\").encode("utf-8")):
+        if xbmcvfs.exists(__cdam__.file_addon_db().replace("\\\\", "\\").encode("utf-8")):
             log("Addon Db found - Loading Counts", xbmc.LOGNOTICE)
             _, local_album_count, local_artist_count, local_cdart_count = db.new_local_count()
         else:
@@ -125,10 +126,10 @@ class GUI(xbmcgui.WindowXMLDialog):
                         temp_path = os.path.join(album["path"], filename).replace("\\\\", "\\")
                         if xbmcvfs.exists(temp_path):
                             url = art_image = temp_path
-                            color = cdam.Constants.COLOR_ORANGE
+                            color = Color.ORANGE
                         else:
                             url = art_image
-                            color = cdam.Constants.COLOR_WHITE
+                            color = Color.WHITE
                     else:
                         if artwork["picture"]:
                             # check to see if artwork already exists
@@ -137,18 +138,18 @@ class GUI(xbmcgui.WindowXMLDialog):
                             url = artwork["picture"]
                             if album[_type]:
                                 art_image = os.path.join(album["path"], filename).replace("\\\\", "\\")
-                                color = cdam.Constants.COLOR_YELLOW
+                                color = Color.YELLOW
                             else:
                                 art_image = url + "/preview"
-                                color = cdam.Constants.COLOR_GREEN
+                                color = Color.GREEN
                         else:
                             url = ""
                             if album[_type]:
                                 art_image = os.path.join(album["path"], filename).replace("\\\\", "\\")
-                                color = cdam.Constants.COLOR_ORANGE
+                                color = Color.ORANGE
                             else:
                                 art_image = url
-                                color = cdam.Constants.COLOR_WHITE
+                                color = Color.WHITE
                     label2 = "%s&&%s&&&&%s&&%s" % (url, album["path"], art_image, str(album["local_id"]))
                     listitem = xbmcgui.ListItem(label=label1, label2=label2, thumbnailImage=art_image)
                     self.getControl(122).addItem(listitem)
@@ -208,9 +209,9 @@ class GUI(xbmcgui.WindowXMLDialog):
                 for item in mbid_list:
                     label2 = "MBID: %s" % item["id"]
                     label1 = "%-3s%%: %s" % (item["score"], item["name"])
-                    li = xbmcgui.ListItem(label=utils.coloring(label1, cdam.Constants.COLOR_WHITE), label2=label2)
+                    li = xbmcgui.ListItem(label=utils.coloring(label1, Color.WHITE), label2=label2)
                     self.getControl(161).addItem(li)
-                    li.setLabel(utils.coloring(label1, cdam.Constants.COLOR_WHITE))
+                    li.setLabel(utils.coloring(label1, Color.WHITE))
                     li.setLabel2(label2)
             except Exception as e:
                 log("Error in script occured", xbmc.LOGNOTICE)
@@ -269,13 +270,13 @@ class GUI(xbmcgui.WindowXMLDialog):
             xbmc.executebuiltin("ActivateWindow(busydialog)")
             for artist in local_artist_list:
                 if artist["has_art"] != "False":
-                    listitem = xbmcgui.ListItem(label=utils.coloring(artist["name"], cdam.Constants.COLOR_GREEN))
+                    listitem = xbmcgui.ListItem(label=utils.coloring(artist["name"], Color.GREEN))
                     self.getControl(120).addItem(listitem)
-                    listitem.setLabel(utils.coloring(artist["name"], cdam.Constants.COLOR_GREEN))
+                    listitem.setLabel(utils.coloring(artist["name"], Color.GREEN))
                 else:
                     listitem = xbmcgui.ListItem(label=artist["name"])
                     self.getControl(120).addItem(listitem)
-                    listitem.setLabel(utils.coloring(artist["name"], cdam.Constants.COLOR_WHITE))
+                    listitem.setLabel(utils.coloring(artist["name"], Color.WHITE))
         except KeyError:
             for artist in local_artist_list:
                 label2 = "MBID: %s" % artist["musicbrainz_artistid"]
@@ -466,7 +467,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                 label1 = "%s * %s" % (album["artist"], album["title"])
                 listitem = xbmcgui.ListItem(label=label1, label2=label2, thumbnailImage=cdart_img)
                 self.getControl(140).addItem(listitem)
-                listitem.setLabel(utils.coloring(label1, cdam.Constants.COLOR_YELLOW))
+                listitem.setLabel(utils.coloring(label1, Color.YELLOW))
                 listitem.setLabel2(label2)
                 work_temp.append(album)
             else:

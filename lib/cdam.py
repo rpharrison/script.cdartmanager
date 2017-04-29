@@ -15,7 +15,7 @@ class CDAMAddon:
 
     @classmethod
     def reload(cls):
-        cls._addon = xbmcaddon.Addon(id=Constants.script_id())
+        cls._addon = xbmcaddon.Addon(id=Def.SCRIPT_ID)
 
 
 class CDAM(CDAMAddon):
@@ -29,7 +29,7 @@ class CDAM(CDAMAddon):
     def __getAddonInfo__(self, info):
         return self.getAddon().getAddonInfo(info)
 
-    def lng(self, string):
+    def getLocalizedString(self, string):
         return self.getAddon().getLocalizedString(string)
 
     def name(self):
@@ -67,7 +67,7 @@ class CDAM(CDAMAddon):
         ]
 
     def user_agent(self):
-        return "%s\\%s (%s)" % (self.name(), self.version(), Constants.useragent_base())
+        return "%s\\%s (%s)" % (self.name(), self.version(), Def.USERAGENT_BASE)
 
     # files and folders
 
@@ -106,10 +106,10 @@ class CDAM(CDAMAddon):
     def path_temp_gfx(self):
         return self.path_profile("tempgfx")
 
-    def file_db(self):
+    def file_addon_db(self):
         return self.path_profile("l_cdart.db")
 
-    def file_db_crash(self):
+    def file_addon_db_crash(self):
         return self.path_profile("l_cdart.db-journal")
 
     def file_settings_xml(self):
@@ -225,32 +225,47 @@ class Settings(CDAMAddon):
         return self.__getSettingPath__("unique_path")
 
 
-class Constants:
+class Def:
     def __init__(self):
         pass
 
-    COLOR_GREEN = "FF00FF00"
-    COLOR_BLUE = "FF0000FF"
-    COLOR_RED = "FFFF0000"
-    COLOR_YELLOW = "FFFFFF00"
-    COLOR_WHITE = "FFFFFFFF"
-    COLOR_CYAN = "FF00FFFF"
-    COLOR_VIOLET = "FFEE82EE"
-    COLOR_PINK = "FFFF1493"
-    COLOR_ORANGE = "FFFF4500"
+    SCRIPT_ID = "script.cdartmanager"
+    DB_VERSION = "3.0.3"
+    USERAGENT_BASE = "https://github.com/stefansielaff/script.cdartmanager"
+    FANARTTV_API_KEY = "65169f993d552483391ca10c1ae7fb03"
 
-    @staticmethod
-    def script_id():
-        return "script.cdartmanager"
 
-    @staticmethod
-    def useragent_base():
-        return "https://github.com/stefansielaff/script.cdartmanager"
+class MediaType:
+    def __init__(self):
+        pass
 
-    @staticmethod
-    def db_version():
-        return "3.0.3"
+    ARTIST = "artist"
+    ALBUM = "album"
 
-    @staticmethod
-    def fanarttv_api_key():
-        return "65169f993d552483391ca10c1ae7fb03"
+
+class ArtType:
+    def __init__(self):
+        pass
+
+    CDART = 'cdart'
+    COVER = 'cover'
+    CLEARLOGO = 'clearlogo'
+    HDLOGO = 'hdlogo'
+    THUMB = 'artistthumb'
+    BANNER = 'musicbanner'
+    FANART = 'fanart'
+
+
+class Color:
+    def __init__(self):
+        pass
+
+    GREEN = "FF00FF00"
+    BLUE = "FF0000FF"
+    RED = "FFFF0000"
+    YELLOW = "FFFFFF00"
+    WHITE = "FFFFFFFF"
+    CYAN = "FF00FFFF"
+    VIOLET = "FFEE82EE"
+    PINK = "FFFF1493"
+    ORANGE = "FFFF4500"
