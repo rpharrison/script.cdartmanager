@@ -24,7 +24,7 @@ new_music = "http://webservice.fanart.tv/v3/music/latest?api_key=%s&client_key=%
 
 
 def remote_cdart_list(artist_menu):
-    log("Finding remote cdARTs", xbmc.LOGDEBUG)
+    log("Finding remote cdARTs")
     cdart_url = []
     try:
         art = retrieve_fanarttv_json(artist_menu["musicbrainz_artistid"])
@@ -42,7 +42,7 @@ def remote_cdart_list(artist_menu):
                         except KeyError:
                             album["local_name"] = album["artist"] = artist_menu["artist"]
                         cdart_url.append(album)
-                        # log( "cdart_url: %s " % cdart_url, xbmc.LOGDEBUG )
+                        # log( "cdart_url: %s " % cdart_url)
     except Exception as e:
         log(e.message, xbmc.LOGERROR)
         print_exc()
@@ -50,7 +50,7 @@ def remote_cdart_list(artist_menu):
 
 
 def remote_coverart_list(artist_menu):
-    log("Finding remote Cover ARTs", xbmc.LOGDEBUG)
+    log("Finding remote Cover ARTs")
     coverart_url = []
     try:
         art = retrieve_fanarttv_json(artist_menu["musicbrainz_artistid"])
@@ -65,7 +65,7 @@ def remote_coverart_list(artist_menu):
                                  "artist": artist_menu["name"], "musicbrainz_albumid": artwork["musicbrainz_albumid"],
                                  "size": 1000, "picture": artwork["cover"], "thumb_art": artwork["cover"]}
                         coverart_url.append(album)
-                        # log( "cdart_url: %s " % cdart_url, xbmc.LOGDEBUG )
+                        # log( "cdart_url: %s " % cdart_url )
     except Exception as e:
         log(e.message, xbmc.LOGERROR)
         print_exc()
@@ -73,7 +73,7 @@ def remote_coverart_list(artist_menu):
 
 
 def remote_fanart_list(artist_menu):
-    log("Finding remote fanart", xbmc.LOGDEBUG)
+    log("Finding remote fanart")
     backgrounds = ""
     try:
         art = retrieve_fanarttv_json(artist_menu["musicbrainz_artistid"])
@@ -86,7 +86,7 @@ def remote_fanart_list(artist_menu):
 
 
 def remote_clearlogo_list(artist_menu):
-    log("Finding remote clearlogo", xbmc.LOGDEBUG)
+    log("Finding remote clearlogo")
     clearlogo = ""
     try:
         art = retrieve_fanarttv_json(artist_menu["musicbrainz_artistid"])
@@ -99,7 +99,7 @@ def remote_clearlogo_list(artist_menu):
 
 
 def remote_hdlogo_list(artist_menu):
-    log("Finding remote hdlogo", xbmc.LOGDEBUG)
+    log("Finding remote hdlogo")
     hdlogo = ""
     try:
         art = retrieve_fanarttv_json(artist_menu["musicbrainz_artistid"])
@@ -112,7 +112,7 @@ def remote_hdlogo_list(artist_menu):
 
 
 def remote_banner_list(artist_menu):
-    log("Finding remote music banners", xbmc.LOGDEBUG)
+    log("Finding remote music banners")
     banner = ""
     try:
         art = retrieve_fanarttv_json(artist_menu["musicbrainz_artistid"])
@@ -125,7 +125,7 @@ def remote_banner_list(artist_menu):
 
 
 def remote_artistthumb_list(artist_menu):
-    log("Finding remote artistthumb", xbmc.LOGDEBUG)
+    log("Finding remote artistthumb")
     artistthumb = ""
     # If there is something in artist_menu["distant_id"] build cdart_url
     try:
@@ -139,7 +139,7 @@ def remote_artistthumb_list(artist_menu):
 
 
 def retrieve_fanarttv_json(id_):
-    log("Retrieving artwork for artist id: %s" % id_, xbmc.LOGDEBUG)
+    log("Retrieving artwork for artist id: %s" % id_)
     # url = music_url_json % (api_key, id, "all")
     url = music_url_json % (id_, Def.FANARTTV_API_KEY, __cfg__.client_key())
     # htmlsource = (get_html_source(url, id, save_file=False, overwrite=False)).encode('utf-8', 'ignore')
@@ -205,7 +205,7 @@ def retrieve_fanarttv_json(id_):
                                     # we should download the first hit here if there are multiple covers
                                     album_artwork["cover"] = album["albumcover"][0]["url"]
                             except Exception as e:
-                                log(e.message, xbmc.LOGDEBUG)
+                                log(e.message)
                                 album_artwork["cover"] = ""
                             albums.append(album_artwork)
     except Exception as e:
@@ -255,10 +255,10 @@ def check_art(mbid):
     url = music_url_json % (str(mbid), Def.FANARTTV_API_KEY, __cfg__.client_key())
     htmlsource = get_html_source(url, "FTV_" + str(mbid), save_file=True, overwrite=True)
     if htmlsource == "null":
-        log("No artwork found for MBID: %s" % mbid, xbmc.LOGDEBUG)
+        log("No artwork found for MBID: %s" % mbid)
         has_art = "False"
     else:
-        log("Artwork found for MBID: %s" % mbid, xbmc.LOGDEBUG)
+        log("Artwork found for MBID: %s" % mbid)
         has_art = "True"
     return has_art
 
@@ -285,7 +285,7 @@ def first_check(all_artists, album_artists, background=False, update_db=False):
     dialog_msg("create", heading="", background=background)
     for artist in album_artists:
         percent = int((float(count) / len(album_artists)) * 100)
-        log("Checking artist MBID: %s" % artist["musicbrainz_artistid"], xbmc.LOGDEBUG)
+        log("Checking artist MBID: %s" % artist["musicbrainz_artistid"])
         match = artist
         if artist["musicbrainz_artistid"] and (artist["has_art"] == "False" or update_db):
             match["has_art"] = check_art(artist["musicbrainz_artistid"])
@@ -297,13 +297,13 @@ def first_check(all_artists, album_artists, background=False, update_db=False):
         dialog_msg("update", percent=percent, line1=heading, line2="", line3=__lng__(32049) % artist["name"],
                    background=background)
         count += 1
-    log("Storing Album Artists List", xbmc.LOGDEBUG)
+    log("Storing Album Artists List")
     store_lalist(album_artists_matched)
     if __cfg__.enable_all_artists() and all_artists:
         count = 0
         for artist in all_artists:
             percent = int((float(count) / len(all_artists)) * 100) if len(all_artists) > 0 else 100
-            log("Checking artist MBID: %s" % artist["musicbrainz_artistid"], xbmc.LOGDEBUG)
+            log("Checking artist MBID: %s" % artist["musicbrainz_artistid"])
             match = artist
             if artist["musicbrainz_artistid"] and (artist["has_art"] == "False" or update_db):
                 match["has_art"] = check_art(artist["musicbrainz_artistid"])
@@ -318,7 +318,7 @@ def first_check(all_artists, album_artists, background=False, update_db=False):
         store_local_artist_table(all_artists_matched, background=background)
     store_fanarttv_datecode(present_datecode)
     dialog_msg("close", background=background)
-    log("Finished First Check", xbmc.LOGDEBUG)
+    log("Finished First Check")
     return
 
 
@@ -333,7 +333,7 @@ def get_recognized(all_artists, album_artists, background=False):
     if new_artwork:
         for artist in album_artists:
             percent = int((float(count) / len(album_artists)) * 100)
-            log("Checking artist MBID: %s" % artist["musicbrainz_artistid"], xbmc.LOGDEBUG)
+            log("Checking artist MBID: %s" % artist["musicbrainz_artistid"])
             match = artist
             if match["musicbrainz_artistid"]:
                 match["has_art"] = update_art(match["musicbrainz_artistid"], data, artist["has_art"])
@@ -345,7 +345,7 @@ def get_recognized(all_artists, album_artists, background=False):
             count = 0
             for artist in all_artists:
                 percent = int((float(count) / len(all_artists)) * 100)
-                log("Checking artist MBID: %s" % artist["musicbrainz_artistid"], xbmc.LOGDEBUG)
+                log("Checking artist MBID: %s" % artist["musicbrainz_artistid"])
                 match = artist
                 if match["musicbrainz_artistid"]:
                     match["has_art"] = update_art(match["musicbrainz_artistid"], data, artist["has_art"])
@@ -361,5 +361,5 @@ def get_recognized(all_artists, album_artists, background=False):
     store_local_artist_table(all_artists_matched, background=background)
     store_fanarttv_datecode(present_datecode)
     dialog_msg("close", background=background)
-    log("Finished Getting Recognized Artists", xbmc.LOGDEBUG)
+    log("Finished Getting Recognized Artists")
     return all_artists_matched, album_artists_matched

@@ -269,3 +269,15 @@ class Color:
     VIOLET = "FFEE82EE"
     PINK = "FFFF1493"
     ORANGE = "FFFF4500"
+
+
+class FileName:
+    def __init__(self):
+        pass
+
+    CDART = "cdart.png"
+    CDART_DISC = "disc.png"
+    FOLDER = "folder.jpg"
+    LOGO = "logo.png"
+    BANNER = "banner.jpg"
+    FANART = "fanart.jpg"

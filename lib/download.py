@@ -13,7 +13,7 @@ import utils
 import ftv_scraper
 
 from utils import log, dialog_msg
-from cdam import ArtType
+from cdam import ArtType, FileName
 
 __cdam__ = cdam.CDAM()
 __cfg__ = cdam.Settings()
@@ -37,20 +37,20 @@ def check_size(path, _type, size_w, size_h):
 
 def get_filename(type_, url, mode):
     if type_ == ArtType.CDART:
-        file_name = "cdart.png"
+        file_name = FileName.CDART
     elif type_ == ArtType.COVER:
-        file_name = "folder.jpg"
+        file_name = FileName.FOLDER
     elif type_ == ArtType.FANART:
         if mode == "auto":
             file_name = os.path.basename(url)
         else:
-            file_name = "fanart.jpg"
+            file_name = FileName.FANART
     elif type_ == ArtType.CLEARLOGO:
-        file_name = "logo.png"
+        file_name = FileName.LOGO
     elif type_ == ArtType.THUMB:
-        file_name = "folder.jpg"
+        file_name = FileName.FOLDER
     elif type_ == ArtType.BANNER:
-        file_name = "banner.jpg"
+        file_name = FileName.BANNER
     else:
         file_name = "unknown"
     return file_name
@@ -63,23 +63,23 @@ def make_music_path(artist):
     if not xbmcvfs.exists(path2):
         if not xbmcvfs.exists(path):
             if xbmcvfs.mkdirs(path):
-                log("Path to music artist made", xbmc.LOGDEBUG)
+                log("Path to music artist made")
                 return True
             else:
-                log("unable to make path to music artist", xbmc.LOGDEBUG)
+                log("unable to make path to music artist")
                 return False
     else:
         if not xbmcvfs.exists(path):
             if xbmcvfs.mkdirs(path):
-                log("Path to music artist made", xbmc.LOGDEBUG)
+                log("Path to music artist made")
                 return True
             else:
-                log("unable to make path to music artist", xbmc.LOGDEBUG)
+                log("unable to make path to music artist")
                 return False
 
 
 def download_art(url_cdart, album, type_, mode, background=False):
-    log("Downloading artwork... ", xbmc.LOGDEBUG)
+    log("Downloading artwork... ")
     download_success = False
 #    percent = 1
     is_canceled = False
@@ -92,7 +92,7 @@ def download_art(url_cdart, album, type_, mode, background=False):
     # Helix: paths MUST end with trailing slash
     path = os.path.join(album["path"].replace("\\\\", "\\"), '')
     if file_name == "unknown":
-        log("Unknown Type ", xbmc.LOGDEBUG)
+        log("Unknown Type ")
         message = [__lng__(32026), __lng__(32025), "File: %s" % utils.get_unicode(path),
                    "Url: %s" % utils.get_unicode(url_cdart)]
         return message, download_success
@@ -100,10 +100,10 @@ def download_art(url_cdart, album, type_, mode, background=False):
         try:
             xbmcvfs.mkdirs(album["path"].replace("\\\\", "\\"))
         except Exception as e:
-            log(e.message, xbmc.LOGDEBUG)
-    log("Path: %s" % path, xbmc.LOGDEBUG)
-    log("Filename: %s" % file_name, xbmc.LOGDEBUG)
-    log("url: %s" % url_cdart, xbmc.LOGDEBUG)
+            log(e.message)
+    log("Path: %s" % path)
+    log("Filename: %s" % file_name)
+    log("url: %s" % url_cdart)
 
     # cosmetic: use subfolder for downloading instead of work folder
     if not xbmcvfs.exists(os.path.join(__cdam__.path_temp_gfx(), '').replace("\\\\", "\\")):
@@ -121,7 +121,7 @@ def download_art(url_cdart, album, type_, mode, background=False):
                 if percent > 100:
                     percent = 100
             except Exception as ex:
-                log(ex.message, xbmc.LOGDEBUG)
+                log(ex.message)
                 percent = 1
             if type_ in (ArtType.FANART, ArtType.CLEARLOGO, ArtType.THUMB, ArtType.BANNER):
                 dialog_msg("update", percent=percent,
@@ -135,7 +135,7 @@ def download_art(url_cdart, album, type_, mode, background=False):
 #                    is_canceled = True
 
         if xbmcvfs.exists(path):
-            log("Fetching image: %s" % url_cdart, xbmc.LOGDEBUG)
+            log("Fetching image: %s" % url_cdart)
             urllib.urlretrieve(url_cdart, destination, _report_hook)
             # message = ["Download Sucessful!"]
             message = [__lng__(32023), __lng__(32024), "File: %s" % utils.get_unicode(path),
@@ -146,13 +146,13 @@ def download_art(url_cdart, album, type_, mode, background=False):
                 db.set_has_art(type_, utils.get_unicode(album["path"]))
             except Exception as e:
                 log(e.message, xbmc.LOGERROR)
-                log("Error updating database", xbmc.LOGDEBUG)
+                log("Error updating database")
                 print_exc()
             download_success = True
 
         else:
-            log("Path error", xbmc.LOGDEBUG)
-            log("    file path: %s" % repr(destination), xbmc.LOGDEBUG)
+            log("Path error")
+            log("    file path: %s" % repr(destination))
             message = [__lng__(32026), __lng__(32025), "File: %s" % utils.get_unicode(path),
                        "Url: %s" % utils.get_unicode(url_cdart)]
             # message = Download Problem, Check file paths - Artwork Not Downloaded]
@@ -161,7 +161,7 @@ def download_art(url_cdart, album, type_, mode, background=False):
         xbmcvfs.delete(destination)
     except Exception as e:
         log(e.message, xbmc.LOGWARNING)
-        log("General download error", xbmc.LOGDEBUG)
+        log("General download error")
         message = [__lng__(32026), __lng__(32025), "File: %s" % utils.get_unicode(path),
                    "Url: %s" % utils.get_unicode(url_cdart)]
         # message = [Download Problem, Check file paths - Artwork Not Downloaded]
@@ -186,7 +186,7 @@ def cdart_search(cdart_url, id_, disc):
 # Automatic download of non existing cdarts and refreshes addon's db
 def auto_download(type_, artist_list, background=False):
     is_canceled = False
-    log("Autodownload", xbmc.LOGDEBUG)
+    log("Autodownload")
     try:
         artist_count = 0
         download_count = 0
@@ -249,14 +249,14 @@ def auto_download(type_, artist_list, background=False):
                         if not xbmcvfs.exists(auto_art["path"]):
                             try:
                                 if xbmcvfs.mkdirs(auto_art["path"]):
-                                    log("extrafanart directory made", xbmc.LOGDEBUG)
+                                    log("extrafanart directory made")
                             except Exception as e:
                                 log(e.message, xbmc.LOGWARNING)
                                 print_exc()
-                                log("unable to make extrafanart directory", xbmc.LOGDEBUG)
+                                log("unable to make extrafanart directory")
                                 continue
                         else:
-                            log("extrafanart directory already exists", xbmc.LOGDEBUG)
+                            log("extrafanart directory already exists")
                     else:
                         auto_art["path"] = path
                     if type_ == ArtType.FANART:
@@ -276,7 +276,7 @@ def auto_download(type_, artist_list, background=False):
                                 log("Fanart Limit Reached", xbmc.LOGNOTICE)
                                 continue
                             if xbmcvfs.exists(os.path.join(auto_art["path"], os.path.basename(artwork))):
-                                log("Fanart already exists, skipping", xbmc.LOGDEBUG)
+                                log("Fanart already exists, skipping")
                                 continue
                             else:
                                 message, d_success, final_destination, is_canceled = download_art(artwork, auto_art,
@@ -290,8 +290,8 @@ def auto_download(type_, artist_list, background=False):
                                 fanart["path"] = final_destination
                                 successfully_downloaded.append(fanart)
                             else:
-                                log("Download Error...  Check Path.", xbmc.LOGDEBUG)
-                                log("    Path: %s" % auto_art["path"], xbmc.LOGDEBUG)
+                                log("Download Error...  Check Path.")
+                                log("    Path: %s" % auto_art["path"])
                                 d_error = True
                     else:
                         artwork = art[0]
@@ -299,7 +299,7 @@ def auto_download(type_, artist_list, background=False):
                         final_destination = None
                         if type_ == ArtType.THUMB:
                             if xbmcvfs.exists(os.path.join(auto_art["path"], "folder.jpg")):
-                                log("Artist Thumb already exists, skipping", xbmc.LOGDEBUG)
+                                log("Artist Thumb already exists, skipping")
                                 continue
                             else:
                                 message, d_success, final_destination, is_canceled = download_art(artwork, auto_art,
@@ -307,7 +307,7 @@ def auto_download(type_, artist_list, background=False):
                                                                                                   "auto", background)
                         elif type_ == ArtType.CLEARLOGO:
                             if xbmcvfs.exists(os.path.join(auto_art["path"], "logo.png")):
-                                log("ClearLOGO already exists, skipping", xbmc.LOGDEBUG)
+                                log("ClearLOGO already exists, skipping")
                                 continue
                             else:
                                 message, d_success, final_destination, is_canceled = download_art(artwork, auto_art,
@@ -315,7 +315,7 @@ def auto_download(type_, artist_list, background=False):
                                                                                                   "auto", background)
                         elif type_ == ArtType.BANNER:
                             if xbmcvfs.exists(os.path.join(auto_art["path"], "banner.jpg")):
-                                log("Music Banner already exists, skipping", xbmc.LOGDEBUG)
+                                log("Music Banner already exists, skipping")
                                 continue
                             else:
                                 message, d_success, final_destination, is_canceled = download_art(artwork, auto_art,
@@ -326,11 +326,11 @@ def auto_download(type_, artist_list, background=False):
                             auto_art["path"] = final_destination
                             successfully_downloaded.append(auto_art)
                         else:
-                            log("Download Error...  Check Path.", xbmc.LOGDEBUG)
-                            log("    Path: %s" % auto_art["path"], xbmc.LOGDEBUG)
+                            log("Download Error...  Check Path.")
+                            log("    Path: %s" % auto_art["path"])
                             d_error = True
                 else:
-                    log("Artist Match not found", xbmc.LOGDEBUG)
+                    log("Artist Match not found")
             elif type_ in (ArtType.CDART, ArtType.COVER) and artist["has_art"]:
                 local_album_list = db.get_local_albums_db(artist["name"], background)
                 if type_ == ArtType.CDART:
@@ -342,7 +342,7 @@ def auto_download(type_, artist_list, background=False):
                     if dialog_msg("iscanceled", background=background):
                         break
                     if not remote_art_url:
-                        log("No artwork found", xbmc.LOGDEBUG)
+                        log("No artwork found")
                         break
                     album_count += 1
                     if not album["musicbrainz_albumid"]:
@@ -351,7 +351,7 @@ def auto_download(type_, artist_list, background=False):
                                line1="%s%s" % (__lng__(32038), utils.get_unicode(artist["name"])),
                                line2="%s%s" % (__lng__(32039), utils.get_unicode(album["title"])),
                                background=background)
-                    log("Album: %s" % album["title"], xbmc.LOGDEBUG)
+                    log("Album: %s" % album["title"])
                     if not album[key_label] or resizeondownload:
                         musicbrainz_albumid = album["musicbrainz_albumid"]
                         art = db.artwork_search(remote_art_url, musicbrainz_albumid, album["disc"], key_label)
@@ -360,8 +360,8 @@ def auto_download(type_, artist_list, background=False):
                                 low_res = check_size(album["path"].replace("\\\\", "\\"), key_label, art["size"],
                                                      art["size"])
                             if art["picture"]:
-                                log("ALBUM MATCH ON FANART.TV FOUND", xbmc.LOGDEBUG)
-                                # log( "test_album[0]: %s" % test_album[0], xbmc.LOGDEBUG )
+                                log("ALBUM MATCH ON FANART.TV FOUND")
+                                # log( "test_album[0]: %s" % test_album[0] )
                                 if low_res:
                                     message, d_success, final_destination, is_canceled = download_art(art["picture"],
                                                                                                       album,
@@ -373,17 +373,17 @@ def auto_download(type_, artist_list, background=False):
                                         album["path"] = final_destination
                                         successfully_downloaded.append(album)
                                     else:
-                                        log("Download Error...  Check Path.", xbmc.LOGDEBUG)
-                                        log("    Path: %s" % repr(album["path"]), xbmc.LOGDEBUG)
+                                        log("Download Error...  Check Path.")
+                                        log("    Path: %s" % repr(album["path"]))
                                         d_error = True
                                 else:
                                     pass
                             else:
-                                log("ALBUM NOT MATCHED ON FANART.TV", xbmc.LOGDEBUG)
+                                log("ALBUM NOT MATCHED ON FANART.TV")
                         else:
-                            log("ALBUM NOT MATCHED ON FANART.TV", xbmc.LOGDEBUG)
+                            log("ALBUM NOT MATCHED ON FANART.TV")
                     else:
-                        log("%s artwork file already exists, skipping..." % key_label, xbmc.LOGDEBUG)
+                        log("%s artwork file already exists, skipping..." % key_label)
         dialog_msg("close", background=background)
         if d_error:
             dialog_msg("ok", line1=__lng__(32026), line2="%s: %s" % (__lng__(32041), download_count),

@@ -52,7 +52,7 @@ def smart_unicode(s):
         elif not isinstance(s, unicode):
             s = unicode(s, 'UTF-8')
     except Exception as e:
-        log(e.message, xbmc.LOGDEBUG)
+        log(e.message)
         if not isinstance(s, basestring):
             if hasattr(s, '__unicode__'):
                 s = unicode(s)
@@ -89,7 +89,7 @@ def get_unicode(to_decode):
 
 def settings_to_log(settings_path):
     try:
-        log("Settings\n", xbmc.LOGDEBUG)
+        log("Settings\n")
         # open path
         settings_file = open(settings_path, "r")
         settings_file_read = settings_file.read()
@@ -135,8 +135,8 @@ def empty_tempxml_folder():
 
 def get_html_source(url, path, save_file=True, overwrite=False):
     """ fetch the html source """
-    log("Retrieving HTML Source", xbmc.LOGDEBUG)
-    log("Fetching URL: %s" % url, xbmc.LOGDEBUG)
+    log("Retrieving HTML Source")
+    log("Fetching URL: %s" % url)
     error = False
     htmlsource = "null"
     file_name = ""
@@ -159,14 +159,14 @@ def get_html_source(url, path, save_file=True, overwrite=False):
                     file_age = datetime.datetime.today() - file_mtime
                     # yes i know... but this is temporary and will be configurable in a later release
                     if file_age.days > 14:
-                        log("Cached file is %s days old, refreshing" % file_age.days, xbmc.LOGDEBUG)
+                        log("Cached file is %s days old, refreshing" % file_age.days)
                         xbmcvfs.delete(file_name)
 
                 if xbmcvfs.exists(file_name) and not overwrite:
-                    log("Retrieving local source", xbmc.LOGDEBUG)
+                    log("Retrieving local source")
                     sock = open(file_name, "r")
                 else:
-                    log("Retrieving online source", xbmc.LOGDEBUG)
+                    log("Retrieving online source")
                     urllib.urlcleanup()
                     sock = urllib.urlopen(url)
             else:
@@ -186,12 +186,12 @@ def get_html_source(url, path, save_file=True, overwrite=False):
         except Exception as e:
             log("error: %s" % e, xbmc.LOGERROR)
             traceback.print_exc()
-            log("!!Unable to open page %s" % url, xbmc.LOGDEBUG)
+            log("!!Unable to open page %s" % url)
             error = True
     if error:
         return "null"
     else:
-        log("HTML Source:\n%s" % htmlsource, xbmc.LOGDEBUG)
+        log("HTML Source:\n%s" % htmlsource)
         if htmlsource == "":
             htmlsource = "null"
         return htmlsource

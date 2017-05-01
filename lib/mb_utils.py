@@ -47,7 +47,7 @@ def split_album_info(album_result, index):
         album["id"] = album_result[index].releaseGroup.id.replace("http://musicbrainz.org/release-group/", "")
         album["title"] = album_result[index].releaseGroup.title
     except Exception as e:
-        log(e.message, xbmc.LOGDEBUG)
+        log(e.message)
         album["artist"] = ""
         album["artist_id"] = ""
         album["id"] = ""
@@ -63,7 +63,7 @@ def get_musicbrainz_release_group(release_mbid):
 
         release_mbid - valid release mbid
     """
-    log("Retrieving MusicBrainz Release Group MBID from Album Release MBID", xbmc.LOGDEBUG)
+    log("Retrieving MusicBrainz Release Group MBID from Album Release MBID")
     url = release_group_url_release_mbid % (server, quote_plus(release_mbid))
     mbid = ""
     htmlsource = get_html_source(url, release_mbid, save_file=False, overwrite=False)
@@ -102,8 +102,8 @@ def get_musicbrainz_album(album_title, artist, e_count, limit=1, with_singles=Fa
     album["artist_id"] = ""
     artist = smart_unicode(get_unicode(artist))
     album_title = smart_unicode(get_unicode(album_title))
-    log("Artist: %s" % artist, xbmc.LOGDEBUG)
-    log("Album: %s" % album_title, xbmc.LOGDEBUG)
+    log("Artist: %s" % artist)
+    log("Album: %s" % album_title)
     artist = artist.replace('"', '?')
     artist = artist.replace('&', 'and')
     album_title = album_title.replace('"', '?')
@@ -118,14 +118,14 @@ def get_musicbrainz_album(album_title, artist, e_count, limit=1, with_singles=Fa
                     xbmc.LOGDEBUG)
                 url = url + nolive_nosingles + query_limit % limit
             elif not with_singles and not by_release and use_live:
-                log("Retrieving MusicBrainz Info - Checking by Artist - Not including Singles", xbmc.LOGDEBUG)
+                log("Retrieving MusicBrainz Info - Checking by Artist - Not including Singles")
                 url = url + live_nosingles + query_limit % limit
             elif not by_release:
                 log("Retrieving MusicBrainz Info - Checking by Artist - Including Singles and Live albums",
                     xbmc.LOGDEBUG)
                 url += query_limit % limit
             elif not with_singles:
-                log("Retrieving MusicBrainz Info - Checking by Artist - Using Release Name", xbmc.LOGDEBUG)
+                log("Retrieving MusicBrainz Info - Checking by Artist - Using Release Name")
                 url = release_group_url_artist % (server, quote_plus(album_title.encode("utf-8")), match_within,
                                                   quote_plus(artist.encode("utf-8"))) + query_limit % limit
         elif use_alias:
@@ -136,14 +136,14 @@ def get_musicbrainz_album(album_title, artist, e_count, limit=1, with_singles=Fa
                     xbmc.LOGDEBUG)
                 url = url + nolive_nosingles + query_limit % limit
             elif not with_singles and not by_release and use_live:
-                log("Retrieving MusicBrainz Info - Checking by Artist - Not including Singles", xbmc.LOGDEBUG)
+                log("Retrieving MusicBrainz Info - Checking by Artist - Not including Singles")
                 url = url + live_nosingles + query_limit % limit
             elif not by_release:
                 log("Retrieving MusicBrainz Info - Checking by Artist - Including Singles and Live albums",
                     xbmc.LOGDEBUG)
                 url += query_limit % limit
             elif not with_singles:
-                log("Retrieving MusicBrainz Info - Checking by Artist - Using Release Name", xbmc.LOGDEBUG)
+                log("Retrieving MusicBrainz Info - Checking by Artist - Using Release Name")
                 url = release_group_url_alias % (server, quote_plus(album_title.encode("utf-8")), match_within,
                                                  quote_plus(artist.encode("utf-8"))) + query_limit % limit
         htmlsource = get_html_source(url, "", save_file=False, overwrite=False)
@@ -162,35 +162,35 @@ def get_musicbrainz_album(album_title, artist, e_count, limit=1, with_singles=Fa
                 album["artist"] = unescape(smart_unicode(mbartist.group(1)))
                 album["artist_id"] = mbartistid.group(1)
             except Exception as e:
-                log(e.message, xbmc.LOGDEBUG)
+                log(e.message)
         if not album["id"]:
             xbmc.sleep(mb_delay)  # sleep for allowing proper use of webserver
             if not with_singles and not by_release and not use_alias and not use_live:
-                log("No releases found on MusicBrainz, Checking For Live Album", xbmc.LOGDEBUG)
+                log("No releases found on MusicBrainz, Checking For Live Album")
                 album, albums = get_musicbrainz_album(album_title, artist, 0, limit, False, False, False,
                                                       True)  # try again by using artist alias
             elif not with_singles and not by_release and not use_alias and use_live:
-                log("No releases found on MusicBrainz, Checking by Artist Alias", xbmc.LOGDEBUG)
+                log("No releases found on MusicBrainz, Checking by Artist Alias")
                 album, albums = get_musicbrainz_album(album_title, artist, 0, limit, False, False, True,
                                                       False)  # try again by using artist alias
             elif use_alias and not with_singles and not by_release and not use_live:
-                log("No releases found on MusicBrainz, Checking by Release Name", xbmc.LOGDEBUG)
+                log("No releases found on MusicBrainz, Checking by Release Name")
                 album, albums = get_musicbrainz_album(album_title, artist, 0, limit, False, True, False,
                                                       False)  # try again by using release name
             elif by_release and not with_singles and not use_alias:
-                log("No releases found on MusicBrainz, Checking by Release name and Artist Alias", xbmc.LOGDEBUG)
+                log("No releases found on MusicBrainz, Checking by Release name and Artist Alias")
                 album, albums = get_musicbrainz_album(album_title, artist, 0, limit, False, True, True,
                                                       False)  # try again by using release name and artist alias
             elif by_release and not with_singles and use_alias:
-                log("No releases found on MusicBrainz, checking singles", xbmc.LOGDEBUG)
+                log("No releases found on MusicBrainz, checking singles")
                 album, albums = get_musicbrainz_album(album_title, artist, 0, limit, True, False, False,
                                                       False)  # try again with singles
             elif with_singles and not use_alias and not by_release:
-                log("No releases found on MusicBrainz, checking singles and Artist Alias", xbmc.LOGDEBUG)
+                log("No releases found on MusicBrainz, checking singles and Artist Alias")
                 album, albums = get_musicbrainz_album(album_title, artist, 0, limit, True, False, True,
                                                       False)  # try again with singles and artist alias
             else:
-                log("No releases found on MusicBrainz.", xbmc.LOGDEBUG)
+                log("No releases found on MusicBrainz.")
                 album["artist"], album["artist_id"], _ = get_musicbrainz_artist_id(artist)
     else:
         match_within = "~4"
@@ -219,11 +219,11 @@ def get_musicbrainz_album(album_title, artist, e_count, limit=1, with_singles=Fa
                         album["title"] = unescape(smart_unicode(mbtitle.group(1)))
                         album["artist"] = unescape(smart_unicode(mbartist.group(1)))
                         album["artist_id"] = mbartistid.group(1)
-                        log("Score     : %s" % album["score"], xbmc.LOGDEBUG)
-                        log("Title     : %s" % album["title"], xbmc.LOGDEBUG)
-                        log("Id        : %s" % album["id"], xbmc.LOGDEBUG)
-                        log("Artist    : %s" % album["artist"], xbmc.LOGDEBUG)
-                        log("Artist ID : %s" % album["artist_id"], xbmc.LOGDEBUG)
+                        log("Score     : %s" % album["score"])
+                        log("Title     : %s" % album["title"])
+                        log("Id        : %s" % album["id"])
+                        log("Artist    : %s" % album["artist"])
+                        log("Artist ID : %s" % album["artist_id"])
                         albums.append(album)
                     except Exception as e:
                         log(e.message, xbmc.LOGERROR)
@@ -238,7 +238,7 @@ def get_musicbrainz_album(album_title, artist, e_count, limit=1, with_singles=Fa
 
 
 def get_musicbrainz_artists(artist_search, limit=1):
-    log("Artist: %s" % artist_search, xbmc.LOGDEBUG)
+    log("Artist: %s" % artist_search)
     artists = []
     artist_name = smart_unicode((artist_search.replace('"', '?').replace('&', 'and')))
     url = artist_url % (server, quote_plus(artist_name.encode("utf-8")), limit)
@@ -261,13 +261,13 @@ def get_musicbrainz_artists(artist_search, limit=1):
                 artist["id"] = id_match.group(1)
             if sort_name_match:
                 artist["sortname"] = unescape(smart_unicode(sort_name_match.group(1)))
-            log("Score     : %s" % artist["score"], xbmc.LOGDEBUG)
-            log("Id        : %s" % artist["id"], xbmc.LOGDEBUG)
-            log("Name      : %s" % artist["name"], xbmc.LOGDEBUG)
-            log("Sort Name : %s" % artist["sortname"], xbmc.LOGDEBUG)
+            log("Score     : %s" % artist["score"])
+            log("Id        : %s" % artist["id"])
+            log("Name      : %s" % artist["name"])
+            log("Sort Name : %s" % artist["sortname"])
             artists.append(artist)
     else:
-        log("No Artist ID found for Artist: %s" % repr(artist_search), xbmc.LOGDEBUG)
+        log("No Artist ID found for Artist: %s" % repr(artist_search))
     xbmc.sleep(mb_delay)
     return artists
 
@@ -300,22 +300,22 @@ def get_musicbrainz_artist_id(artist_search, limit=1, alias=False):
             id_ = id_match.group(1)
         if sort_name_match:
             sortname = unescape(smart_unicode(sort_name_match.group(1)))
-        log("Score     : %s" % score, xbmc.LOGDEBUG)
-        log("Id        : %s" % id_, xbmc.LOGDEBUG)
-        log("Name      : %s" % name, xbmc.LOGDEBUG)
-        log("Sort Name : %s" % sortname, xbmc.LOGDEBUG)
+        log("Score     : %s" % score)
+        log("Id        : %s" % id_)
+        log("Name      : %s" % name)
+        log("Sort Name : %s" % sortname)
     else:
         if not alias:
-            log("No Artist ID found trying aliases: %s" % artist_search, xbmc.LOGDEBUG)
+            log("No Artist ID found trying aliases: %s" % artist_search)
             name, id_, sortname = get_musicbrainz_artist_id(artist_search, limit, True)
         else:
-            log("No Artist ID found for Artist: %s" % artist_search, xbmc.LOGDEBUG)
+            log("No Artist ID found for Artist: %s" % artist_search)
     xbmc.sleep(mb_delay)
     return name, id_, sortname
 
 
 def update_musicbrainz_id(type_, info):
-    log("Updating MusicBrainz ID", xbmc.LOGDEBUG)
+    log("Updating MusicBrainz ID")
     artist_id = ""
     try:
         if type_ == "artist":  # available data info["local_id"], info["name"], info["distant_id"]
@@ -367,10 +367,10 @@ def mbid_check(database_mbid, type_):
             mbid_match = False
     else:
         pass
-    log("Current MBID: %s    New MBID: %s" % (database_mbid, new_mbid), xbmc.LOGDEBUG)
+    log("Current MBID: %s    New MBID: %s" % (database_mbid, new_mbid))
     if mbid_match:
-        log("MBID is current. No Need to change", xbmc.LOGDEBUG)
+        log("MBID is current. No Need to change")
     else:
-        log("MBID is not current. Need to change", xbmc.LOGDEBUG)
+        log("MBID is not current. Need to change")
     xbmc.sleep(mb_delay)
     return mbid_match, new_mbid

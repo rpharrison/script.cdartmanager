@@ -16,7 +16,7 @@ import ftv_scraper
 import mb_utils
 import utils
 from utils import log, dialog_msg
-from cdam import Color
+from cdam import Color, ArtType, FileName
 
 __cdam__ = cdam.CDAM()
 __cfg__ = cdam.Settings()
@@ -103,12 +103,12 @@ class GUI(xbmcgui.WindowXMLDialog):
             check = False
             try:
                 for album in local_album_list:
-                    if _type == "cdart":
+                    if _type == ArtType.CDART:
                         art_image = __cdam__.file_missing_cdart()
-                        filename = "cdart.png"
+                        filename = FileName.CDART
                     else:
                         art_image = __cdam__.file_missing_cover()
-                        filename = "folder.jpg"
+                        filename = FileName.FOLDER
                     empty_list = False
                     if album["disc"] > 1:
                         label1 = "%s - %s %s" % (album["title"], __lng__(32016), album["disc"])
@@ -441,7 +441,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                     listitem = xbmcgui.ListItem(label=item["artist"], label2=item["title"], thumbnailImage=item["path"])
                 except Exception as e:
                     listitem = xbmcgui.ListItem(label=item["artist"], label2="", thumbnailImage=item["path"])
-                    log(e.message, xbmc.LOGDEBUG)
+                    log(e.message)
                 self.getControl(404).addItem(listitem)
                 listitem.setLabel(item["artist"])
                 xbmc.executebuiltin("Dialog.Close(busydialog)")
@@ -461,8 +461,8 @@ class GUI(xbmcgui.WindowXMLDialog):
         xbmc.executebuiltin("ActivateWindow(busydialog)")
         self.getControl(140).reset()
         for album in l_artist:
-            if album["cdart"]:
-                cdart_img = os.path.join(album["path"], "cdart.png")
+            if album[ArtType.CDART]:
+                cdart_img = os.path.join(album["path"], FileName.CDART)
                 label2 = "%s&&%s&&&&%s&&%s" % (url, album["path"], cdart_img, album["local_id"])
                 label1 = "%s * %s" % (album["artist"], album["title"])
                 listitem = xbmcgui.ListItem(label=label1, label2=label2, thumbnailImage=cdart_img)
@@ -580,7 +580,7 @@ class GUI(xbmcgui.WindowXMLDialog):
             if dialog_msg("iscanceled"):
                 break
             if album["local"] == "TRUE" and album["distant"] == "FALSE":
-                source = os.path.join(album["path"].replace("\\\\", "\\"), "cdart.png")
+                source = os.path.join(album["path"].replace("\\\\", "\\"), FileName.CDART)
                 log("Source: %s" % repr(source), xbmc.LOGNOTICE)
                 if xbmcvfs.exists(source):
                     if fn_format == 0:
@@ -693,7 +693,7 @@ class GUI(xbmcgui.WindowXMLDialog):
             log("Source folder: %s" % repr(source), xbmc.LOGNOTICE)
             log("Source filename: %s" % repr(fn), xbmc.LOGNOTICE)
             if xbmcvfs.exists(fn):
-                destination = os.path.join(album["path"], "cdart.png")
+                destination = os.path.join(album["path"], FileName.CDART)
                 log("Destination: %s" % repr(destination), xbmc.LOGNOTICE)
                 try:
                     xbmcvfs.copy(fn, destination)
@@ -705,7 +705,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                     log(e.message, xbmc.LOGWARNING)
                     log("######  Copying error, check path and file permissions", xbmc.LOGNOTICE)
                 try:
-                    db.set_has_art("cdart", album["path"])
+                    db.set_has_art(ArtType.CDART, album["path"])
                 except Exception as e:
                     log("Error in script occured", xbmc.LOGNOTICE)
                     log(e.message, xbmc.LOGWARNING)
@@ -740,8 +740,8 @@ class GUI(xbmcgui.WindowXMLDialog):
         for album in albums:
             if dialog_msg("iscanceled"):
                 break
-            if album["cdart"]:
-                source = os.path.join(album["path"].replace("\\\\", "\\"), "cdart.png")
+            if album[ArtType.CDART]:
+                source = os.path.join(album["path"].replace("\\\\", "\\"), FileName.CDART)
                 log("cdART #: %s" % count, xbmc.LOGNOTICE)
                 log("Artist: %-30s  Album: %s" % (repr(album["artist"]), repr(album["title"])), xbmc.LOGNOTICE)
                 log("Album Path: %s" % repr(source), xbmc.LOGNOTICE)
@@ -830,11 +830,11 @@ class GUI(xbmcgui.WindowXMLDialog):
                            line2=" %s: %s" % (__lng__(32039), utils.get_unicode(album["title"])), line3="")
                 cdart = " "
                 cover = " "
-                if album["cdart"]:
+                if album[ArtType.CDART]:
                     cdart = "X"
-                if album["cover"]:
+                if album[ArtType.COVER]:
                     cover = "X"
-                if album["cdart"] and album["cover"]:
+                if album[ArtType.CDART] and album[ArtType.COVER]:
                     continue
                 else:
                     if int(album["disc"]) > 1:
@@ -903,7 +903,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                     try:
                         missing.write(line.encode("utf8"))
                     except Exception as ex:
-                        log(ex.message, xbmc.LOGDEBUG)
+                        log(ex.message)
                         missing.write(repr(line))
                     missing.write("-" * 172)
                     missing.write("\r\n")
@@ -946,7 +946,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                     image = ""
                     # image = image
         except Exception as ex:  # If there is not any information in any of those locations, no image.
-            log(ex.message, xbmc.LOGDEBUG)
+            log(ex.message)
             traceback.print_exc()
             image = __cdam__.file_blank_artwork()
         self.getControl(210).setImage(image)
@@ -1025,10 +1025,10 @@ class GUI(xbmcgui.WindowXMLDialog):
         if ctrl_id in (105, 150):  # cdARTs Search Artists
             if ctrl_id == 105:
                 self.menu_mode = 1
-                self.artwork_type = "cdart"
+                self.artwork_type = ArtType.CDART
             elif ctrl_id == 150:
                 self.menu_mode = 3
-                self.artwork_type = "cover"
+                self.artwork_type = ArtType.COVER
             self.local_artists = self.album_artists
             xbmc.executebuiltin("ActivateWindow(busydialog)")
             self.getControl(120).reset()
@@ -1051,27 +1051,27 @@ class GUI(xbmcgui.WindowXMLDialog):
             self.getControl(204).setLabel(__lng__(32038) + "[CR]%s" % artist_name)
             if self.menu_mode == 1:
                 self.remote_cdart_url = ftv_scraper.remote_cdart_list(self.artist_menu)
-                xbmcgui.Window(10001).setProperty("artwork", "cdart")
-                self.populate_album_list(self.remote_cdart_url, 0, "cdart")
+                xbmcgui.Window(10001).setProperty("artwork", ArtType.CDART)
+                self.populate_album_list(self.remote_cdart_url, 0, ArtType.CDART)
             elif self.menu_mode == 3:
                 self.remote_cdart_url = ftv_scraper.remote_coverart_list(self.artist_menu)
-                xbmcgui.Window(10001).setProperty("artwork", "cover")
-                self.populate_album_list(self.remote_cdart_url, 0, "cover")
+                xbmcgui.Window(10001).setProperty("artwork", ArtType.COVER)
+                self.populate_album_list(self.remote_cdart_url, 0, ArtType.COVER)
             elif self.menu_mode == 6:
-                xbmcgui.Window(10001).setProperty("artwork", "fanart")
+                xbmcgui.Window(10001).setProperty("artwork", ArtType.FANART)
                 self.populate_fanarts(self.artist_menu, 0)
             elif self.menu_mode == 7:
-                xbmcgui.Window(10001).setProperty("artwork", "clearlogo")
+                xbmcgui.Window(10001).setProperty("artwork", ArtType.CLEARLOGO)
                 self.populate_clearlogos(self.artist_menu, 0)
             elif self.menu_mode == 9:
-                xbmcgui.Window(10001).setProperty("artwork", "artistthumb")
+                xbmcgui.Window(10001).setProperty("artwork", ArtType.THUMB)
                 self.populate_artistthumbs(self.artist_menu, 0)
             elif self.menu_mode == 11:
                 self.local_albums = db.get_local_albums_db(self.artist_menu["name"])
                 self.getControl(145).reset()
                 self.populate_album_list_mbid(self.local_albums)
             elif self.menu_mode == 13:
-                xbmcgui.Window(10001).setProperty("artwork", "musicbanner")
+                xbmcgui.Window(10001).setProperty("artwork", ArtType.BANNER)
                 self.populate_musicbanners(self.artist_menu, 0)
         if ctrl_id == 145:
             self.selected_item = self.getControl(145).getSelectedPosition()
@@ -1086,7 +1086,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                     self.getControl(156).setLabel(
                         __lng__(32038) + "[CR]%s" % utils.get_unicode(self.artist_menu["name"]))
                 except Exception as ex:
-                    log(ex.message, xbmc.LOGDEBUG)
+                    log(ex.message)
                     self.getControl(156).setLabel(__lng__(32038) + "[CR]%s" % repr(self.artist_menu["name"]))
             if self.menu_mode in (11, 12):  # Album
                 self.album_menu = {"local_id": (
@@ -1104,7 +1104,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                     self.getControl(156).setLabel(
                         __lng__(32039) + "[CR]%s" % utils.get_unicode(self.album_menu["title"]))
                 except Exception as ex:
-                    log(ex.message, xbmc.LOGDEBUG)
+                    log(ex.message)
                     self.getControl(156).setLabel(__lng__(32039) + "[CR]%s" % repr(self.album_menu["title"]))
         if ctrl_id == 157:  # Manual Edit
             if self.menu_mode == 10:  # Artist
@@ -1149,7 +1149,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                 cdart_path["artist"] = utils.get_unicode(self.getControl(204).getLabel()).replace(
                     __lng__(32038) + "[CR]", "")
             except Exception as ex:
-                log(ex.message, xbmc.LOGDEBUG)
+                log(ex.message)
                 cdart_path["artist"] = repr(self.getControl(204).getLabel()).replace(__lng__(32038) + "[CR]", "")
             cdart_path["title"] = self.getControl(122).getSelectedItem().getLabel()
             cdart_path["title"] = utils.remove_color(cdart_path["title"])
@@ -1159,28 +1159,28 @@ class GUI(xbmcgui.WindowXMLDialog):
                 if url.lower().startswith("http"):
                     message = None
                     if self.menu_mode == 1:
-                        message, _, _ = download.download_art(url, cdart_path, "cdart", "manual")
+                        message, _, _ = download.download_art(url, cdart_path, ArtType.CDART, "manual")
                     elif self.menu_mode == 3:
-                        message, _, _ = download.download_art(url, cdart_path, "cover", "manual")
+                        message, _, _ = download.download_art(url, cdart_path, ArtType.COVER, "manual")
                     dialog_msg("close")
                     if message is not None:  # and do not crash if there's somethin wrong with this url
                         dialog_msg("ok", heading=message[0], line1=message[1], line2=message[2], line3=message[3])
                     else:
                         log("Download must have failed, message is None")
             else:  # If it is not a recognized Album...
-                log("Oops --  Some how I got here... - ControlID(122)", xbmc.LOGDEBUG)
+                log("Oops --  Some how I got here... - ControlID(122)")
             all_artist_count, local_album_count, local_artist_count, local_cdart_count = db.new_local_count()
             self.refresh_counts(local_album_count, local_artist_count, local_cdart_count)
             artist_name = utils.get_unicode(self.artist_menu["name"])
             self.getControl(204).setLabel(__lng__(32038) + "[CR]%s" % artist_name)
             if self.menu_mode == 1:
                 self.remote_cdart_url = ftv_scraper.remote_cdart_list(self.artist_menu)
-                xbmcgui.Window(10001).setProperty("artwork", "cdart")
-                self.populate_album_list(self.remote_cdart_url, self.selected_item, "cdart")
+                xbmcgui.Window(10001).setProperty("artwork", ArtType.CDART)
+                self.populate_album_list(self.remote_cdart_url, self.selected_item, ArtType.CDART)
             elif self.menu_mode == 3:
                 self.remote_cdart_url = ftv_scraper.remote_coverart_list(self.artist_menu)
-                xbmcgui.Window(10001).setProperty("artwork", "cover")
-                self.populate_album_list(self.remote_cdart_url, self.selected_item, "cover")
+                xbmcgui.Window(10001).setProperty("artwork", ArtType.COVER)
+                self.populate_album_list(self.remote_cdart_url, self.selected_item, ArtType.COVER)
         if ctrl_id == 132:  # Clean Music database selected from Advanced Menu
             log("#  Executing Built-in - CleanLibrary(music)", xbmc.LOGNOTICE)
             xbmc.executebuiltin("CleanLibrary(music)")
@@ -1227,7 +1227,7 @@ class GUI(xbmcgui.WindowXMLDialog):
         if ctrl_id == 137:  # Local cdART List
             self.getControl(122).reset()
             self.menu_mode = 8
-            xbmcgui.Window(10001).setProperty("artwork", "cdart")
+            xbmcgui.Window(10001).setProperty("artwork", ArtType.CDART)
             self.populate_local_cdarts(0)
         if ctrl_id == 107:
             self.setFocusId(200)
@@ -1265,13 +1265,13 @@ class GUI(xbmcgui.WindowXMLDialog):
             self.setFocusId(140)
             self.populate_local_cdarts()
         if ctrl_id == 100:  # cdARTS
-            self.artwork_type = "cdart"
+            self.artwork_type = ArtType.CDART
             self.setFocusId(105)
         if ctrl_id == 101:  # Cover Arts
-            self.artwork_type = "cover"
+            self.artwork_type = ArtType.COVER
             self.setFocusId(150)
-        if ctrl_id == 154:  # Cover Arts
-            self.artwork_type = "musicbanner"
+        if ctrl_id == 154:  # Muscic Banner
+            self.artwork_type = ArtType.BANNER
             self.setFocusId(200)
         if ctrl_id == 103:  # Advanced
             self.setFocusId(130)
@@ -1292,7 +1292,7 @@ class GUI(xbmcgui.WindowXMLDialog):
         if ctrl_id in (205, 207):  # Artist Music Banner Select Artists
             self.menu_mode = 13
         if ctrl_id == 102:
-            self.artwork_type = "fanart"
+            self.artwork_type = ArtType.FANART
             self.setFocusId(170)
         if ctrl_id == 170:
             self.setFocusId(180)
@@ -1311,13 +1311,13 @@ class GUI(xbmcgui.WindowXMLDialog):
         if ctrl_id == 201:
             self.setFocusId(207)
         if ctrl_id == 152:
-            self.artwork_type = "clearlogo"
-            xbmcgui.Window(10001).setProperty("artwork", "clearlogo")
+            self.artwork_type = ArtType.CLEARLOGO
+            xbmcgui.Window(10001).setProperty("artwork", ArtType.CLEARLOGO)
             self.menu_mode = 7
             self.setFocusId(168)
         if ctrl_id == 153:
-            self.artwork_type = "artistthumb"
-            xbmcgui.Window(10001).setProperty("artwork", "artistthumb")
+            self.artwork_type = ArtType.THUMB
+            xbmcgui.Window(10001).setProperty("artwork", ArtType.THUMB)
             self.menu_mode = 9
             self.setFocusId(193)
         if ctrl_id in (180, 181, 184, 185, 197, 198, 205, 206):
@@ -1340,12 +1340,12 @@ class GUI(xbmcgui.WindowXMLDialog):
                                               utils.change_characters(utils.smart_unicode(artist["artist"])))
                 selected_item = self.getControl(167).getSelectedPosition()
                 if url:
-                    message, _, _ = download.download_art(url, artist, "clearlogo", "manual")
+                    message, _, _ = download.download_art(url, artist, ArtType.CLEARLOGO, "manual")
                     dialog_msg("close")
                     dialog_msg("ok", heading=message[0], line1=message[1], line2=message[2], line3=message[3])
                 else:
-                    log("Nothing to download", xbmc.LOGDEBUG)
-                xbmcgui.Window(10001).setProperty("artwork", "clearlogo")
+                    log("Nothing to download")
+                xbmcgui.Window(10001).setProperty("artwork", ArtType.CLEARLOGO)
                 self.populate_clearlogos(self.artist_menu, selected_item)
         if ctrl_id == 202:  # Music Banner
             artist = {}
@@ -1356,12 +1356,12 @@ class GUI(xbmcgui.WindowXMLDialog):
                                               utils.change_characters(utils.smart_unicode(artist["artist"])))
                 selected_item = self.getControl(202).getSelectedPosition()
                 if url:
-                    message, success, is_canceled = download.download_art(url, artist, "musicbanner", "manual")
+                    message, success, is_canceled = download.download_art(url, artist, ArtType.BANNER, "manual")
                     dialog_msg("close")
                     dialog_msg("ok", heading=message[0], line1=message[1], line2=message[2], line3=message[3])
                 else:
-                    log("Nothing to download", xbmc.LOGDEBUG)
-                xbmcgui.Window(10001).setProperty("artwork", "musicbanner")
+                    log("Nothing to download")
+                xbmcgui.Window(10001).setProperty("artwork", ArtType.BANNER)
                 self.populate_musicbanners(self.artist_menu, selected_item)
         if ctrl_id == 160:  # Fanart Download
             artist = {}
@@ -1372,12 +1372,12 @@ class GUI(xbmcgui.WindowXMLDialog):
                                               utils.change_characters(utils.smart_unicode(artist["artist"])))
                 selected_item = self.getControl(160).getSelectedPosition()
                 if url:
-                    message, success, is_canceled = download.download_art(url, artist, "fanart", "manual")
+                    message, success, is_canceled = download.download_art(url, artist, ArtType.FANART, "manual")
                     dialog_msg("close")
                     dialog_msg("ok", heading=message[0], line1=message[1], line2=message[2], line3=message[3])
                 else:
-                    log("Nothing to download", xbmc.LOGDEBUG)
-                xbmcgui.Window(10001).setProperty("artwork", "fanart")
+                    log("Nothing to download")
+                xbmcgui.Window(10001).setProperty("artwork", ArtType.FANART)
                 self.populate_fanarts(self.artist_menu, selected_item)
         if ctrl_id == 199:  # Artist Thumb
             artist = {}
@@ -1388,12 +1388,12 @@ class GUI(xbmcgui.WindowXMLDialog):
                                               utils.change_characters(utils.smart_unicode(artist["artist"])))
                 selected_item = self.getControl(199).getSelectedPosition()
                 if url:
-                    message, success, is_canceled = download.download_art(url, artist, "artistthumb", "manual")
+                    message, success, is_canceled = download.download_art(url, artist, ArtType.THUMB, "manual")
                     dialog_msg("close")
                     dialog_msg("ok", heading=message[0], line1=message[1], line2=message[2], line3=message[3])
                 else:
-                    log("Nothing to download", xbmc.LOGDEBUG)
-                xbmcgui.Window(10001).setProperty("artwork", "artistthumb")
+                    log("Nothing to download")
+                xbmcgui.Window(10001).setProperty("artwork", ArtType.THUMB)
                 self.populate_artistthumbs(self.artist_menu, selected_item)
         if ctrl_id in (182, 186, 187, 183, 106, 151, 195, 196, 207, 208):  # Automatic Download
             self.artwork_type = ""
@@ -1401,18 +1401,18 @@ class GUI(xbmcgui.WindowXMLDialog):
                 self.local_artists = self.album_artists
                 if ctrl_id == 106:  # cdARTs
                     self.menu_mode = 2
-                    self.artwork_type = "cdart"
+                    self.artwork_type = ArtType.CDART
                 elif ctrl_id == 151:  # cover arts
                     self.menu_mode = 4
-                    self.artwork_type = "cover"
+                    self.artwork_type = ArtType.COVER
                 elif ctrl_id == 186:  # ClearLOGOs
-                    self.artwork_type = "clearlogo"
+                    self.artwork_type = ArtType.CLEARLOGO
                 elif ctrl_id == 182:  # Fanarts
-                    self.artwork_type = "fanart"
+                    self.artwork_type = ArtType.FANART
                 elif ctrl_id == 195:  # Artist Thumbs
-                    self.artwork_type = "artistthumb"
+                    self.artwork_type = ArtType.THUMB
                 elif ctrl_id == 207:  # Artist banner
-                    self.artwork_type = "musicbanner"
+                    self.artwork_type = ArtType.BANNER
                 _, successfully_downloaded = download.auto_download(self.artwork_type, self.local_artists)
                 all_artist_count, local_album_count, local_artist_count, local_cdart_count = db.new_local_count()
                 self.refresh_counts(local_album_count, local_artist_count, local_cdart_count)
@@ -1492,7 +1492,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                 try:
                     kb.setDefault(self.artist_menu["name"])
                 except Exception as ex:
-                    log(ex.message, xbmc.LOGDEBUG)
+                    log(ex.message)
                     kb.setDefault(repr(self.artist_menu["name"]))
                 kb.doModal()
                 while True:
@@ -1512,7 +1512,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                 try:
                     kb.setDefault(self.album_menu["title"])
                 except Exception as ex:
-                    log(ex.message, xbmc.LOGDEBUG)
+                    log(ex.message)
                     kb.setDefault(repr(self.album_menu["title"]))
                 kb.doModal()
                 while True:
@@ -1528,7 +1528,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                     try:
                         kb.setDefault(self.album_menu["artist"])
                     except Exception as ex:
-                        log(ex.message, xbmc.LOGDEBUG)
+                        log(ex.message)
                         kb.setDefault(repr(self.album_menu["artist"]))
                     kb.doModal()
                     while True:
