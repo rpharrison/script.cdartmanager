@@ -233,6 +233,7 @@ class Def:
     DB_VERSION = "3.0.3"
     USERAGENT_BASE = "https://github.com/stefansielaff/script.cdartmanager"
     FANARTTV_API_KEY = "65169f993d552483391ca10c1ae7fb03"
+    TADB_API_KEY = "9982148621896198621597"
 
 
 class MediaType:
