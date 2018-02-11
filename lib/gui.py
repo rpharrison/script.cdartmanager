@@ -10,6 +10,7 @@ import xbmcgui
 import xbmcvfs
 
 import cdam
+import filesystem
 import db
 import download
 import ftv_scraper
@@ -21,6 +22,7 @@ from cdam import Color, ArtType, FileName
 __cdam__ = cdam.CDAM()
 __cfg__ = cdam.Settings()
 __lng__ = __cdam__.getLocalizedString
+__fs__ = filesystem.CDAMFilesystem()
 
 kb = xbmc.Keyboard()
 KEY_BUTTON_BACK = 275
@@ -463,7 +465,6 @@ class GUI(xbmcgui.WindowXMLDialog):
         for album in l_artist:
             if album[ArtType.CDART]:
                 cdart_img = os.path.join(album["path"], FileName.CDART)
-
                 label2 = "%s&&%s&&&&%s&&%s" % (url, album["path"], cdart_img, album["local_id"])
                 label1 = "%s * %s" % (album["artist"], album["title"])
                 if album["disc"] > 1:
@@ -481,63 +482,12 @@ class GUI(xbmcgui.WindowXMLDialog):
             self.getControl(140).selectItem(focus_item)
         return work_temp
 
-    # get backup folder for album
     @staticmethod
-    def get_backup_filename(artist, album, disc_num=1):
-        fn_format = __cfg__.folder()
-        backup_folder = __cfg__.path_backup_path()
-        if not backup_folder:
-            __cfg__.open()
-            backup_folder = __cfg__.path_backup_path()
-        if fn_format == 0:
-            destination = os.path.join(backup_folder, utils.change_characters(artist))
-            fn = os.path.join(destination, utils.change_characters(album))
-        else:
-            destination = backup_folder
-            fn = os.path.join(destination, utils.change_characters((artist + " - " + album).lower()))
-        if disc_num > 1:
-            fn += "_disc_" + str(disc_num)
-        fn += ".png"
-        log("backup filename: %s" % fn, xbmc.LOGDEBUG)
-        return fn
+    def cdart_delete(fn, album_title):
+        if __fs__.cdart_single_delete(fn):
+            db.unset_cdart(album_title)
 
-    @staticmethod
-    def single_backup_copy(artist, album, source):
-        log("Copying To Backup Folder: %s - %s" % (artist, album), xbmc.LOGNOTICE)
-        log("source: %s" % source, xbmc.LOGNOTICE)
-        if xbmcvfs.exists(source):
-            target = GUI.get_backup_filename(artist, album)
-            if not xbmcvfs.exists(os.path.dirname(target)):
-                xbmcvfs.mkdirs(os.path.dirname(target))
-            else:
-                pass
-            log("target: %s" % target, xbmc.LOGNOTICE)
-            try:
-                xbmcvfs.copy(source, target)
-            except Exception as e:
-                log("Error in script occured", xbmc.LOGNOTICE)
-                log(e.message, xbmc.LOGWARNING)
-                log("copying error, check path and file permissions", xbmc.LOGNOTICE)
-        else:
-            log("Error: cdART file does not exist..  Please check...", xbmc.LOGNOTICE)
-        return
-
-    @staticmethod
-    def single_cdart_delete(source, album):
-        log("Deleting: %s" % source, xbmc.LOGNOTICE)
-        if xbmcvfs.exists(source):
-            try:
-                xbmcvfs.delete(source)
-                db.unset_cdart(album)
-            except Exception as e:
-                log("Error in script occured", xbmc.LOGNOTICE)
-                log(e.message, xbmc.LOGWARNING)
-                log("Deleteing error, check path and file permissions", xbmc.LOGNOTICE)
-        else:
-            log("Error: cdART file does not exist..  Please check...", xbmc.LOGNOTICE)
-        return
-
-    def restore_from_backup(self):
+    def restore_cdart(self):
         log("Restoring cdARTs from backup folder", xbmc.LOGNOTICE)
         dialog_msg("create", heading=__lng__(32069))
         # Onscreen Dialog - Restoring cdARTs from backup...
@@ -627,79 +577,27 @@ class GUI(xbmcgui.WindowXMLDialog):
         # copy cdarts from music folder to temporary location
 
     # first step to copy to skin folder
-    def cdart_copy(self):
+    def backup_cdart(self):
         log("Copying cdARTs to Backup folder", xbmc.LOGNOTICE)
-        destination = ""
-        duplicates = 0
-        percent = 0
-        count = 0
-        total = 0
-
-        fn_format = __cfg__.folder()
-        bkup_folder = __cfg__.path_backup_path()
-        if not bkup_folder:
-            __cfg__.open()
-            bkup_folder = __cfg__.path_backup_path()
-
         albums = db.get_local_albums_db("all artists", self.background)
+        total = 0
+        copied = 0
         dialog_msg("create", heading=__lng__(32060))
         for album in albums:
             if dialog_msg("iscanceled"):
                 break
+            total += 1
             if album[ArtType.CDART]:
                 source = os.path.join(album["path"].replace("\\\\", "\\"), FileName.CDART)
-                log("cdART #: %s" % count, xbmc.LOGNOTICE)
-                log("Artist: %-30s  Album: %s" % (repr(album["artist"]), repr(album["title"])), xbmc.LOGNOTICE)
-                log("Album Path: %s" % repr(source), xbmc.LOGNOTICE)
-                if xbmcvfs.exists(source):
-                    if fn_format == 0:
-                        destination = os.path.join(bkup_folder,
-                                                   (album["artist"].replace("/", "").replace("'", "")))  # to fix AC/DC
-                        if album["disc"] > 1:
-                            fn = os.path.join(destination, (
-                                (album["title"].replace("/", "").replace("'", "")) + "_disc_" + str(
-                                    album["disc"]) + ".png"))
-                        else:
-                            fn = os.path.join(destination,
-                                              ((album["title"].replace("/", "").replace("'", "")) + ".png"))
-                    elif fn_format == 1:
-                        destination = os.path.join(bkup_folder)  # to fix AC/DC
-                        if album["disc"] > 1:
-                            fn = os.path.join(destination, (
-                                (album["artist"].replace("/", "").replace("'", "")) + " - " + (
-                                    album["title"].replace("/", "").replace("'", "")) + "_disc_" + str(
-                                    album["disc"]) + ".png").lower())
-                        else:
-                            fn = os.path.join(destination, (
-                                (album["artist"].replace("/", "").replace("'", "")) + " - " + (
-                                    album["title"].replace("/", "").replace("'", "")) + ".png").lower())
-                    log("Destination Path: %s" % repr(destination), xbmc.LOGNOTICE)
-                    if not xbmcvfs.exists(destination):
-                        xbmcvfs.mkdirs(destination)
-                    log("Filename: %s" % repr(fn), xbmc.LOGNOTICE)
-                    if xbmcvfs.exists(fn):
-                        log("################## cdART Not being copied, File exists: %s" % repr(fn), xbmc.LOGNOTICE)
-                        duplicates += 1
-                    else:
-                        try:
-                            xbmcvfs.copy(source, fn)
-                            count += 1
-                            dialog_msg("update", percent=percent, line1="backup folder: %s" % bkup_folder,
-                                       line2="Filename: %s" % repr(fn), line3="%s: %s" % (__lng__(32056), count))
-                        except Exception as e:
-                            log("Error in script occured", xbmc.LOGNOTICE)
-                            log(e.message, xbmc.LOGWARNING)
-                            log("######  Copying error, check path and file permissions", xbmc.LOGNOTICE)
-                else:
-                    log("######  Copying error, cdart.png does not exist", xbmc.LOGNOTICE)
+                if __fs__.cdart_single_backup_copy(album["artist"], album["title"], source):
+                    copied += 1
+                percent = int(total / len(albums) * 100)
+                dialog_msg("update", percent=percent, line1="%s" % source, line2="%s: %s" % (__lng__(32056), copied))
             else:
                 pass
-            percent = int(total / float(len(albums)) * 100)
-            total += 1
         dialog_msg("close")
-        log("Duplicate cdARTs: %s" % duplicates, xbmc.LOGNOTICE)
-        dialog_msg("ok", heading=__lng__(32057), line1="%s: %s" % (__lng__(32058), bkup_folder),
-                   line2="%s %s" % (count, __lng__(32059)), line3="%s Duplicates Found" % duplicates)
+        dialog_msg("ok", heading=__lng__(32057), line1="%s: %s" % (__lng__(32058), __cfg__.path_backup_path()),
+                   line2="%s %s" % (copied, __lng__(32059)))
         return
 
     # Search for missing cdARTs and save to missing.txt in Missing List path
@@ -1094,7 +992,7 @@ class GUI(xbmcgui.WindowXMLDialog):
             log("#  Executing Built-in - UpdateLibrary(music)", xbmc.LOGNOTICE)
             xbmc.executebuiltin("UpdateLibrary(music)")
         if ctrl_id == 135:  # Back up cdART selected from Advanced Menu
-            self.cdart_copy()
+            self.backup_cdart()
         if ctrl_id == 134:
             log("No function here anymore", xbmc.LOGNOTICE)
         if ctrl_id == 131:  # Modify Local Database
@@ -1127,7 +1025,7 @@ class GUI(xbmcgui.WindowXMLDialog):
             all_artist_count, local_album_count, local_artist_count, local_cdart_count = db.new_local_count()
             self.refresh_counts(local_album_count, local_artist_count, local_cdart_count)
         if ctrl_id == 136:  # Restore from Backup
-            self.restore_from_backup()
+            self.restore_cdart()
             all_artist_count, local_album_count, local_artist_count, local_cdart_count = db.new_local_count()
             self.refresh_counts(local_album_count, local_artist_count, local_cdart_count)
         if ctrl_id == 137:  # Local cdART List
@@ -1151,12 +1049,12 @@ class GUI(xbmcgui.WindowXMLDialog):
             artist = artist_album.split(" * ")[0]
             album_title = artist_album.split(" * ")[1]
             if ctrl_id == 143:  # Delete cdART
-                self.single_cdart_delete(path, album_title)
+                self.cdart_delete(path, album_title)
                 all_artist_count, local_album_count, local_artist_count, local_cdart_count = db.new_local_count()
                 self.refresh_counts(local_album_count, local_artist_count, local_cdart_count)
                 popup_label = __lng__(32075)
             else:  # Backup to backup folder
-                self.single_backup_copy(artist, album_title, path)
+                __fs__.cdart_single_backup_copy(artist, album_title, path)
                 popup_label = __lng__(32074)
             self.popup(popup_label, self.getControl(140).getSelectedItem().getLabel(), "", "")
             self.setFocusId(140)

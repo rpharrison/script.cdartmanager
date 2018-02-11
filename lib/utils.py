@@ -110,16 +110,21 @@ def settings_to_log(settings_path):
 
 def clear_image_cache(url):
     thumb = Thumbnails().get_cached_picture_thumb(url)
+    log("clear thumb: %s" % thumb, xbmc.LOGNOTICE)
     png = os.path.splitext(thumb)[0] + ".png"
     dds = os.path.splitext(thumb)[0] + ".dds"
     jpg = os.path.splitext(thumb)[0] + ".jpg"
     if xbmcvfs.exists(thumb):
+        log("deleting thumb: %s" % thumb, xbmc.LOGNOTICE)
         xbmcvfs.delete(thumb)
     if xbmcvfs.exists(png):
+        log("deleting png: %s" % png, xbmc.LOGNOTICE)
         xbmcvfs.delete(png)
     if xbmcvfs.exists(jpg):
+        log("deleting jpg: %s" % jpg, xbmc.LOGNOTICE)
         xbmcvfs.delete(jpg)
     if xbmcvfs.exists(dds):
+        log("deleting dds: %s" % dds, xbmc.LOGNOTICE)
         xbmcvfs.delete(dds)
 
 
