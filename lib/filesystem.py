@@ -14,7 +14,6 @@ class CDAMFilesystem:
 
     def __init__(self):
         self.__cfg__ = cdam.Settings()
-        pass
 
     # get backup folder for album
     def cdart_get_backup_filename(self, artist, album, disc_num=1):
@@ -36,12 +35,31 @@ class CDAMFilesystem:
         log("backup filename: %s" % fn, xbmc.LOGDEBUG)
         return fn
 
+    def cdart_single_restore(self, artist, album, target, disc_num=1):
+        log("Restore: %s - %s" % (artist, album), xbmc.LOGNOTICE)
+        log(" target: %s" % target, xbmc.LOGNOTICE)
+        source = self.cdart_get_backup_filename(artist, album, disc_num)
+        if disc_num > 1 and not xbmcvfs.exists(source):
+            log(" DISC %s source (%s) not found, searching upwards" % (disc_num, source), xbmc.LOGDEBUG)
+            source = self.cdart_get_backup_filename(artist, album)
+        log(" source: %s" % source, xbmc.LOGNOTICE)
+
+        # RETURN FOR NOW, UNDER CONSTRUCTION
+        if xbmcvfs.exists(source):
+            # xbmcvfs.copy(source, target)
+            log("Restore succesful.", xbmc.LOGNOTICE)
+            return True
+        else:
+            log("No Backup found, skipped.", xbmc.LOGNOTICE)
+
+        return False
+
     # backup a cdart file
-    def cdart_single_backup_copy(self, artist, album, source):
+    def cdart_single_backup(self, artist, album, source, disc_num=1):
         log("Backup: %s - %s" % (artist, album), xbmc.LOGNOTICE)
         log(" source: %s" % source, xbmc.LOGNOTICE)
         if xbmcvfs.exists(source):
-            target = self.cdart_get_backup_filename(artist, album)
+            target = self.cdart_get_backup_filename(artist, album, disc_num)
             log(" target: %s" % target, xbmc.LOGNOTICE)
             if xbmcvfs.exists(target):
                 log(" target exists, skipping", xbmc.LOGNOTICE)
@@ -50,8 +68,6 @@ class CDAMFilesystem:
                     if not xbmcvfs.exists(os.path.dirname(target)):
                         xbmcvfs.mkdirs(os.path.dirname(target))
                         log(" target path created", xbmc.LOGDEBUG)
-                    else:
-                        pass
                     xbmcvfs.copy(source, target)
                     log("Backup succesful.", xbmc.LOGNOTICE)
                     return True
