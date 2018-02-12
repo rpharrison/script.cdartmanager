@@ -3,18 +3,18 @@
 # jsonrpc_calls.py
 
 import os
-import utils
+import cdam_utils
 import xbmc
 import traceback
 
-from utils import log
+from cdam_utils import log
 from cdam import MediaType
 
 empty = {}
 
 
 def get_thumbnail_path(database_id, type_):
-    utils.log("jsonrpc_calls.py - Retrieving Thumbnail Path for %s id: %s" % (type_, database_id))
+    cdam_utils.log("jsonrpc_calls.py - Retrieving Thumbnail Path for %s id: %s" % (type_, database_id))
     if type_ == MediaType.ALBUM and database_id:
         json_query = '{"jsonrpc": "2.0", "method": "AudioLibrary.GetAlbumDetails", ' \
                      '"params": {"properties": ["thumbnail"], "albumid": %d}, "id": 1}' % database_id
@@ -24,7 +24,7 @@ def get_thumbnail_path(database_id, type_):
                      '"params": {"properties": ["thumbnail"], "artistid": %d}, "id": 1}' % database_id
         json_thumb = retrieve_json_dict(json_query, items='artistdetails', force_log=False)
     else:
-        utils.log("jsonrpc_calls.py - Improper type or database_id")
+        cdam_utils.log("jsonrpc_calls.py - Improper type or database_id")
         return empty
     if json_thumb:
         return json_thumb["thumbnail"]
@@ -33,13 +33,13 @@ def get_thumbnail_path(database_id, type_):
 
 
 def get_fanart_path(database_id):
-    utils.log("jsonrpc_calls.py - Retrieving Fanart Path for Artist id: %s" % database_id)
+    cdam_utils.log("jsonrpc_calls.py - Retrieving Fanart Path for Artist id: %s" % database_id)
     if database_id:
         json_query = '{"jsonrpc": "2.0", "method": "AudioLibrary.GetArtistDetails", ' \
                      '"params": {"properties": ["fanart"], "artistid": %d}, "id": 1}' % database_id
         json_fanart = retrieve_json_dict(json_query, items='artistdetails', force_log=False)
     else:
-        utils.log("jsonrpc_calls.py - Improper type or database_id")
+        cdam_utils.log("jsonrpc_calls.py - Improper type or database_id")
         return empty
     if json_fanart:
         return json_fanart["fanart"]
@@ -48,7 +48,7 @@ def get_fanart_path(database_id):
 
 
 def get_all_local_artists(all_artists=True):
-    utils.log("jsonrpc_calls.py - Retrieving all local artists")
+    cdam_utils.log("jsonrpc_calls.py - Retrieving all local artists")
     if all_artists:
         json_query = '{"jsonrpc": "2.0", "method": "AudioLibrary.GetArtists", ' \
                      '"params": { "albumartistsonly": false }, "id": 1}'
@@ -63,7 +63,7 @@ def get_all_local_artists(all_artists=True):
 
 
 def retrieve_artist_details(artist_id):
-    utils.log("jsonrpc_calls.py - Retrieving Artist Details")
+    cdam_utils.log("jsonrpc_calls.py - Retrieving Artist Details")
     json_query = '{"jsonrpc": "2.0", "method": "AudioLibrary.GetArtistDetails", ' \
                  '"params": {"properties": ["musicbrainzartistid"], "artistid": %d}, "id": 1}' % artist_id
     json_artist_details = retrieve_json_dict(json_query, items='artistdetails', force_log=False)
@@ -74,7 +74,7 @@ def retrieve_artist_details(artist_id):
 
 
 def retrieve_album_list():
-    utils.log("jsonrpc_calls.py - Retrieving Album List")
+    cdam_utils.log("jsonrpc_calls.py - Retrieving Album List")
     json_query = '{"jsonrpc": "2.0", "method": "AudioLibrary.GetAlbums", ' \
                  '"params": { "limits": { "start": 0 }, ' \
                  '"properties": ["title", "artist", "musicbrainzalbumid", "musicbrainzalbumartistid"], ' \
@@ -87,7 +87,7 @@ def retrieve_album_list():
 
 
 def retrieve_album_details(album_id):
-    utils.log("jsonrpc_calls.py - Retrieving Album Details")
+    cdam_utils.log("jsonrpc_calls.py - Retrieving Album Details")
     album_details = []
     json_query = '{"jsonrpc": "2.0", "method": "AudioLibrary.GetAlbumDetails", ' \
                  '"params": {"properties": ["artist", "title", "musicbrainzalbumid", "musicbrainzalbumartistid"], ' \
@@ -101,7 +101,7 @@ def retrieve_album_details(album_id):
 
 
 def get_album_path(album_id):
-    utils.log("jsonrpc_calls.py - Retrieving Album Path")
+    cdam_utils.log("jsonrpc_calls.py - Retrieving Album Path")
     paths = []
     albumartistmbids = []
     albumreleasembids = []
