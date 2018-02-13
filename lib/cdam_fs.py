@@ -6,13 +6,22 @@ import xbmc
 import xbmcvfs
 
 import cdam
-import cdam_utils
+import cdam_utils as cu
 from cdam_utils import log
 
 
 # sanitize filename
 def sanitize(fn):
     return fn.replace("\\\\", "\\")
+
+
+# get target path for artist related artwork
+def get_artist_path(artist_name, fn=None):
+    cfg = cdam.Settings()
+    result = os.path.join(cfg.path_music_path(), cu.change_characters(cu.smart_unicode(artist_name)))
+    if fn:
+        result = os.path.join(result, fn)
+    return sanitize(result)
 
 
 # get backup folder for album
@@ -24,11 +33,11 @@ def cdart_get_backup_filename(artist, album, disc_num=1):
         cfg.open()
         backup_folder = cfg.path_backup_path()
     if fn_format == 0:
-        destination = os.path.join(backup_folder, cdam_utils.change_characters(artist))
-        fn = os.path.join(destination, cdam_utils.change_characters(album))
+        destination = os.path.join(backup_folder, cu.change_characters(artist))
+        fn = os.path.join(destination, cu.change_characters(album))
     else:
         destination = backup_folder
-        fn = os.path.join(destination, cdam_utils.change_characters((artist + " - " + album).lower()))
+        fn = os.path.join(destination, cu.change_characters((artist + " - " + album).lower()))
     if disc_num > 1:
         fn += "_disc_" + str(disc_num)
     fn += ".png"

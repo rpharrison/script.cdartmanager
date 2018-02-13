@@ -3,9 +3,11 @@
 # jsonrpc_calls.py
 
 import os
-import cdam_utils
+import json
 import xbmc
 import traceback
+
+import cdam_utils
 
 from cdam_utils import log
 from cdam import MediaType
@@ -136,7 +138,8 @@ def retrieve_json_dict(json_query, items='items', force_log=False):
     if force_log:
         xbmc.log("[json_utils.py] - retrieve_json_dict - JSONRPC -\n%s" % response, level=xbmc.LOGDEBUG)
     if response.startswith("{"):
-        response = eval(response, {"true": True, "false": False, "null": None})
+        # response = eval(response, {"true": True, "false": False, "null": None})
+        response = json.loads(response)
         try:
             if 'result' in response:
                 result = response['result']

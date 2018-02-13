@@ -9,7 +9,8 @@ import xbmcvfs
 
 import cdam
 import cdam_db
-import cdam_utils
+import cdam_fs
+import cdam_utils as cu
 import ftv_scraper
 
 from cdam_utils import log, dialog_msg
@@ -72,8 +73,8 @@ def download_art(url_cdart, album, type_, mode, background=False):
     path = os.path.join(sanitize(album["path"]), '')
     if file_name == "unknown":
         log("Unknown Type ")
-        message = [__lng__(32026), __lng__(32025), "File: %s" % cdam_utils.get_unicode(path),
-                   "Url: %s" % cdam_utils.get_unicode(url_cdart)]
+        message = [__lng__(32026), __lng__(32025), "File: %s" % cu.get_unicode(path),
+                   "Url: %s" % cu.get_unicode(url_cdart)]
         return message, download_success
     if not xbmcvfs.exists(path):
         try:
@@ -104,25 +105,22 @@ def download_art(url_cdart, album, type_, mode, background=False):
                 percent = 1
             if type_ in (ArtType.FANART, ArtType.CLEARLOGO, ArtType.THUMB, ArtType.BANNER):
                 dialog_msg("update", percent=percent,
-                           line1="%s%s" % (__lng__(32038), cdam_utils.get_unicode(album["artist"])), background=background)
+                           line1="%s%s" % (__lng__(32038), cu.get_unicode(album["artist"])), background=background)
             else:
                 dialog_msg("update", percent=percent,
-                           line1="%s%s" % (__lng__(32038), cdam_utils.get_unicode(album["artist"])),
-                           line2="%s%s" % (__lng__(32039), cdam_utils.get_unicode(album["title"])), background=background)
-#            if mode == "auto":
-#                if dialog_msg("iscanceled", background=background):
-#                    is_canceled = True
+                           line1="%s%s" % (__lng__(32038), cu.get_unicode(album["artist"])),
+                           line2="%s%s" % (__lng__(32039), cu.get_unicode(album["title"])), background=background)
 
         if xbmcvfs.exists(path):
             log("Fetching image: %s" % url_cdart)
             urllib.urlretrieve(url_cdart, destination, _report_hook)
             # message = ["Download Sucessful!"]
-            message = [__lng__(32023), __lng__(32024), "File: %s" % cdam_utils.get_unicode(path),
-                       "Url: %s" % cdam_utils.get_unicode(url_cdart)]
+            message = [__lng__(32023), __lng__(32024), "File: %s" % cu.get_unicode(path),
+                       "Url: %s" % cu.get_unicode(url_cdart)]
             xbmcvfs.copy(destination, final_destination)  # copy it to album folder
             # update database
             try:
-                cdam_db.set_has_art(type_, cdam_utils.get_unicode(album["path"]))
+                cdam_db.set_has_art(type_, cu.get_unicode(album["path"]))
             except Exception as e:
                 log(e.message, xbmc.LOGERROR)
                 log("Error updating database")
@@ -132,8 +130,8 @@ def download_art(url_cdart, album, type_, mode, background=False):
         else:
             log("Path error")
             log("    file path: %s" % repr(destination))
-            message = [__lng__(32026), __lng__(32025), "File: %s" % cdam_utils.get_unicode(path),
-                       "Url: %s" % cdam_utils.get_unicode(url_cdart)]
+            message = [__lng__(32026), __lng__(32025), "File: %s" % cu.get_unicode(path),
+                       "Url: %s" % cu.get_unicode(url_cdart)]
             # message = Download Problem, Check file paths - Artwork Not Downloaded]
         # always cleanup downloaded files
         # if type == MediaType.FANART:
@@ -141,8 +139,8 @@ def download_art(url_cdart, album, type_, mode, background=False):
     except Exception as e:
         log(e.message, xbmc.LOGWARNING)
         log("General download error")
-        message = [__lng__(32026), __lng__(32025), "File: %s" % cdam_utils.get_unicode(path),
-                   "Url: %s" % cdam_utils.get_unicode(url_cdart)]
+        message = [__lng__(32026), __lng__(32025), "File: %s" % cu.get_unicode(path),
+                   "Url: %s" % cu.get_unicode(url_cdart)]
         # message = [Download Problem, Check file paths - Artwork Not Downloaded]
         # print_exc()
     if mode == "auto" or mode == "single":
@@ -194,14 +192,13 @@ def auto_download(type_, artist_list, background=False):
                     and artist["has_art"]:
                 dialog_msg("update",
                            percent=percent,
-                           line1="%s%s" % (__lng__(32038), cdam_utils.get_unicode(artist["name"])),
+                           line1="%s%s" % (__lng__(32038), cu.get_unicode(artist["name"])),
                            background=background)
 
                 temp_art = {"musicbrainz_artistid": artist["musicbrainz_artistid"], "artist": artist["name"]}
                 auto_art = {"musicbrainz_artistid": artist["musicbrainz_artistid"], "artist": artist["name"]}
 
-                path = os.path.join(__cfg__.path_music_path(),
-                                    cdam_utils.change_characters(cdam_utils.smart_unicode(artist["name"])))
+                path = cdam_fs.get_artist_path(artist["name"])
                 if type_ == ArtType.FANART:
                     art = ftv_scraper.remote_fanart_list(auto_art)
                 elif type_ == ArtType.CLEARLOGO:
@@ -318,8 +315,8 @@ def auto_download(type_, artist_list, background=False):
                     if not album["musicbrainz_albumid"]:
                         continue
                     dialog_msg("update", percent=percent,
-                               line1="%s%s" % (__lng__(32038), cdam_utils.get_unicode(artist["name"])),
-                               line2="%s%s" % (__lng__(32039), cdam_utils.get_unicode(album["title"])),
+                               line1="%s%s" % (__lng__(32038), cu.get_unicode(artist["name"])),
+                               line2="%s%s" % (__lng__(32039), cu.get_unicode(album["title"])),
                                background=background)
                     log("Album: %s" % album["title"])
                     if not album[key_label] or resizeondownload:

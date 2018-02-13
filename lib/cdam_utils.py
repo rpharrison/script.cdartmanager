@@ -2,6 +2,7 @@
 import datetime
 import errno
 import htmlentitydefs
+import json
 import os
 import re
 import traceback
@@ -110,21 +111,17 @@ def settings_to_log(settings_path):
 
 def clear_image_cache(url):
     thumb = Thumbnails().get_cached_picture_thumb(url)
-    log("clear thumb: %s" % thumb, xbmc.LOGNOTICE)
+    log("clear thumb: %s" % thumb, xbmc.LOGDEBUG)
     png = os.path.splitext(thumb)[0] + ".png"
     dds = os.path.splitext(thumb)[0] + ".dds"
     jpg = os.path.splitext(thumb)[0] + ".jpg"
     if xbmcvfs.exists(thumb):
-        log("deleting thumb: %s" % thumb, xbmc.LOGNOTICE)
         xbmcvfs.delete(thumb)
     if xbmcvfs.exists(png):
-        log("deleting png: %s" % png, xbmc.LOGNOTICE)
         xbmcvfs.delete(png)
     if xbmcvfs.exists(jpg):
-        log("deleting jpg: %s" % jpg, xbmc.LOGNOTICE)
         xbmcvfs.delete(jpg)
     if xbmcvfs.exists(dds):
-        log("deleting dds: %s" % dds, xbmc.LOGNOTICE)
         xbmcvfs.delete(dds)
 
 
@@ -310,4 +307,4 @@ def percent_of(value, base):
 
 
 def from_json_simple(json_string):
-    return eval(json_string, {"true": True, "false": False, "null": None})
+    return json.loads(json_string)

@@ -3,6 +3,7 @@
 import calendar
 import os
 import traceback
+import copy
 from datetime import datetime
 
 import xbmc
@@ -156,14 +157,14 @@ class GUI(xbmcgui.WindowXMLDialog):
                             else:
                                 art_image = url
                                 color = Color.WHITE
-                    label2 = "%s&&%s&&&&%s&&%s" % (url, album["path"], art_image, str(album["local_id"]))
-                    listitem = xbmcgui.ListItem(label=label1, label2=label2, thumbnailImage=art_image)
-                    self.getControl(122).addItem(listitem)
-                    listitem.setLabel(cu.coloring(label1, color))
-                    listitem.setLabel2(label2)
-                    listitem.setThumbnailImage(art_image)
-                    self.cdart_url = art_url
+
+                    data = copy.deepcopy(album)
+                    data['url'] = url
                     cu.clear_image_cache(art_image)
+                    listitem = xbmcgui.ListItem(label=cu.coloring(label1, color),
+                                                label2=json.dumps(data), thumbnailImage=art_image)
+                    self.getControl(122).addItem(listitem)
+                    self.cdart_url = art_url
             except Exception as e:
                 log("Error in script occured", xbmc.LOGNOTICE)
                 log(e.message, xbmc.LOGWARNING)
@@ -308,11 +309,12 @@ class GUI(xbmcgui.WindowXMLDialog):
             fanart = ftv_scraper.remote_fanart_list(artist_menu)
             if fanart:
                 for artwork in fanart:
+                    data = copy.deepcopy(artist_menu)
+                    data['url'] = artwork
                     listitem = xbmcgui.ListItem(label=os.path.basename(artwork),
-                                                label2=artist_menu["name"] + "&&&&" + artwork,
+                                                label2=json.dumps(data),
                                                 thumbnailImage=artwork + "/preview")
                     self.getControl(160).addItem(listitem)
-                    listitem.setLabel(os.path.basename(artwork))
                     xbmc.executebuiltin("Dialog.Close(busydialog)")
                     self.setFocus(self.getControl(160))
                     self.getControl(160).selectItem(focus_item)
@@ -338,11 +340,12 @@ class GUI(xbmcgui.WindowXMLDialog):
             if banner:
                 for artwork in banner:
                     cu.clear_image_cache(artwork)
+                    data = copy.deepcopy(artist_menu)
+                    data['url'] = artwork
                     listitem = xbmcgui.ListItem(label=os.path.basename(artwork),
-                                                label2=artist_menu["name"] + "&&&&" + artwork,
+                                                label2=json.dumps(data),
                                                 thumbnailImage=artwork + "/preview")
                     self.getControl(202).addItem(listitem)
-                    listitem.setLabel(os.path.basename(artwork))
                     xbmc.executebuiltin("Dialog.Close(busydialog)")
                     self.setFocus(self.getControl(202))
                     self.getControl(202).selectItem(focus_item)
@@ -370,10 +373,11 @@ class GUI(xbmcgui.WindowXMLDialog):
             if clearlogo:
                 for artwork in clearlogo:
                     cu.clear_image_cache(artwork)
-                    listitem = xbmcgui.ListItem(label="Standard", label2=artist_menu["name"] + "&&&&" + artwork,
+                    data = copy.deepcopy(artist_menu)
+                    data['url'] = artwork
+                    listitem = xbmcgui.ListItem(label=__lng__(32169), label2=json.dumps(data),
                                                 thumbnailImage=artwork + "/preview")
                     self.getControl(167).addItem(listitem)
-                    listitem.setLabel(__lng__(32169))
                     xbmc.executebuiltin("Dialog.Close(busydialog)")
                     self.setFocus(self.getControl(167))
                     self.getControl(167).selectItem(focus_item)
@@ -382,11 +386,11 @@ class GUI(xbmcgui.WindowXMLDialog):
             if hdlogo:
                 for artwork in hdlogo:
                     cu.clear_image_cache(artwork)
-                    listitem = xbmcgui.listitem = xbmcgui.ListItem(label="HD",
-                                                                   label2=artist_menu["name"] + "&&&&" + artwork,
+                    data = copy.deepcopy(artist_menu)
+                    data['url'] = artwork
+                    listitem = xbmcgui.listitem = xbmcgui.ListItem(label=__lng__(32170), label2=json.dumps(data),
                                                                    thumbnailImage=artwork + "/preview")
                     self.getControl(167).addItem(listitem)
-                    listitem.setLabel(__lng__(32170))
                     xbmc.executebuiltin("Dialog.Close(busydialog)")
                     self.setFocus(self.getControl(167))
                     self.getControl(167).selectItem(focus_item)
@@ -415,8 +419,9 @@ class GUI(xbmcgui.WindowXMLDialog):
             if artistthumb:
                 for artwork in artistthumb:
                     cu.clear_image_cache(artwork)
-                    listitem = xbmcgui.ListItem(label=os.path.basename(artwork),
-                                                label2=artist_menu["name"] + "&&&&" + artwork,
+                    data = copy.deepcopy(artist_menu)
+                    data['url'] = artwork
+                    listitem = xbmcgui.ListItem(label=os.path.basename(artwork), label2=json.dumps(data),
                                                 thumbnailImage=artwork + "/preview")
                     self.getControl(199).addItem(listitem)
                     listitem.setLabel(os.path.basename(artwork))
@@ -437,7 +442,7 @@ class GUI(xbmcgui.WindowXMLDialog):
             xbmc.executebuiltin("Dialog.Close(busydialog)")
 
     def populate_downloaded(self, successfully_downloaded, _type):
-        log("Populating ClearLOGO List", xbmc.LOGNOTICE)
+        log("Populating downloaded items", xbmc.LOGNOTICE)
         xbmc.executebuiltin("ActivateWindow(busydialog)")
         self.getControl(404).reset()
         xbmcgui.Window(10001).setProperty("artwork", _type)
@@ -449,7 +454,6 @@ class GUI(xbmcgui.WindowXMLDialog):
                     listitem = xbmcgui.ListItem(label=item["artist"], label2="", thumbnailImage=item["path"])
                     log(e.message)
                 self.getControl(404).addItem(listitem)
-                listitem.setLabel(item["artist"])
                 xbmc.executebuiltin("Dialog.Close(busydialog)")
                 self.setFocus(self.getControl(404))
                 self.getControl(404).selectItem(0)
@@ -467,7 +471,7 @@ class GUI(xbmcgui.WindowXMLDialog):
         for album in l_artist:
             if album[ArtType.CDART]:
                 cdart_img = os.path.join(album["path"], FileName.CDART)
-                data = album
+                data = copy.deepcopy(album)
                 data['cdart_img'] = cdart_img
                 label1 = "%s * %s" % (data["artist"], data["title"])
                 if album["disc"] > 1:
@@ -559,15 +563,11 @@ class GUI(xbmcgui.WindowXMLDialog):
                     break
                 dialog_msg("update", percent=cu.percent_of(count, len(albums)), line1=__lng__(32103),
                            line2=" %s: %s" % (__lng__(32039), cu.get_unicode(album["title"])), line3="")
-                cdart = " "
-                cover = " "
-                if album[ArtType.CDART]:
-                    cdart = "X"
-                if album[ArtType.COVER]:
-                    cover = "X"
                 if album[ArtType.CDART] and album[ArtType.COVER]:
                     continue
                 else:
+                    cdart = "X" if album[ArtType.CDART] else " "
+                    cover = "X" if album[ArtType.COVER] else " "
                     if int(album["disc"]) > 1:
                         line = "|  %-45s| %-75s     disc#: %2s |  %-50s|    %s    |    %s    |\r\n" % (
                             album["musicbrainz_albumid"], album["title"], album["disc"], album["artist"], cdart, cover)
@@ -600,27 +600,16 @@ class GUI(xbmcgui.WindowXMLDialog):
                     break
                 dialog_msg("update", percent=cu.percent_of(count, len(artists)), line1=__lng__(32103),
                            line2=" %s: %s" % (__lng__(32038), cu.get_unicode(artist["name"])), line3="")
-                fanart = " "
-                clearlogo = " "
-                artistthumb = " "
-                musicbanner = " "
+
                 line = ""
-                fanart_path = sanitize(os.path.join(__cfg__.path_music_path(), artist["name"], FileName.FANART))
-                clearlogo_path = sanitize(os.path.join(__cfg__.path_music_path(), artist["name"], FileName.LOGO))
-                artistthumb_path = sanitize(os.path.join(__cfg__.path_music_path(), artist["name"], FileName.FOLDER))
-                musicbanner_path = sanitize(os.path.join(__cfg__.path_music_path(), artist["name"], FileName.BANNER))
-                if xbmcvfs.exists(fanart_path):
-                    fanart = "X"
-                if xbmcvfs.exists(clearlogo_path):
-                    clearlogo = "X"
-                if xbmcvfs.exists(artistthumb_path):
-                    artistthumb = "X"
-                if xbmcvfs.exists(musicbanner_path):
-                    musicbanner = "X"
-                if not xbmcvfs.exists(fanart_path) or not xbmcvfs.exists(clearlogo_path) or not xbmcvfs.exists(
-                        artistthumb_path) or not xbmcvfs.exists(musicbanner_path):
+                fanart = "X" if xbmcvfs.exists(cdam_fs.get_artist_path(artist["name"], FileName.FANART)) else " "
+                clearlogo = "X" if xbmcvfs.exists(cdam_fs.get_artist_path(artist["name"], FileName.LOGO)) else " "
+                thumb = "X" if xbmcvfs.exists(cdam_fs.get_artist_path(artist["name"], FileName.FOLDER)) else " "
+                banner = "X" if xbmcvfs.exists(cdam_fs.get_artist_path(artist["name"], FileName.BANNER)) else " "
+
+                if fanart == " " or clearlogo == " " or thumb == " " or banner == " ":
                     line = "|  %-45s| %-70s|    %s   |    %s      |      %s       |      %s       |\r\n" % (
-                        artist["musicbrainz_artistid"], artist["name"], fanart, clearlogo, artistthumb, musicbanner)
+                        artist["musicbrainz_artistid"], artist["name"], fanart, clearlogo, thumb, banner)
                 if line:
                     try:
                         missing.write(line.encode("utf8"))
@@ -855,26 +844,18 @@ class GUI(xbmcgui.WindowXMLDialog):
                 self.populate_artist_list_mbid(self.local_artists)
         if ctrl_id == 122:  # Retrieving information from Album List
             self.getControl(140).reset()
-            cdart_path = {}
-            url = ((self.getControl(122).getSelectedItem().getLabel2()).split("&&&&")[0]).split("&&")[0]
-            cdart_path["path"] = ((self.getControl(122).getSelectedItem().getLabel2()).split("&&&&")[0]).split("&&")[1]
-            try:
-                cdart_path["artist"] = cu.get_unicode(self.getControl(204).getLabel()).replace(
-                    __lng__(32038) + "[CR]", "")
-            except Exception as ex:
-                log(ex.message)
-                cdart_path["artist"] = repr(self.getControl(204).getLabel()).replace(__lng__(32038) + "[CR]", "")
-            cdart_path["title"] = self.getControl(122).getSelectedItem().getLabel()
-            cdart_path["title"] = cu.remove_color(cdart_path["title"])
+            data = cu.from_json_simple(self.getControl(122).getSelectedItem().getLabel2())
+            url = data['url']
+            log(url, xbmc.LOGNOTICE)
             self.selected_item = self.getControl(122).getSelectedPosition()
             if not url == "":  # If it is a recognized Album...
                 # make sure the url is remote before attemting to download it
                 if url.lower().startswith("http"):
                     message = None
                     if self.menu_mode == 1:
-                        message, _, _ = download.download_art(url, cdart_path, ArtType.CDART, "manual")
+                        message, _, _ = download.download_art(url, data, ArtType.CDART, "manual")
                     elif self.menu_mode == 3:
-                        message, _, _ = download.download_art(url, cdart_path, ArtType.COVER, "manual")
+                        message, _, _ = download.download_art(url, data, ArtType.COVER, "manual")
                     dialog_msg("close")
                     if message is not None:  # and do not crash if there's somethin wrong with this url
                         dialog_msg("ok", heading=message[0], line1=message[1], line2=message[2], line3=message[3])
@@ -1037,15 +1018,14 @@ class GUI(xbmcgui.WindowXMLDialog):
                 self.local_artists = self.all_artists_list
                 self.populate_artist_list(self.local_artists)
         if ctrl_id == 167:  # clearLOGO
-            artist = {}
             if self.menu_mode == 7:
-                url = (self.getControl(167).getSelectedItem().getLabel2()).split("&&&&")[1]
-                artist["artist"] = (self.getControl(167).getSelectedItem().getLabel2()).split("&&&&")[0]
-                artist["path"] = os.path.join(__cfg__.path_music_path(),
-                                              cu.change_characters(cu.smart_unicode(artist["artist"])))
+                data = cu.from_json_simple(self.getControl(167).getSelectedItem().getLabel2())
+                url = data['url']
+                data['artist'] = data['name']
+                data['path'] = cdam_fs.get_artist_path(data['name'])
                 selected_item = self.getControl(167).getSelectedPosition()
                 if url:
-                    message, _, _ = download.download_art(url, artist, ArtType.CLEARLOGO, "manual")
+                    message, _, _ = download.download_art(url, data, ArtType.CLEARLOGO, "manual")
                     dialog_msg("close")
                     dialog_msg("ok", heading=message[0], line1=message[1], line2=message[2], line3=message[3])
                 else:
@@ -1053,15 +1033,14 @@ class GUI(xbmcgui.WindowXMLDialog):
                 xbmcgui.Window(10001).setProperty("artwork", ArtType.CLEARLOGO)
                 self.populate_clearlogos(self.artist_menu, selected_item)
         if ctrl_id == 202:  # Music Banner
-            artist = {}
             if self.menu_mode == 13:
-                url = (self.getControl(202).getSelectedItem().getLabel2()).split("&&&&")[1]
-                artist["artist"] = (self.getControl(202).getSelectedItem().getLabel2()).split("&&&&")[0]
-                artist["path"] = os.path.join(__cfg__.path_music_path(),
-                                              cu.change_characters(cu.smart_unicode(artist["artist"])))
+                data = cu.from_json_simple(self.getControl(202).getSelectedItem().getLabel2())
+                url = data['url']
+                data['artist'] = data['name']
+                data['path'] = cdam_fs.get_artist_path(data['name'])
                 selected_item = self.getControl(202).getSelectedPosition()
                 if url:
-                    message, success, is_canceled = download.download_art(url, artist, ArtType.BANNER, "manual")
+                    message, success, is_canceled = download.download_art(url, data, ArtType.BANNER, "manual")
                     dialog_msg("close")
                     dialog_msg("ok", heading=message[0], line1=message[1], line2=message[2], line3=message[3])
                 else:
@@ -1069,15 +1048,14 @@ class GUI(xbmcgui.WindowXMLDialog):
                 xbmcgui.Window(10001).setProperty("artwork", ArtType.BANNER)
                 self.populate_musicbanners(self.artist_menu, selected_item)
         if ctrl_id == 160:  # Fanart Download
-            artist = {}
             if self.menu_mode == 6:
-                url = (self.getControl(160).getSelectedItem().getLabel2()).split("&&&&")[1]
-                artist["artist"] = (self.getControl(160).getSelectedItem().getLabel2()).split("&&&&")[0]
-                artist["path"] = os.path.join(__cfg__.path_music_path(),
-                                              cu.change_characters(cu.smart_unicode(artist["artist"])))
+                data = cu.from_json_simple(self.getControl(160).getSelectedItem().getLabel2())
+                url = data['url']
+                data['artist'] = data['name']
+                data['path'] = cdam_fs.get_artist_path(data['name'])
                 selected_item = self.getControl(160).getSelectedPosition()
                 if url:
-                    message, success, is_canceled = download.download_art(url, artist, ArtType.FANART, "manual")
+                    message, success, is_canceled = download.download_art(url, data, ArtType.FANART, "manual")
                     dialog_msg("close")
                     dialog_msg("ok", heading=message[0], line1=message[1], line2=message[2], line3=message[3])
                 else:
@@ -1085,15 +1063,14 @@ class GUI(xbmcgui.WindowXMLDialog):
                 xbmcgui.Window(10001).setProperty("artwork", ArtType.FANART)
                 self.populate_fanarts(self.artist_menu, selected_item)
         if ctrl_id == 199:  # Artist Thumb
-            artist = {}
             if self.menu_mode == 9:
-                url = (self.getControl(199).getSelectedItem().getLabel2()).split("&&&&")[1]
-                artist["artist"] = (self.getControl(199).getSelectedItem().getLabel2()).split("&&&&")[0]
-                artist["path"] = os.path.join(__cfg__.path_music_path(),
-                                              cu.change_characters(cu.smart_unicode(artist["artist"])))
+                data = cu.from_json_simple(self.getControl(199).getSelectedItem().getLabel2())
+                url = data['url']
+                data['artist'] = data['name']
+                data['path'] = cdam_fs.get_artist_path(data['name'])
                 selected_item = self.getControl(199).getSelectedPosition()
                 if url:
-                    message, success, is_canceled = download.download_art(url, artist, ArtType.THUMB, "manual")
+                    message, success, is_canceled = download.download_art(url, data, ArtType.THUMB, "manual")
                     dialog_msg("close")
                     dialog_msg("ok", heading=message[0], line1=message[1], line2=message[2], line3=message[3])
                 else:

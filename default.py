@@ -12,7 +12,7 @@ import xbmcvfs
 
 import lib.cdam_utils as cu
 
-from lib import cdam, cdam_db, download, ftv_scraper, gui, jsonrpc_calls
+from lib import cdam, cdam_db, cdam_fs, download, ftv_scraper, gui, jsonrpc_calls
 from lib.cdam import Def, MediaType, ArtType, FileName
 from lib.cdam_utils import log, dialog_msg
 from lib.cdam_fs import sanitize
@@ -124,22 +124,17 @@ def update_xbmc_thumbnails(background=False):
         count += 1
         dialog_msg("update", percent=cu.percent_of(count, len(artists)), line1=__lng__(32112),
                    line2=" %s %s" % (__lng__(32038), cu.get_unicode(artist_["name"])), background=background)
-        xbmc_thumbnail_path = ""
-        xbmc_fanart_path = ""
-        fanart_path = sanitize(os.path.join(__cfg__.path_music_path(), cu.change_characters(artist_["name"]),
-                                            FileName.FANART))
-        artistthumb_path = sanitize(os.path.join(__cfg__.path_music_path(), cu.change_characters(artist_["name"]),
-                                    FileName.FOLDER))
+        # xbmc_thumbnail_path = ""
+        # xbmc_fanart_path = ""
+        fanart_path = cdam_fs.get_artist_path(artist_["name"], FileName.FANART)
+        artistthumb_path = cdam_fs.get_artist_path(artist_["name"], FileName.FOLDER)
         if xbmcvfs.exists(fanart_path):
-            xbmc_fanart_path = jsonrpc_calls.get_fanart_path(artist_["local_id"])
+            thumbnail_copy(fanart_path, jsonrpc_calls.get_fanart_path(artist_["local_id"]), ArtType.FANART)
         elif xbmcvfs.exists(artistthumb_path):
-            xbmc_thumbnail_path = jsonrpc_calls.get_thumbnail_path(artist_["local_id"], MediaType.ARTIST)
+            thumbnail_copy(artistthumb_path, jsonrpc_calls.get_thumbnail_path(artist_["local_id"], MediaType.ARTIST),
+                           "artist thumb")
         else:
             continue
-        if xbmc_fanart_path:  # copy to XBMC supplied fanart path
-            thumbnail_copy(fanart_path, xbmc_fanart_path, ArtType.FANART)
-        if xbmc_thumbnail_path:  # copy to XBMC supplied artist image path
-            thumbnail_copy(artistthumb_path, xbmc_thumbnail_path, "artist thumb")
 
     count = 1
     for album_ in albums:
@@ -412,8 +407,9 @@ if __name__ == "__main__":
                         "Notification( %s, %s, %d, %s)" % (
                             __lng__(32042), __lng__(32110), 500, __cdam__.file_icon()))
             clear_skin_properties()
-        except:
+        except Exception as e:
             print "Unexpected error:", sys.exc_info()[0]
+            log(e.message, xbmc.LOGWARNING)
             clear_skin_properties()
             raise
     else:

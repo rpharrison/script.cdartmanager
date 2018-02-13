@@ -5,6 +5,7 @@ import os
 import re
 import time
 import traceback
+import ast
 
 import sqlite3 as sql
 from sqlite3 import Error as SQLError
@@ -674,17 +675,6 @@ def get_local_albums_db(artist_name, background=False):
                     SELECT DISTINCT album_id, title, artist, path, cdart, cover, disc, musicbrainz_albumid,
                     musicbrainz_artistid FROM alblist WHERE artist=? ORDER BY title ASC
                 """, (artist_name,))
-            except SQLError:
-                try:
-                    c.execute("""\
-                        SELECT DISTINCT album_id, title, artist, path, cdart, cover, disc, musicbrainz_albumid,
-                        musicbrainz_artistid FROM alblist WHERE artist=? ORDER BY title ASC
-                    """, (artist_name,))
-                except SQLError:
-                    c.execute("""\
-                        SELECT DISTINCT album_id, title, artist, path, cdart, cover, disc, musicbrainz_albumid,
-                        musicbrainz_artistid FROM alblist WHERE artist=? ORDER BY title ASC
-                    """, (artist_name,))
             except Exception as e:
                 log(e.message, xbmc.LOGERROR)
                 traceback.print_exc()
@@ -692,8 +682,9 @@ def get_local_albums_db(artist_name, background=False):
         c.close()
         for item in db:
             album = {"local_id": (item[0]), "title": cu.get_unicode(item[1]), "artist": cu.get_unicode(item[2]),
-                     "path": cu.get_unicode(item[3]).replace('"', ''), "cdart": eval(cu.get_unicode(item[4])),
-                     "cover": eval(cu.get_unicode(item[5])), "disc": (item[6]),
+                     "path": cu.get_unicode(item[3]),
+                     "cdart": ast.literal_eval(cu.get_unicode(item[4])),
+                     "cover": ast.literal_eval(cu.get_unicode(item[5])), "disc": (item[6]),
                      "musicbrainz_albumid": cu.get_unicode(item[7]), "musicbrainz_artistid": cu.get_unicode(item[8])}
             # print album
             local_album_list.append(album)
