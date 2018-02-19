@@ -44,21 +44,14 @@ class GUI(xbmcgui.WindowXMLDialog):
         self.menu_mode = 0
         self.artist_menu = {}
         self.album_menu = {}
-        self.remote_cdart_url = []
         self.all_artists = []
-        self.cdart_url = []
         self.local_artists = []
         self.local_albums = []
-        self.label_1 = ""
-        self.label_2 = self.image
-        self.cdartimg = ""
-        self.artwork_type = ""
         self.artists = []
         self.albums = []
         self.album_artists = []
         self.all_artists_list = []
         self.recognized_artists = []
-        self.selected_item = 0
 
     def onInit(self):
         # checking to see if addon_db exists, if not, run database_setup()
@@ -164,7 +157,6 @@ class GUI(xbmcgui.WindowXMLDialog):
                     listitem = xbmcgui.ListItem(label=cu.coloring(label1, color),
                                                 label2=json.dumps(data), thumbnailImage=art_image)
                     self.getControl(122).addItem(listitem)
-                    self.cdart_url = art_url
             except Exception as e:
                 log("Error in script occured", xbmc.LOGNOTICE)
                 log(e.message, xbmc.LOGWARNING)
@@ -727,10 +719,8 @@ class GUI(xbmcgui.WindowXMLDialog):
         if ctrl_id in (105, 150):  # cdARTs Search Artists
             if ctrl_id == 105:
                 self.menu_mode = 1
-                self.artwork_type = ArtType.CDART
             elif ctrl_id == 150:
                 self.menu_mode = 3
-                self.artwork_type = ArtType.COVER
             self.local_artists = self.album_artists
             xbmc.executebuiltin("ActivateWindow(busydialog)")
             self.getControl(120).reset()
@@ -752,13 +742,13 @@ class GUI(xbmcgui.WindowXMLDialog):
             artist_name = cu.get_unicode(self.artist_menu["name"])
             self.getControl(204).setLabel(__lng__(32038) + "[CR]%s" % artist_name)
             if self.menu_mode == 1:
-                self.remote_cdart_url = ftv_scraper.remote_cdart_list(self.artist_menu)
+                remote_cdart_url = ftv_scraper.remote_cdart_list(self.artist_menu)
                 xbmcgui.Window(10001).setProperty("artwork", ArtType.CDART)
-                self.populate_album_list(self.remote_cdart_url, 0, ArtType.CDART)
+                self.populate_album_list(remote_cdart_url, 0, ArtType.CDART)
             elif self.menu_mode == 3:
-                self.remote_cdart_url = ftv_scraper.remote_coverart_list(self.artist_menu)
+                remote_cdart_url = ftv_scraper.remote_coverart_list(self.artist_menu)
                 xbmcgui.Window(10001).setProperty("artwork", ArtType.COVER)
-                self.populate_album_list(self.remote_cdart_url, 0, ArtType.COVER)
+                self.populate_album_list(remote_cdart_url, 0, ArtType.COVER)
             elif self.menu_mode == 6:
                 xbmcgui.Window(10001).setProperty("artwork", ArtType.FANART)
                 self.populate_fanarts(self.artist_menu, 0)
@@ -776,7 +766,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                 xbmcgui.Window(10001).setProperty("artwork", ArtType.BANNER)
                 self.populate_musicbanners(self.artist_menu, 0)
         if ctrl_id == 145:
-            self.selected_item = self.getControl(145).getSelectedPosition()
+            # self.selected_item = self.getControl(145).getSelectedPosition()
             if self.menu_mode == 10:  # Artist
                 self.artist_menu = {"local_id": (
                     self.local_artists[self.getControl(145).getSelectedPosition()]["local_id"]),
@@ -833,7 +823,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                 xbmc.executebuiltin("ActivateWindow(busydialog)")
                 self.getControl(145).reset()
                 self.local_albums = cdam_db.get_local_albums_db(self.album_menu["artist"])
-                self.populate_album_list_mbid(self.local_albums, self.selected_item)
+                self.populate_album_list_mbid(self.local_albums)
             elif self.menu_mode == 10:
                 xbmc.executebuiltin("ActivateWindow(busydialog)")
                 self.getControl(145).reset()
@@ -847,7 +837,7 @@ class GUI(xbmcgui.WindowXMLDialog):
             data = cu.from_json_simple(self.getControl(122).getSelectedItem().getLabel2())
             url = data['url']
             log(url, xbmc.LOGNOTICE)
-            self.selected_item = self.getControl(122).getSelectedPosition()
+            selected_item = self.getControl(122).getSelectedPosition()
             if not url == "":  # If it is a recognized Album...
                 # make sure the url is remote before attemting to download it
                 if url.lower().startswith("http"):
@@ -868,13 +858,13 @@ class GUI(xbmcgui.WindowXMLDialog):
             artist_name = cu.get_unicode(self.artist_menu["name"])
             self.getControl(204).setLabel(__lng__(32038) + "[CR]%s" % artist_name)
             if self.menu_mode == 1:
-                self.remote_cdart_url = ftv_scraper.remote_cdart_list(self.artist_menu)
+                remote_cdart_url = ftv_scraper.remote_cdart_list(self.artist_menu)
                 xbmcgui.Window(10001).setProperty("artwork", ArtType.CDART)
-                self.populate_album_list(self.remote_cdart_url, self.selected_item, ArtType.CDART)
+                self.populate_album_list(remote_cdart_url, selected_item, ArtType.CDART)
             elif self.menu_mode == 3:
-                self.remote_cdart_url = ftv_scraper.remote_coverart_list(self.artist_menu)
+                remote_cdart_url = ftv_scraper.remote_coverart_list(self.artist_menu)
                 xbmcgui.Window(10001).setProperty("artwork", ArtType.COVER)
-                self.populate_album_list(self.remote_cdart_url, self.selected_item, ArtType.COVER)
+                self.populate_album_list(remote_cdart_url, selected_item, ArtType.COVER)
         if ctrl_id == 132:  # Clean Music database selected from Advanced Menu
             log("#  Executing Built-in - CleanLibrary(music)", xbmc.LOGNOTICE)
             xbmc.executebuiltin("CleanLibrary(music)")
@@ -951,13 +941,10 @@ class GUI(xbmcgui.WindowXMLDialog):
             self.setFocusId(140)
             self.populate_local_cdarts()
         if ctrl_id == 100:  # cdARTS
-            self.artwork_type = ArtType.CDART
             self.setFocusId(105)
         if ctrl_id == 101:  # Cover Arts
-            self.artwork_type = ArtType.COVER
             self.setFocusId(150)
         if ctrl_id == 154:  # Muscic Banner
-            self.artwork_type = ArtType.BANNER
             self.setFocusId(200)
         if ctrl_id == 103:  # Advanced
             self.setFocusId(130)
@@ -978,7 +965,6 @@ class GUI(xbmcgui.WindowXMLDialog):
         if ctrl_id in (205, 207):  # Artist Music Banner Select Artists
             self.menu_mode = 13
         if ctrl_id == 102:
-            self.artwork_type = ArtType.FANART
             self.setFocusId(170)
         if ctrl_id == 170:
             self.setFocusId(180)
@@ -997,12 +983,10 @@ class GUI(xbmcgui.WindowXMLDialog):
         if ctrl_id == 201:
             self.setFocusId(207)
         if ctrl_id == 152:
-            self.artwork_type = ArtType.CLEARLOGO
             xbmcgui.Window(10001).setProperty("artwork", ArtType.CLEARLOGO)
             self.menu_mode = 7
             self.setFocusId(168)
         if ctrl_id == 153:
-            self.artwork_type = ArtType.THUMB
             xbmcgui.Window(10001).setProperty("artwork", ArtType.THUMB)
             self.menu_mode = 9
             self.setFocusId(193)
@@ -1078,43 +1062,43 @@ class GUI(xbmcgui.WindowXMLDialog):
                 xbmcgui.Window(10001).setProperty("artwork", ArtType.THUMB)
                 self.populate_artistthumbs(self.artist_menu, selected_item)
         if ctrl_id in (182, 186, 187, 183, 106, 151, 195, 196, 207, 208):  # Automatic Download
-            self.artwork_type = ""
+            artwork_type = ""
             if ctrl_id in (106, 151, 186, 182, 195, 207):
                 self.local_artists = self.album_artists
                 if ctrl_id == 106:  # cdARTs
                     self.menu_mode = 2
-                    self.artwork_type = ArtType.CDART
+                    artwork_type = ArtType.CDART
                 elif ctrl_id == 151:  # cover arts
                     self.menu_mode = 4
-                    self.artwork_type = ArtType.COVER
+                    artwork_type = ArtType.COVER
                 elif ctrl_id == 186:  # ClearLOGOs
-                    self.artwork_type = ArtType.CLEARLOGO
+                    artwork_type = ArtType.CLEARLOGO
                 elif ctrl_id == 182:  # Fanarts
-                    self.artwork_type = ArtType.FANART
+                    artwork_type = ArtType.FANART
                 elif ctrl_id == 195:  # Artist Thumbs
-                    self.artwork_type = ArtType.THUMB
+                    artwork_type = ArtType.THUMB
                 elif ctrl_id == 207:  # Artist banner
-                    self.artwork_type = ArtType.BANNER
-                _, successfully_downloaded = download.auto_download(self.artwork_type, self.local_artists)
+                    artwork_type = ArtType.BANNER
+                _, successfully_downloaded = download.auto_download(artwork_type, self.local_artists)
                 all_artist_count, local_album_count, local_artist_count, local_cdart_count = cdam_db.new_local_count()
                 self.refresh_counts(local_album_count, local_artist_count, local_cdart_count)
                 if successfully_downloaded:
-                    self.populate_downloaded(successfully_downloaded, self.artwork_type)
+                    self.populate_downloaded(successfully_downloaded, artwork_type)
             if ctrl_id in (183, 187, 196, 208) and __cfg__.enable_all_artists():
                 self.local_artists = self.all_artists_list
                 if ctrl_id == 187:  # ClearLOGOs All Artists
-                    self.artwork_type = "clearlogo_allartists"
+                    artwork_type = "clearlogo_allartists"
                 elif ctrl_id == 183:  # Fanarts All Artists
-                    self.artwork_type = "fanart_allartists"
+                    artwork_type = "fanart_allartists"
                 elif ctrl_id == 196:  # Artist Thumbs All Artists
-                    self.artwork_type = "artistthumb_allartists"
+                    artwork_type = "artistthumb_allartists"
                 elif ctrl_id == 208:  # Artist Banners All Artists
-                    self.artwork_type = "musicbanner_allartists"
-                _, successfully_downloaded = download.auto_download(self.artwork_type, self.local_artists)
+                    artwork_type = "musicbanner_allartists"
+                _, successfully_downloaded = download.auto_download(artwork_type, self.local_artists)
                 all_artist_count, local_album_count, local_artist_count, local_cdart_count = cdam_db.new_local_count()
                 self.refresh_counts(local_album_count, local_artist_count, local_cdart_count)
                 if successfully_downloaded:
-                    self.populate_downloaded(successfully_downloaded, self.artwork_type)
+                    self.populate_downloaded(successfully_downloaded, artwork_type)
         if ctrl_id == 113:
             self.setFocusId(107)
         if ctrl_id == 114:  # Refresh Artist MBIDs
@@ -1251,7 +1235,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                     self.local_artists = cdam_db.get_local_artists_db("all_artists")
                 else:
                     self.local_artists = cdam_db.get_local_artists_db("album_artists")
-                self.populate_artist_list_mbid(self.local_artists, self.selected_item)
+                self.populate_artist_list_mbid(self.local_artists)
             if self.menu_mode in (11, 12):
                 album_details = {"artist": self.albums[self.getControl(161).getSelectedPosition()]["artist"],
                                  "title": self.albums[self.getControl(161).getSelectedPosition()]["title"],
@@ -1264,10 +1248,10 @@ class GUI(xbmcgui.WindowXMLDialog):
                 xbmc.executebuiltin("ActivateWindow(busydialog)")
                 if self.menu_mode == 12:
                     self.local_albums = cdam_db.get_local_albums_db("all artists")
-                    self.populate_album_list_mbid(self.local_albums, self.selected_item)
+                    self.populate_album_list_mbid(self.local_albums)
                 else:
                     self.local_albums = cdam_db.get_local_albums_db(self.artist_menu["name"])
-                    self.populate_album_list_mbid(self.local_albums, self.selected_item)
+                    self.populate_album_list_mbid(self.local_albums)
         if ctrl_id == 141:
             local_artists = cdam_db.get_local_artists_db(mode="album_artists")
             if __cfg__.enable_all_artists():
