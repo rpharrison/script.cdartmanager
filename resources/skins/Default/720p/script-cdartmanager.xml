@@ -160,10 +160,6 @@ id      | description
 
 <window>
     <defaultcontrol>9000</defaultcontrol>
-	<!--
-    <animation effect="fade" time="250">WindowOpen</animation>
-    <animation effect="fade" time="250">WindowClose</animation>
-	-->
     <controls>
         <control type="group">
             <posx>0</posx>
@@ -178,7 +174,6 @@ id      | description
             <!-- ** Required ** Do not change <id> or <type> -->
             
             <control type="image" id="200">  <!-- script Icon -->
-                <!-- <animation effect="rotate" end="-360" center="auto" time="5000" loop="true" reversible="false" condition=Control.HasFocus(122)>conditional</animation> -->
                 <description>page header tab icon</description>
                 <posx>20</posx>
                 <posy>-70</posy>
@@ -252,13 +247,8 @@ id      | description
                 <animation effect="slide" end="300,0" time="600" tween="quadratic" easing="out" condition="Control.HasFocus(145) | ControlGroup(9031).HasFocus | ControlGroup(9032).HasFocus">conditional</animation>
                 <visible>Control.HasFocus(145) | Control.HasFocus(146) | Control.HasFocus(161) | ControlGroup(9031).HasFocus | ControlGroup(9032).HasFocus | ControlGroup(9033).HasFocus</visible>
                 <control type="image" id ="220">
-                    <!--
-                    <posx>0</posx>
-                    <posy>0</posy>
-                    -->
                     <width>980</width>
                     <height>670</height>
-                    <!--<aspectratio scalediffuse="false">keep</aspectratio>-->
                     <texture>default-menu.png</texture>
                 </control>
                 <control type="list" id="145">
@@ -385,13 +375,8 @@ id      | description
                 <animation effect="slide" end="300,0" time="600" tween="quadratic" easing="out" condition="Control.HasFocus(120) | ControlGroup(9003).HasFocus">conditional</animation>
                 <visible>Control.HasFocus(120) | Control.HasFocus(121) | ControlGroup(9037).HasFocus | ControlGroup(9004).HasFocus | ControlGroup(9010).HasFocus | ControlGroup(9023).HasFocus | ControlGroup(9024).HasFocus</visible>
                 <control type="image" id ="220">
-                    <!--
-                    <posx>0</posx>
-                    <posy>0</posy>
-                    -->
                     <width>980</width>
                     <height>670</height>
-                    <!--<aspectratio scalediffuse="false">keep</aspectratio>-->
                     <texture>default-menu.png</texture>
                 </control>
                 <control type="list" id="120">
@@ -1193,7 +1178,7 @@ id      | description
                     <label>$ADDON[script.cdartmanager 32074]</label>
                     <align>center</align>
                     <aligny>center</aligny>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>140</onleft>
@@ -1215,7 +1200,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32075]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>140</onleft>
@@ -1267,7 +1252,7 @@ id      | description
                     <label>$ADDON[script.cdartmanager 32155]</label>
                     <align>center</align>
                     <aligny>center</aligny>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>145</onleft>
@@ -1289,7 +1274,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32156]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>145</onleft>
@@ -1311,7 +1296,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32157]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>145</onleft>
@@ -1418,7 +1403,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32067]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9005</onleft>
@@ -1439,7 +1424,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32068]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9005</onleft>
@@ -1474,7 +1459,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32166]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9026</onleft>
@@ -1495,7 +1480,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32154]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9026</onleft>
@@ -1530,7 +1515,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32002]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9026</onleft>
@@ -1551,7 +1536,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32166]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9026</onleft>
@@ -1589,15 +1574,17 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32153]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <radioposx>260</radioposx>
                     <radioposy>10</radioposy>
                     <radiowidth>18</radiowidth>
                     <radioheight>18</radioheight>
-                    <textureradioon>HomeHasSub.png</textureradioon>
-                    <textureradiooff>HomeHasSub.png</textureradiooff>
+                    <textureradioonfocus>ng_chevron-right.png</textureradioonfocus>
+                    <textureradioofffocus>ng_chevron-right.png</textureradioofffocus>
+                    <textureradioonnofocus>ng_chevron-right.png</textureradioonnofocus>
+                    <textureradiooffnofocus>ng_chevron-right.png</textureradiooffnofocus>
                     <onleft>9019</onleft>
                     <onright>126</onright>
                     <onup>125</onup>
@@ -1616,15 +1603,17 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32152]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <radioposx>260</radioposx>
                     <radioposy>10</radioposy>
                     <radiowidth>18</radiowidth>
                     <radioheight>18</radioheight>
-                    <textureradioon>HomeHasSub.png</textureradioon>
-                    <textureradiooff>HomeHasSub.png</textureradiooff>
+                    <textureradioonfocus>ng_chevron-right.png</textureradioonfocus>
+                    <textureradioofffocus>ng_chevron-right.png</textureradioofffocus>
+                    <textureradioonnofocus>ng_chevron-right.png</textureradioonnofocus>
+                    <textureradiooffnofocus>ng_chevron-right.png</textureradiooffnofocus>
                     <onleft>9019</onleft>
                     <onright>148</onright>
                     <!-- <onright>147</onright> Remove previous line once added to script -->
@@ -1644,7 +1633,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32151]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9019</onleft>
@@ -1679,7 +1668,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32002]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9025</onleft>
@@ -1700,7 +1689,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32154]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9025</onleft>
@@ -1739,7 +1728,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32153]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9019</onleft>
@@ -1760,15 +1749,17 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32152]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <radioposx>260</radioposx>
                     <radioposy>10</radioposy>
                     <radiowidth>18</radiowidth>
                     <radioheight>18</radioheight>
-                    <textureradioon>HomeHasSub.png</textureradioon>
-                    <textureradiooff>HomeHasSub.png</textureradiooff>
+                    <textureradioonfocus>ng_chevron-right.png</textureradioonfocus>
+                    <textureradioofffocus>ng_chevron-right.png</textureradioofffocus>
+                    <textureradioonnofocus>ng_chevron-right.png</textureradioonnofocus>
+                    <textureradiooffnofocus>ng_chevron-right.png</textureradiooffnofocus>
                     <onleft>9019</onleft>
                     <onright>139</onright>
                     <!-- <onright>138</onright> Remove previous line once added to script -->
@@ -1788,7 +1779,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32151]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9019</onleft>
@@ -1828,15 +1819,17 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32122]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <radioposx>260</radioposx>
                     <radioposy>10</radioposy>
                     <radiowidth>18</radiowidth>
                     <radioheight>18</radioheight>
-                    <textureradioon>HomeHasSub.png</textureradioon>
-                    <textureradiooff>HomeHasSub.png</textureradiooff>
+                    <textureradioonfocus>ng_chevron-right.png</textureradioonfocus>
+                    <textureradioofffocus>ng_chevron-right.png</textureradioofffocus>
+                    <textureradioonnofocus>ng_chevron-right.png</textureradioonnofocus>
+                    <textureradiooffnofocus>ng_chevron-right.png</textureradiooffnofocus>
                     <onleft>9005</onleft>
                     <onright>113</onright>
                     <onclick>113</onclick>
@@ -1856,18 +1849,20 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32127]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <radioposx>260</radioposx>
                     <radioposy>10</radioposy>
                     <radiowidth>18</radiowidth>
                     <radioheight>18</radioheight>
-                    <textureradioon>HomeHasSub.png</textureradioon>
-                    <textureradiooff>HomeHasSub.png</textureradiooff>
+                    <textureradioonfocus>ng_chevron-right.png</textureradioonfocus>
+                    <textureradioofffocus>ng_chevron-right.png</textureradioofffocus>
+                    <textureradioonnofocus>ng_chevron-right.png</textureradioonnofocus>
+                    <textureradiooffnofocus>ng_chevron-right.png</textureradiooffnofocus>
                     <onleft>9005</onleft>
                     <onright>123</onright>
                     <onclick>123</onclick>
@@ -1887,7 +1882,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32123]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9005</onleft>
@@ -1908,7 +1903,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32012]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9005</onleft>
@@ -1929,7 +1924,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32129]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9005</onleft>
@@ -1958,7 +1953,7 @@ id      | description
                     <posx>10</posx>
                     <posy>10</posy>
                     <height>40</height>
-                    <width>250</width>
+                    <width>285</width>
                     <textoffsetx>10</textoffsetx>
                     <textwidth>240</textwidth>
                     <aligny>center</aligny>
@@ -1966,15 +1961,17 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32061]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <radioposx>260</radioposx>
                     <radioposy>10</radioposy>
                     <radiowidth>18</radiowidth>
                     <radioheight>18</radioheight>
-                    <textureradioon>HomeHasSub.png</textureradioon>
-                    <textureradiooff>HomeHasSub.png</textureradiooff>
+                    <textureradioonfocus>ng_chevron-right.png</textureradioonfocus>
+                    <textureradioofffocus>ng_chevron-right.png</textureradioofffocus>
+                    <textureradioonnofocus>ng_chevron-right.png</textureradioonnofocus>
+                    <textureradiooffnofocus>ng_chevron-right.png</textureradiooffnofocus>
                     <onclick>135</onclick>
                     <onleft>9000</onleft>
                     <onright>135</onright>
@@ -1986,7 +1983,7 @@ id      | description
                     <posx>10</posx>
                     <posy>50</posy>
                     <height>40</height>
-                    <width>250</width>
+                    <width>285</width>
                     <textoffsetx>10</textoffsetx>
                     <textwidth>240</textwidth>
                     <aligny>center</aligny>
@@ -1994,15 +1991,17 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32126]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <radioposx>260</radioposx>
                     <radioposy>10</radioposy>
                     <radiowidth>18</radiowidth>
                     <radioheight>18</radioheight>
-                    <textureradioon>HomeHasSub.png</textureradioon>
-                    <textureradiooff>HomeHasSub.png</textureradiooff>
+                    <textureradioonfocus>ng_chevron-right.png</textureradioonfocus>
+                    <textureradioofffocus>ng_chevron-right.png</textureradioofffocus>
+                    <textureradioonnofocus>ng_chevron-right.png</textureradioonnofocus>
+                    <textureradiooffnofocus>ng_chevron-right.png</textureradiooffnofocus>
                     <onleft>9000</onleft>
                     <onright>188</onright>
                     <onclick>188</onclick>
@@ -2022,7 +2021,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32013]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9000</onleft>
@@ -2043,7 +2042,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32014]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9000</onleft>
@@ -2064,7 +2063,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32098]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9000</onleft>
@@ -2085,7 +2084,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32191]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9000</onleft>
@@ -2170,7 +2169,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32002]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9000</onleft>
@@ -2191,7 +2190,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32004]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9000</onleft>
@@ -2226,7 +2225,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32002]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9000</onleft>
@@ -2247,7 +2246,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32004]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9000</onleft>
@@ -2289,7 +2288,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32121]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9020</onleft>
@@ -2310,7 +2309,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32120]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9020</onleft>
@@ -2353,7 +2352,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32121]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9020</onleft>
@@ -2374,7 +2373,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32120]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9020</onleft>
@@ -2410,15 +2409,17 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32002]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <radioposx>238</radioposx>
                     <radioposy>10</radioposy>
                     <radiowidth>18</radiowidth>
                     <radioheight>18</radioheight>
-                    <textureradioon>HomeHasSub.png</textureradioon>
-                    <textureradiooff>HomeHasSub.png</textureradiooff>
+                    <textureradioonfocus>ng_chevron-right.png</textureradioonfocus>
+                    <textureradioofffocus>ng_chevron-right.png</textureradioofffocus>
+                    <textureradioonnofocus>ng_chevron-right.png</textureradioonnofocus>
+                    <textureradiooffnofocus>ng_chevron-right.png</textureradiooffnofocus>
                     <onclick>197</onclick>
                     <onleft>9000</onleft>
                     <onright>197</onright>
@@ -2438,15 +2439,17 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32004]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <radioposx>238</radioposx>
                     <radioposy>10</radioposy>
                     <radiowidth>18</radiowidth>
                     <radioheight>18</radioheight>
-                    <textureradioon>HomeHasSub.png</textureradioon>
-                    <textureradiooff>HomeHasSub.png</textureradiooff>
+                    <textureradioonfocus>ng_chevron-right.png</textureradioonfocus>
+                    <textureradioofffocus>ng_chevron-right.png</textureradioofffocus>
+                    <textureradioonnofocus>ng_chevron-right.png</textureradioonnofocus>
+                    <textureradiooffnofocus>ng_chevron-right.png</textureradiooffnofocus>
                     <onclick>195</onclick>
                     <onleft>9000</onleft>
                     <onright>195</onright>
@@ -2488,7 +2491,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32121]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9034</onleft>
@@ -2509,7 +2512,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32120]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9034</onleft>
@@ -2552,7 +2555,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32121]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9034</onleft>
@@ -2573,7 +2576,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32120]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9034</onleft>
@@ -2609,15 +2612,17 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32002]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <radioposx>238</radioposx>
                     <radioposy>10</radioposy>
                     <radiowidth>18</radiowidth>
                     <radioheight>18</radioheight>
-                    <textureradioon>HomeHasSub.png</textureradioon>
-                    <textureradiooff>HomeHasSub.png</textureradiooff>
+                    <textureradioonfocus>ng_chevron-right.png</textureradioonfocus>
+                    <textureradioofffocus>ng_chevron-right.png</textureradioofffocus>
+                    <textureradioonnofocus>ng_chevron-right.png</textureradioonnofocus>
+                    <textureradiooffnofocus>ng_chevron-right.png</textureradiooffnofocus>
                     <onclick>205</onclick>
                     <onleft>9000</onleft>
                     <onright>205</onright>
@@ -2637,15 +2642,17 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32004]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <radioposx>238</radioposx>
                     <radioposy>10</radioposy>
                     <radiowidth>18</radiowidth>
                     <radioheight>18</radioheight>
-                    <textureradioon>HomeHasSub.png</textureradioon>
-                    <textureradiooff>HomeHasSub.png</textureradiooff>
+                    <textureradioonfocus>ng_chevron-right.png</textureradioonfocus>
+                    <textureradioofffocus>ng_chevron-right.png</textureradioofffocus>
+                    <textureradioonnofocus>ng_chevron-right.png</textureradioonnofocus>
+                    <textureradiooffnofocus>ng_chevron-right.png</textureradiooffnofocus>
                     <onclick>207</onclick>
                     <onleft>9000</onleft>
                     <onright>207</onright>
@@ -2686,7 +2693,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32121]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9008</onleft>
@@ -2707,7 +2714,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32120]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9008</onleft>
@@ -2750,7 +2757,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32121]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9008</onleft>
@@ -2771,7 +2778,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32120]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9008</onleft>
@@ -2807,15 +2814,17 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32002]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <radioposx>238</radioposx>
                     <radioposy>10</radioposy>
                     <radiowidth>18</radiowidth>
                     <radioheight>18</radioheight>
-                    <textureradioon>HomeHasSub.png</textureradioon>
-                    <textureradiooff>HomeHasSub.png</textureradiooff>
+                    <textureradioonfocus>ng_chevron-right.png</textureradioonfocus>
+                    <textureradioofffocus>ng_chevron-right.png</textureradioofffocus>
+                    <textureradioonnofocus>ng_chevron-right.png</textureradioonnofocus>
+                    <textureradiooffnofocus>ng_chevron-right.png</textureradiooffnofocus>
                     <onclick>184</onclick>
                     <onleft>9000</onleft>
                     <onright>184</onright>
@@ -2835,15 +2844,17 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32004]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <radioposx>238</radioposx>
                     <radioposy>10</radioposy>
                     <radiowidth>18</radiowidth>
                     <radioheight>18</radioheight>
-                    <textureradioon>HomeHasSub.png</textureradioon>
-                    <textureradiooff>HomeHasSub.png</textureradiooff>
+                    <textureradioonfocus>ng_chevron-right.png</textureradioonfocus>
+                    <textureradioofffocus>ng_chevron-right.png</textureradioofffocus>
+                    <textureradioonnofocus>ng_chevron-right.png</textureradioonnofocus>
+                    <textureradiooffnofocus>ng_chevron-right.png</textureradiooffnofocus>
                     <onclick>186</onclick>
                     <onleft>9000</onleft>
                     <onright>186</onright>
@@ -2885,7 +2896,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32121]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9009</onleft>
@@ -2906,7 +2917,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32120]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9009</onleft>
@@ -2949,7 +2960,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32121]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9009</onleft>
@@ -2970,7 +2981,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32120]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9009</onleft>
@@ -2996,10 +3007,10 @@ id      | description
                 </control>
                 <control type="radiobutton" id="170"> <!-- Search Artists -->
                     <description>Search Artists</description>
-                    <posx>10</posx>
+                    <posx>0</posx>
                     <posy>10</posy>
                     <height>40</height>
-                    <width>230</width>
+                    <width>270</width>
                     <textoffsetx>10</textoffsetx>
                     <textwidth>220</textwidth>
                     <aligny>center</aligny>
@@ -3007,15 +3018,17 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32002]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <radioposx>238</radioposx>
                     <radioposy>10</radioposy>
                     <radiowidth>18</radiowidth>
                     <radioheight>18</radioheight>
-                    <textureradioon>HomeHasSub.png</textureradioon>
-                    <textureradiooff>HomeHasSub.png</textureradiooff>
+                    <textureradioonfocus>ng_chevron-right.png</textureradioonfocus>
+                    <textureradioofffocus>ng_chevron-right.png</textureradioofffocus>
+                    <textureradioonnofocus>ng_chevron-right.png</textureradioonnofocus>
+                    <textureradiooffnofocus>ng_chevron-right.png</textureradiooffnofocus>
                     <onclick>180</onclick>
                     <onleft>9000</onleft>
                     <onright>180</onright>
@@ -3027,7 +3040,7 @@ id      | description
                     <posx>10</posx>
                     <posy>50</posy>
                     <height>40</height>
-                    <width>230</width>
+                    <width>270</width>
                     <textoffsetx>10</textoffsetx>
                     <textwidth>220</textwidth>
                     <aligny>center</aligny>
@@ -3035,15 +3048,17 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32004]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <radioposx>238</radioposx>
                     <radioposy>10</radioposy>
                     <radiowidth>18</radiowidth>
                     <radioheight>18</radioheight>
-                    <textureradioon>HomeHasSub.png</textureradioon>
-                    <textureradiooff>HomeHasSub.png</textureradiooff>
+                    <textureradioonfocus>ng_chevron-right.png</textureradioonfocus>
+                    <textureradioofffocus>ng_chevron-right.png</textureradioofffocus>
+                    <textureradioonnofocus>ng_chevron-right.png</textureradioonnofocus>
+                    <textureradiooffnofocus>ng_chevron-right.png</textureradiooffnofocus>
                     <onclick>182</onclick>
                     <onleft>9000</onleft>
                     <onright>182</onright>
@@ -3065,7 +3080,7 @@ id      | description
                     <posx>0</posx>
                     <posy>10</posy>
                     <height>40</height>
-                    <width>270</width>
+                    <width>300</width>
                     <textoffsetx>10</textoffsetx>
                     <textwidth>250</textwidth>
                     <aligny>center</aligny>
@@ -3073,27 +3088,29 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32001]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <radioposx>275</radioposx>
                     <radioposy>10</radioposy>
                     <radiowidth>18</radiowidth>
                     <radioheight>18</radioheight>
-                    <textureradioon>HomeHasSub.png</textureradioon>
-                    <textureradiooff>HomeHasSub.png</textureradiooff>
+                    <textureradioonfocus>ng_chevron-right.png</textureradioonfocus>
+                    <textureradioofffocus>ng_chevron-right.png</textureradioofffocus>
+                    <textureradioonnofocus>ng_chevron-right.png</textureradioonnofocus>
+                    <textureradiooffnofocus>ng_chevron-right.png</textureradiooffnofocus>
                     <onclick>105</onclick>
                     <onleft>9000</onleft>
                     <onright>105</onright>
                     <onup>111</onup>
                     <ondown>101</ondown>
-                </control>                
+                </control>
                 <control type="radiobutton" id="101"> <!-- Cover Art -->
                     <description>Cover Art</description>
                     <posx>0</posx>
                     <posy>50</posy>
                     <height>40</height>
-                    <width>270</width>
+                    <width>300</width>
                     <textoffsetx>10</textoffsetx>
                     <textwidth>250</textwidth>
                     <aligny>center</aligny>
@@ -3101,15 +3118,17 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32003]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <radioposx>275</radioposx>
                     <radioposy>10</radioposy>
                     <radiowidth>18</radiowidth>
                     <radioheight>18</radioheight>
-                    <textureradioon>HomeHasSub.png</textureradioon>
-                    <textureradiooff>HomeHasSub.png</textureradiooff>
+                    <textureradioonfocus>ng_chevron-right.png</textureradioonfocus>
+                    <textureradioofffocus>ng_chevron-right.png</textureradioofffocus>
+                    <textureradioonnofocus>ng_chevron-right.png</textureradioonnofocus>
+                    <textureradiooffnofocus>ng_chevron-right.png</textureradiooffnofocus>
                     <onclick>150</onclick>
                     <onleft>9000</onleft>
                     <onright>150</onright>
@@ -3121,7 +3140,7 @@ id      | description
                     <posx>0</posx>
                     <posy>90</posy>
                     <height>40</height>
-                    <width>270</width>
+                    <width>300</width>
                     <textoffsetx>10</textoffsetx>
                     <textwidth>250</textwidth>
                     <aligny>center</aligny>
@@ -3129,15 +3148,17 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32006]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <radioposx>275</radioposx>
                     <radioposy>10</radioposy>
                     <radiowidth>18</radiowidth>
                     <radioheight>18</radioheight>
-                    <textureradioon>HomeHasSub.png</textureradioon>
-                    <textureradiooff>HomeHasSub.png</textureradiooff>
+                    <textureradioonfocus>ng_chevron-right.png</textureradioonfocus>
+                    <textureradioofffocus>ng_chevron-right.png</textureradioofffocus>
+                    <textureradioonnofocus>ng_chevron-right.png</textureradioonnofocus>
+                    <textureradiooffnofocus>ng_chevron-right.png</textureradiooffnofocus>
                     <onclick>170</onclick>
                     <onleft>9000</onleft>
                     <onright>170</onright>
@@ -3149,7 +3170,7 @@ id      | description
                     <posx>0</posx>
                     <posy>130</posy>
                     <height>40</height>
-                    <width>270</width>
+                    <width>300</width>
                     <textoffsetx>10</textoffsetx>
                     <textwidth>250</textwidth>
                     <aligny>center</aligny>
@@ -3157,15 +3178,17 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32009]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <radioposx>275</radioposx>
                     <radioposy>10</radioposy>
                     <radiowidth>18</radiowidth>
                     <radioheight>18</radioheight>
-                    <textureradioon>HomeHasSub.png</textureradioon>
-                    <textureradiooff>HomeHasSub.png</textureradiooff>
+                    <textureradioonfocus>ng_chevron-right.png</textureradioonfocus>
+                    <textureradioofffocus>ng_chevron-right.png</textureradioofffocus>
+                    <textureradioonnofocus>ng_chevron-right.png</textureradioonnofocus>
+                    <textureradiooffnofocus>ng_chevron-right.png</textureradiooffnofocus>
                     <onclick>168</onclick>
                     <onleft>9000</onleft>
                     <onright>168</onright>
@@ -3177,7 +3200,7 @@ id      | description
                     <posx>0</posx>
                     <posy>170</posy>
                     <height>40</height>
-                    <width>270</width>
+                    <width>300</width>
                     <textoffsetx>10</textoffsetx>
                     <textwidth>250</textwidth>
                     <aligny>center</aligny>
@@ -3185,15 +3208,17 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32144]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <radioposx>275</radioposx>
                     <radioposy>10</radioposy>
                     <radiowidth>18</radiowidth>
                     <radioheight>18</radioheight>
-                    <textureradioon>HomeHasSub.png</textureradioon>
-                    <textureradiooff>HomeHasSub.png</textureradiooff>
+                    <textureradioonfocus>ng_chevron-right.png</textureradioonfocus>
+                    <textureradioofffocus>ng_chevron-right.png</textureradioofffocus>
+                    <textureradioonnofocus>ng_chevron-right.png</textureradioonnofocus>
+                    <textureradiooffnofocus>ng_chevron-right.png</textureradiooffnofocus>
                     <onclick>193</onclick>
                     <onleft>9000</onleft>
                     <onright>193</onright>
@@ -3205,7 +3230,7 @@ id      | description
                     <posx>0</posx>
                     <posy>210</posy>
                     <height>40</height>
-                    <width>270</width>
+                    <width>300</width>
                     <textoffsetx>10</textoffsetx>
                     <textwidth>250</textwidth>
                     <aligny>center</aligny>
@@ -3213,15 +3238,17 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32168]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <radioposx>275</radioposx>
                     <radioposy>10</radioposy>
                     <radiowidth>18</radiowidth>
                     <radioheight>18</radioheight>
-                    <textureradioon>HomeHasSub.png</textureradioon>
-                    <textureradiooff>HomeHasSub.png</textureradiooff>
+                    <textureradioonfocus>ng_chevron-right.png</textureradioonfocus>
+                    <textureradioofffocus>ng_chevron-right.png</textureradioofffocus>
+                    <textureradioonnofocus>ng_chevron-right.png</textureradioonnofocus>
+                    <textureradiooffnofocus>ng_chevron-right.png</textureradiooffnofocus>
                     <onclick>200</onclick>
                     <onleft>9000</onleft>
                     <onright>200</onright>
@@ -3233,7 +3260,7 @@ id      | description
                     <posx>0</posx>
                     <posy>250</posy>
                     <height>40</height>
-                    <width>270</width>
+                    <width>300</width>
                     <textoffsetx>10</textoffsetx>
                     <textwidth>250</textwidth>
                     <aligny>center</aligny>
@@ -3241,15 +3268,17 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32011]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <radioposx>275</radioposx>
                     <radioposy>10</radioposy>
                     <radiowidth>18</radiowidth>
                     <radioheight>18</radioheight>
-                    <textureradioon>HomeHasSub.png</textureradioon>
-                    <textureradiooff>HomeHasSub.png</textureradiooff>
+                    <textureradioonfocus>ng_chevron-right.png</textureradioonfocus>
+                    <textureradioofffocus>ng_chevron-right.png</textureradioofffocus>
+                    <textureradioonnofocus>ng_chevron-right.png</textureradioonnofocus>
+                    <textureradiooffnofocus>ng_chevron-right.png</textureradiooffnofocus>
                     <onclick>130</onclick>
                     <onleft>9000</onleft>
                     <onright>130</onright>
@@ -3261,7 +3290,7 @@ id      | description
                     <posx>0</posx>
                     <posy>290</posy>
                     <height>40</height>
-                    <width>270</width>
+                    <width>300</width>
                     <textoffsetx>10</textoffsetx>
                     <textwidth>250</textwidth>
                     <aligny>center</aligny>
@@ -3269,7 +3298,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32146]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9000</onleft>
@@ -3282,7 +3311,7 @@ id      | description
                     <posx>0</posx>
                     <posy>330</posy>
                     <height>40</height>
-                    <width>270</width>
+                    <width>300</width>
                     <textoffsetx>10</textoffsetx>
                     <textwidth>250</textwidth>
                     <aligny>center</aligny>
@@ -3290,7 +3319,7 @@ id      | description
                     <textcolor>FFFFFFFF</textcolor>
                     <focusedcolor>FFFFFFFF</focusedcolor>
                     <label>$ADDON[script.cdartmanager 32147]</label>
-                    <texturefocus border="5">cdman-button-focus.png</texturefocus>
+                    <texturefocus>ng_focus.png</texturefocus>
                     <texturenofocus>-</texturenofocus>
                     <pulseonselect>false</pulseonselect>
                     <onleft>9000</onleft>
