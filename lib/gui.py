@@ -85,6 +85,9 @@ class GUI(xbmcgui.WindowXMLDialog):
             self.all_artists_list = all_artists
             self.album_artists = album_artists
 
+        # debug
+        self.setFocusId(137)
+
     # creates the album list on the skin
     def populate_album_list(self, art_url, focus_item, _type):
         log("Populating Album List", xbmc.LOGNOTICE)
@@ -111,7 +114,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                         filename = FileName.FOLDER
                     empty_list = False
                     if album["disc"] > 1:
-                        label1 = "%s - %s %s" % (album["title"], __lng__(32016), album["disc"])
+                        label1 = "%s - %s [%s]" % (album["title"], __lng__(32016), album["disc"])
                     else:
                         label1 = album["title"]
                     musicbrainz_albumid = album["musicbrainz_albumid"]
@@ -465,11 +468,10 @@ class GUI(xbmcgui.WindowXMLDialog):
                 cdart_img = os.path.join(album["path"], FileName.CDART)
                 data = copy.deepcopy(album)
                 data['cdart_img'] = cdart_img
-                label1 = "%s * %s" % (data["artist"], data["title"])
+                label1 = "%s - %s" % (data["artist"], data["title"])
                 if album["disc"] > 1:
-                    label1 += " * DISC%s" % album["disc"]
-                listitem = xbmcgui.ListItem(label=cu.coloring(label1, Color.YELLOW), label2=json.dumps(data),
-                                            thumbnailImage=cdart_img)
+                    label1 += " [%s]" % album["disc"]
+                listitem = xbmcgui.ListItem(label=label1, label2=json.dumps(data), thumbnailImage=cdart_img)
                 self.getControl(140).addItem(listitem)
         xbmc.executebuiltin("Dialog.Close(busydialog)")
         self.setFocus(self.getControl(140))
@@ -1114,12 +1116,12 @@ class GUI(xbmcgui.WindowXMLDialog):
                 if updated_artist["musicbrainz_artistid"]:
                     cdam_db.update_artist_mbid(updated_artist["musicbrainz_artistid"], updated_artist["local_id"],
                                                artist_name=updated_artist["name"])
-        if ctrl_id == 139:  # Automatic Refresh Artist MBIDs
+        if ctrl_id == 114:  # Automatic Refresh Artist MBIDs
             cdam_db.check_artist_mbid(empty, False, mode="album_artists")
         if ctrl_id == 123:
             self.setFocusId(126)
         if ctrl_id == 124:  # Refresh Album MBIDs
-            self.setFocusId(147)  # change to 147 when selected album is added to script
+            cdam_db.check_album_mbid(empty, False)
         if ctrl_id == 125:
             updated_albums, canceled = cdam_db.update_missing_album_mbid(empty, False)
             for updated_album in updated_albums:
@@ -1138,8 +1140,6 @@ class GUI(xbmcgui.WindowXMLDialog):
             self.local_albums = cdam_db.get_local_albums_db("all artists")
             self.menu_mode = 12
             self.populate_album_list_mbid(self.local_albums)
-        if ctrl_id == 148:  # Automatic Refresh Album MBIDs
-            cdam_db.check_album_mbid(empty, False)
         if ctrl_id == 113:
             xbmc.executebuiltin("ActivateWindow(busydialog)")
             self.getControl(145).reset()
@@ -1252,7 +1252,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                 else:
                     self.local_albums = cdam_db.get_local_albums_db(self.artist_menu["name"])
                     self.populate_album_list_mbid(self.local_albums)
-        if ctrl_id == 141:
+        if ctrl_id == 138:
             local_artists = cdam_db.get_local_artists_db(mode="album_artists")
             if __cfg__.enable_all_artists():
                 all_artists = cdam_db.get_local_artists_db(mode="all_artists")

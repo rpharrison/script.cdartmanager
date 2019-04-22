@@ -10,8 +10,6 @@
         <setting label="32158" type="bool" id="enable_missing" default="true" />
         <setting label="32062" type="folder" id="missing_path" default="" source="auto" enable="eq(-1,true)" option="writeable" />
         <setting id="folder" type="enum" label="32019" lvalues="32054|32055" default="0"/>
-        <setting type="sep" />
-        <setting label="32097" type="bool" id="enableresize" default="false" enable="false"  />
     </category>
     <category label="32143">
         <setting type="sep" />
@@ -40,7 +38,6 @@
         <setting label="32190" type="slider" id="mb_delay" option="int" visible="eq(-2,false)" range="0,9" default="9" />
         <setting type="sep" />
         <setting label="32106" type="bool" id="resizeondownload" default="false" enable="false"/>
-        <setting label="32171" type="bool" id="enable_hdlogos" default="true" enable="false" />
     </category>
     <category label="32250">
     	<setting type="sep" />
