@@ -10,10 +10,10 @@ from traceback import print_exc
 import xbmc
 import xbmcvfs
 
-import cdam
-from cdam import Def, ArtType
-from cdam_db import store_lalist, store_local_artist_table, store_fanarttv_datecode, retrieve_fanarttv_datecode
-from cdam_utils import get_html_source, log, dialog_msg, percent_of
+import lib.cdam as cdam
+from lib.cdam import Def, ArtType
+from lib.cdam_db import store_lalist, store_local_artist_table, store_fanarttv_datecode, retrieve_fanarttv_datecode
+from lib.cdam_utils import get_html_source, log, dialog_msg, percent_of
 
 __cdam__ = cdam.CDAM()
 __cfg__ = cdam.Settings()
@@ -229,7 +229,7 @@ def retrieve_fanarttv_json(id_):
 
 
 def check_fanart_new_artwork(present_datecode):
-    log("Checking for new Artwork on fanart.tv since last run...", xbmc.LOGNOTICE)
+    log("Checking for new Artwork on fanart.tv since last run...", xbmc.LOGDEBUG)
     previous_datecode = retrieve_fanarttv_datecode()
     # fix: use global tempxml_folder instead of explicit definition
     tempxml_folder = __cdam__.path_temp_xml()
@@ -238,11 +238,11 @@ def check_fanart_new_artwork(present_datecode):
     url = new_music % (Def.FANARTTV_API_KEY, __cfg__.client_key(), str(previous_datecode))
     htmlsource = get_html_source(url, "FTV-NEW_" + str(present_datecode), save_file=True, overwrite=False)
     if htmlsource == "null":
-        log("No new Artwork found on fanart.tv", xbmc.LOGNOTICE)
+        log("No new Artwork found on fanart.tv", xbmc.LOGDEBUG)
         return False, htmlsource
     else:
         try:
-            log("New Artwork found on fanart.tv", xbmc.LOGNOTICE)
+            log("New Artwork found on fanart.tv", xbmc.LOGDEBUG)
             data = json.loads(htmlsource)
             return True, data
         except Exception as e:
@@ -276,7 +276,7 @@ def update_art(mbid, data, existing_has_art):
 
 
 def first_check(all_artists, album_artists, background=False, update_db=False):
-    log("Checking for artist match with fanart.tv - First Check", xbmc.LOGNOTICE)
+    log("Checking for artist match with fanart.tv - First Check", xbmc.LOGDEBUG)
     heading = __lng__(32187)
     album_artists_matched = []
     all_artists_matched = []
@@ -322,7 +322,7 @@ def first_check(all_artists, album_artists, background=False, update_db=False):
 
 
 def get_recognized(all_artists, album_artists, background=False):
-    log("Checking for artist match with fanart.tv - Get Recognized artists", xbmc.LOGNOTICE)
+    log("Checking for artist match with fanart.tv - Get Recognized artists", xbmc.LOGDEBUG)
     album_artists_matched = []
     all_artists_matched = []
     count = 0
@@ -351,7 +351,7 @@ def get_recognized(all_artists, album_artists, background=False):
                            line3=__lng__(32049) % artist["name"], background=background)
                 count += 1
     else:
-        log("No new music artwork on fanart.tv", xbmc.LOGNOTICE)
+        log("No new music artwork on fanart.tv", xbmc.LOGDEBUG)
         album_artists_matched = album_artists
         all_artists_matched = all_artists
     store_lalist(album_artists_matched)

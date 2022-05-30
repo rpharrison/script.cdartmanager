@@ -5,9 +5,9 @@ import os
 import xbmc
 import xbmcvfs
 
-import cdam
-import cdam_utils as cu
-from cdam_utils import log
+import lib.cdam as cdam
+import lib.cdam_utils as cu
+from lib.cdam_utils import log
 
 
 # sanitize filename
@@ -46,65 +46,65 @@ def cdart_get_backup_filename(artist, album, disc_num=1):
 
 
 def cdart_single_restore(target, artist, album, disc_num=1):
-    log("Restore: %s - %s" % (artist, album), xbmc.LOGNOTICE)
-    log(" target: %s" % target, xbmc.LOGNOTICE)
+    log("Restore: %s - %s" % (artist, album), xbmc.LOGDEBUG)
+    log(" target: %s" % target, xbmc.LOGDEBUG)
     source = cdart_get_backup_filename(artist, album, disc_num)
     if disc_num > 1 and not xbmcvfs.exists(source):
         log(" DISC %s source (%s) not found, searching upwards" % (disc_num, source), xbmc.LOGDEBUG)
         source = cdart_get_backup_filename(artist, album)
-    log(" source: %s" % source, xbmc.LOGNOTICE)
+    log(" source: %s" % source, xbmc.LOGDEBUG)
     if xbmcvfs.exists(source):
         try:
             if not xbmcvfs.exists(os.path.dirname(target)):
                 xbmcvfs.mkdirs(os.path.dirname(target))
                 log(" target path created", xbmc.LOGDEBUG)
             xbmcvfs.copy(source, target)
-            log("Restore succesful.", xbmc.LOGNOTICE)
+            log("Restore succesful.", xbmc.LOGDEBUG)
             return True
         except Exception as e:
-            log("copying error, check path and file permissions", xbmc.LOGNOTICE)
+            log("copying error, check path and file permissions", xbmc.LOGDEBUG)
             log(e.message, xbmc.LOGWARNING)
     else:
-        log("No Backup found, skipped.", xbmc.LOGNOTICE)
+        log("No Backup found, skipped.", xbmc.LOGDEBUG)
     return False
 
 
 # backup a cdart file
 def cdart_single_backup(source, artist, album, disc_num=1):
-    log("Backup: %s - %s" % (artist, album), xbmc.LOGNOTICE)
-    log(" source: %s" % source, xbmc.LOGNOTICE)
+    log("Backup: %s - %s" % (artist, album), xbmc.LOGDEBUG)
+    log(" source: %s" % source, xbmc.LOGDEBUG)
     if xbmcvfs.exists(source):
         target = cdart_get_backup_filename(artist, album, disc_num)
-        log(" target: %s" % target, xbmc.LOGNOTICE)
+        log(" target: %s" % target, xbmc.LOGDEBUG)
         if xbmcvfs.exists(target):
-            log(" target exists, skipping", xbmc.LOGNOTICE)
+            log(" target exists, skipping", xbmc.LOGDEBUG)
         else:
             try:
                 if not xbmcvfs.exists(os.path.dirname(target)):
                     xbmcvfs.mkdirs(os.path.dirname(target))
                     log(" target path created", xbmc.LOGDEBUG)
                 xbmcvfs.copy(source, target)
-                log("Backup succesful.", xbmc.LOGNOTICE)
+                log("Backup succesful.", xbmc.LOGDEBUG)
                 return True
             except Exception as e:
-                log("copying error, check path and file permissions", xbmc.LOGNOTICE)
+                log("copying error, check path and file permissions", xbmc.LOGDEBUG)
                 log(e.message, xbmc.LOGWARNING)
     else:
-        log("Backup source does not exist, skipped.", xbmc.LOGNOTICE)
+        log("Backup source does not exist, skipped.", xbmc.LOGDEBUG)
     return False
 
 
 def cdart_single_delete(fn):
-    log("Deleting: %s" % fn, xbmc.LOGNOTICE)
+    log("Deleting: %s" % fn, xbmc.LOGDEBUG)
     if xbmcvfs.exists(fn):
         try:
             xbmcvfs.delete(fn)
             return True
         except Exception as e:
-            log("Error in script occured", xbmc.LOGNOTICE)
+            log("Error in script occured", xbmc.LOGDEBUG)
             log(e.message, xbmc.LOGWARNING)
-            log("Deleteing error, check path and file permissions", xbmc.LOGNOTICE)
+            log("Deleteing error, check path and file permissions", xbmc.LOGDEBUG)
             return False
     else:
-        log("Error: cdART file does not exist..  Please check...", xbmc.LOGNOTICE)
+        log("Error: cdART file does not exist..  Please check...", xbmc.LOGDEBUG)
     return True

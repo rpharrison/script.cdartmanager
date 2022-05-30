@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime
 import errno
-import htmlentitydefs
+import html.entities
 import json
 import os
 import re
@@ -12,8 +12,8 @@ import xbmc
 import xbmcgui
 import xbmcvfs
 
-import cdam
-from file_item import Thumbnails
+import lib.cdam as cdam
+from lib.file_item import Thumbnails
 
 __cdam__ = cdam.CDAM()
 __cfg__ = cdam.Settings()

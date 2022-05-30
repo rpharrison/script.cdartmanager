@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="script.cdartmanager"
        name="cdART Manager"
-       version="4.2.1"
+       version="4.2.2"
        provider-name="stef.an">
     <requires>
-        <import addon="xbmc.python" version="2.19.0"/>
+        <import addon="xbmc.python" version="3.0.0"/>
         <import addon="xbmc.json" version="6.20.0"/>
         <import addon="script.module.pil" version="1.1.7" optional="true"/>
     </requires>
@@ -14,7 +14,6 @@
     <extension point="xbmc.addon.metadata">
         <platform>all</platform>
         <summary>cdART Manager enriches your music collection with several types of fanart provided by fanart.tv</summary>
-        <summary lang="es">cdART Manager enriquece su colección de música con ilustraciones proporcionadas por fanart.tv</summary>
         <description>With this script you are able to manage your cdARTs. You can download cdARTs from fanart.tv, Backup your cdARTs, View and even delete your local cdARTs
         </description>
         <description lang="hu">A programmal könnyen kezelheted a CD lemez képeidet (CDArts). Letöltheted vele őket az fanart.tv-ról, biztonsági másolatot készíthetsz róluk,
@@ -31,7 +30,9 @@
         <description lang="pt">Este script permite que você gerencie seus cdARTs. Você poderá baixar cdARTs do site fanart.tv, efetuar backup, Visualizar e até apagar seus cdARTs
             armazenados localmente.
         </description>
-        <description lang="es">Con este script, puede administrar sus cdARTs. Puede descargar cdARTs de fanart.tv, hacer una copia de seguridad de sus cdARTs, ver e incluso eliminar sus cdARTs.</description>
+        <description lang="es">Con este script serás capaz de administrar tus cdARTs. Puedes descargar cdARTs desde fanart.tv, Respaldar tus cdARTs, Ver e incluso Borrar tus cdARTs
+            locales.
+        </description>
         <license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
         <source>https://github.com/stefansielaff/script.cdartmanager</source>
         <forum>http://forum.kodi.tv/showthread.php?tid=77031</forum>

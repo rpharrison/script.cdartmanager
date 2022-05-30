@@ -7,10 +7,10 @@ import json
 import xbmc
 import traceback
 
-import cdam_utils
+import lib.cdam_utils
 
-from cdam_utils import log
-from cdam import MediaType
+from lib.cdam_utils import log
+from lib.cdam import MediaType
 
 empty = {}
 
@@ -146,15 +146,15 @@ def retrieve_json_dict(json_query, items='items', force_log=False):
                 json_dict = result[items]
                 return json_dict
             else:
-                xbmc.log("[json_utils.py] - retrieve_json_dict - No response from XBMC", level=xbmc.LOGNOTICE)
+                xbmc.log("[json_utils.py] - retrieve_json_dict - No response from XBMC", level=xbmc.LOGDEBUG)
                 xbmc.log(response, level=xbmc.LOGDEBUG)
                 return None
         except Exception as e:
-            log("Error in script occured", xbmc.LOGNOTICE)
+            log("Error in script occured", xbmc.LOGDEBUG)
             log(e.message, xbmc.LOGWARNING)
             traceback.print_exc()
-            xbmc.log("[json_utils.py] - retrieve_json_dict - JSONRPC -\n%s" % response, level=xbmc.LOGNOTICE)
-            xbmc.log("[json_utils.py] - retrieve_json_dict - Error trying to get json response", level=xbmc.LOGNOTICE)
+            xbmc.log("[json_utils.py] - retrieve_json_dict - JSONRPC -\n%s" % response, level=xbmc.LOGDEBUG)
+            xbmc.log("[json_utils.py] - retrieve_json_dict - Error trying to get json response", level=xbmc.LOGDEBUG)
             return empty
     else:
         return empty

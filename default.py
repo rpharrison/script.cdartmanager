@@ -89,7 +89,7 @@ def select_artwork(details, media_type_):
             artwork = ftv_scraper.remote_banner_list(details)
         if artwork:
             for art in artwork:
-                print art
+                print (art)
 
 
 def thumbnail_copy(art_path, thumb_path, type_="artwork"):
@@ -106,7 +106,7 @@ def thumbnail_copy(art_path, thumb_path, type_="artwork"):
 
 
 def update_xbmc_thumbnails(background=False):
-    log("Updating Thumbnails/fanart Images", xbmc.LOGNOTICE)
+    log("Updating Thumbnails/fanart Images", xbmc.LOGDEBUG)
     xbmc.sleep(1000)
     dialog_msg("create", heading=__lng__(32042), background=background)
     # Artists
@@ -149,7 +149,7 @@ def update_xbmc_thumbnails(background=False):
         if xbmc_thumbnail_path:
             thumbnail_copy(coverart_path, xbmc_thumbnail_path, "album cover")
         count += 1
-    log("Finished Updating Thumbnails/fanart Images", xbmc.LOGNOTICE)
+    log("Finished Updating Thumbnails/fanart Images", xbmc.LOGDEBUG)
 
 
 def get_script_mode():
@@ -186,14 +186,14 @@ def get_script_mode():
 
 if __name__ == "__main__":
 
-    log("#############################################################", xbmc.LOGNOTICE)
+    log("#############################################################", xbmc.LOGDEBUG)
     for credit in __cdam__.credits():
-        log("#  %-55s  #" % credit, xbmc.LOGNOTICE)
-    log("#############################################################", xbmc.LOGNOTICE)
+        log("#  %-55s  #" % credit, xbmc.LOGDEBUG)
+    log("#############################################################", xbmc.LOGDEBUG)
 
-    log("Looking for settings.xml", xbmc.LOGNOTICE)
+    log("Looking for settings.xml", xbmc.LOGDEBUG)
     if not xbmcvfs.exists(__cdam__.file_settings_xml()):  # Open Settings if settings.xml does not exists
-        log("settings.xml File not found, creating path and opening settings", xbmc.LOGNOTICE)
+        log("settings.xml File not found, creating path and opening settings", xbmc.LOGDEBUG)
         xbmcvfs.mkdirs(__cdam__.path_profile())
         __cfg__.open()
         soft_exit = True
@@ -202,7 +202,7 @@ if __name__ == "__main__":
     script_mode, provided_mbid, provided_dbid, media_type = get_script_mode()
 
     if xbmcgui.Window(10000).getProperty("cdart_manager_running") == "True":
-        log("cdART Manager Already running, exiting...", xbmc.LOGNOTICE)
+        log("cdART Manager Already running, exiting...", xbmc.LOGDEBUG)
         soft_exit = True
     else:
         xbmcgui.Window(10000).setProperty("cdart_manager_running", "True")
@@ -218,7 +218,7 @@ if __name__ == "__main__":
             local_artists = []
 
             if script_mode == "database":
-                log("Start method - Build Database in background", xbmc.LOGNOTICE)
+                log("Start method - Build Database in background", xbmc.LOGDEBUG)
                 xbmcgui.Window(10000).setProperty("cdartmanager_update", "True")
                 local_album_count, local_artist_count, local_cdart_count = cdam_db.refresh_db(background=True)
                 local_artists = cdam_db.get_local_artists_db(mode="album_artists")
@@ -239,22 +239,22 @@ if __name__ == "__main__":
                 xbmcgui.Window(10000).setProperty("cdart_manager_running", "True")
                 artwork_type = None
                 if script_mode == "autocdart":
-                    log("Start method - Autodownload Album cdARTs in background", xbmc.LOGNOTICE)
+                    log("Start method - Autodownload Album cdARTs in background", xbmc.LOGDEBUG)
                     artwork_type = ArtType.CDART
                 elif script_mode == "autocover":
-                    log("Start method - Autodownload Album Cover art in background", xbmc.LOGNOTICE)
+                    log("Start method - Autodownload Album Cover art in background", xbmc.LOGDEBUG)
                     artwork_type = ArtType.COVER
                 elif script_mode == "autofanart":
-                    log("Start method - Autodownload Artist Fanarts in background", xbmc.LOGNOTICE)
+                    log("Start method - Autodownload Artist Fanarts in background", xbmc.LOGDEBUG)
                     artwork_type = ArtType.FANART
                 elif script_mode == "autologo":
-                    log("Start method - Autodownload Artist Logos in background", xbmc.LOGNOTICE)
+                    log("Start method - Autodownload Artist Logos in background", xbmc.LOGDEBUG)
                     artwork_type = ArtType.CLEARLOGO
                 elif script_mode == "autothumb":
-                    log("Start method - Autodownload Artist Thumbnails in background", xbmc.LOGNOTICE)
+                    log("Start method - Autodownload Artist Thumbnails in background", xbmc.LOGDEBUG)
                     artwork_type = ArtType.THUMB
                 elif script_mode == "autobanner":
-                    log("Start method - Autodownload Artist Music Banners in background", xbmc.LOGNOTICE)
+                    log("Start method - Autodownload Artist Music Banners in background", xbmc.LOGDEBUG)
                     artwork_type = ArtType.BANNER
                 if artwork_type in (ArtType.FANART, ArtType.CLEARLOGO, ArtType.THUMB, ArtType.BANNER) \
                         and __cfg__.enable_all_artists():
@@ -264,9 +264,9 @@ if __name__ == "__main__":
                     download_count, successfully_downloaded = download.auto_download(artwork_type, local_artists,
                                                                                      background=True)
                 log("Autodownload of %s artwork completed\nTotal artwork downloaded: %d" % (
-                    artwork_type, download_count), xbmc.LOGNOTICE)
+                    artwork_type, download_count), xbmc.LOGDEBUG)
             elif script_mode == "update":
-                log("Start method - Update Database in background", xbmc.LOGNOTICE)
+                log("Start method - Update Database in background", xbmc.LOGDEBUG)
                 xbmcgui.Window(10000).setProperty("cdart_manager_update", "True")
                 cdam_db.update_database(background=True)
                 local_artists = cdam_db.get_local_artists_db(mode="album_artists")
@@ -279,11 +279,11 @@ if __name__ == "__main__":
                 ftv_scraper.first_check(all_artists, local_artists, background=True, update_db=True)
             elif script_mode == "autoall":
                 xbmcgui.Window(10000).setProperty("cdart_manager_running", "True")
-                log("Start method - Autodownload all artwork in background", xbmc.LOGNOTICE)
+                log("Start method - Autodownload all artwork in background", xbmc.LOGDEBUG)
                 total_artwork = 0
                 for artwork_type in (ArtType.CDART, ArtType.COVER, ArtType.FANART,
                                      ArtType.CLEARLOGO, ArtType.THUMB, ArtType.BANNER):
-                    log("Start method - Autodownload %s in background" % artwork_type, xbmc.LOGNOTICE)
+                    log("Start method - Autodownload %s in background" % artwork_type, xbmc.LOGDEBUG)
                     download_count = 0
                     if artwork_type in (ArtType.FANART, ArtType.CLEARLOGO, ArtType.THUMB, ArtType.BANNER) \
                             and __cfg__.enable_all_artists():
@@ -293,19 +293,19 @@ if __name__ == "__main__":
                         download_count, successfully_downloaded = download.auto_download(artwork_type, local_artists,
                                                                                          background=True)
                     total_artwork += download_count
-                log("Autodownload all artwork completed\nTotal artwork downloaded: %d" % total_artwork, xbmc.LOGNOTICE)
+                log("Autodownload all artwork completed\nTotal artwork downloaded: %d" % total_artwork, xbmc.LOGDEBUG)
             elif script_mode == "update_thumbs":
-                log("Start method - Update Thumbnails in background", xbmc.LOGNOTICE)
+                log("Start method - Update Thumbnails in background", xbmc.LOGDEBUG)
                 update_xbmc_thumbnails()
             elif script_mode == "oneshot":
-                log("Start method - One Shot Download method", xbmc.LOGNOTICE)
+                log("Start method - One Shot Download method", xbmc.LOGDEBUG)
                 if provided_dbid or provided_mbid:
                     if media_type[0] in (ArtType.CLEARLOGO, ArtType.FANART, ArtType.THUMB, ArtType.BANNER):
                         artist = artist_musicbrainz_id(provided_dbid, provided_mbid)
                         if not artist:
-                            log("No MBID found", xbmc.LOGNOTICE)
+                            log("No MBID found", xbmc.LOGDEBUG)
                         else:
-                            print artist
+                            print (artist)
                             log("Artist: %s" % artist["artist"], xbmc.LOGDEBUG)
                             log("MBID: %s" % artist["musicbrainz_artistid"], xbmc.LOGDEBUG)
                             select_artwork(artist, media_type[0])
@@ -313,7 +313,7 @@ if __name__ == "__main__":
                         if provided_dbid:
                             album_details = album_musicbrainz_id(provided_dbid)
                             if not album_details:
-                                log("No MBID found", xbmc.LOGNOTICE)
+                                log("No MBID found", xbmc.LOGDEBUG)
                             else:
                                 for album in album_details:
                                     log("Album: %s" % album["title"])
@@ -326,9 +326,9 @@ if __name__ == "__main__":
                 else:
                     log("A Database ID or MusicBrainz ID needed")
             elif script_mode == "normal":
-                log("Addon Work Folder: %s" % __cdam__.path_profile(), xbmc.LOGNOTICE)
-                log("Addon Database: %s" % __cdam__.file_addon_db(), xbmc.LOGNOTICE)
-                log("Addon settings: %s" % __cdam__.file_settings_xml(), xbmc.LOGNOTICE)
+                log("Addon Work Folder: %s" % __cdam__.path_profile(), xbmc.LOGDEBUG)
+                log("Addon Database: %s" % __cdam__.file_addon_db(), xbmc.LOGDEBUG)
+                log("Addon settings: %s" % __cdam__.file_settings_xml(), xbmc.LOGDEBUG)
                 if xbmcgui.Window(10000).getProperty(
                         "cdart_manager_update") == "True":
                     # Check to see if skin property is set, if it is, gracefully exit the script
@@ -336,52 +336,52 @@ if __name__ == "__main__":
                         background_db = False
                         # message "cdART Manager, Stopping Background Database Building"
                         dialog_msg("okdialog", heading=__lng__(32042), line1=__lng__(32119))
-                        log("BackgroundDB was in Progress, Stopping, allowing script to continue", xbmc.LOGNOTICE)
+                        log("BackgroundDB was in Progress, Stopping, allowing script to continue", xbmc.LOGDEBUG)
                         xbmcgui.Window(10000).setProperty("cdartmanager_update", "False")
                     else:
                         background_db = True
                         # message "cdART Manager, Background Database building in progress...  Exiting Script..."
                         dialog_msg("okdialog", heading=__lng__(32042), line1=__lng__(32118))
-                        log("Background Database Building in Progress, exiting", xbmc.LOGNOTICE)
+                        log("Background Database Building in Progress, exiting", xbmc.LOGDEBUG)
                         xbmcgui.Window(10000).setProperty("cdartmanager_update", "False")
                 if not background_db and not soft_exit:  # If Settings exists and not in background_db mode, continue on
-                    log("Addon Work Folder Found, Checking For Database", xbmc.LOGNOTICE)
+                    log("Addon Work Folder Found, Checking For Database", xbmc.LOGDEBUG)
                 # if l_cdart.db missing, must be first run
                 if not xbmcvfs.exists(__cdam__.file_addon_db()) and not background_db:
-                    log("Addon Db not found, Must Be First Run", xbmc.LOGNOTICE)
+                    log("Addon Db not found, Must Be First Run", xbmc.LOGDEBUG)
                     first_run = True
                 elif not background_db and not soft_exit:
-                    log("Addon Db Found, Checking Database Version", xbmc.LOGNOTICE)
+                    log("Addon Db Found, Checking Database Version", xbmc.LOGDEBUG)
                 # if l_cdart.db.journal exists, creating database must have crashed at some point, delete and start over
                 if xbmcvfs.exists(__cdam__.file_addon_db_crash()) \
                         and not first_run and not background_db and not soft_exit:
-                    log("Detected Database Crash, Trying to delete", xbmc.LOGNOTICE)
+                    log("Detected Database Crash, Trying to delete", xbmc.LOGDEBUG)
                     try:
                         xbmcvfs.delete(__cdam__.file_addon_db())
                         xbmcvfs.delete(__cdam__.file_addon_db_crash())
-                    except StandardError, e:
-                        log("Error Occurred: %s " % e.__class__.__name__, xbmc.LOGNOTICE)
+                    except Exception as e:
+                        log("Error Occurred: %s " % e.__class__.__name__, xbmc.LOGDEBUG)
                         traceback.print_exc()
                         script_fail = True
                 elif not first_run and not background_db and not soft_exit and not script_fail:  # Test database version
-                    log("Looking for database version: %s" % Def.DB_VERSION, xbmc.LOGNOTICE)
+                    log("Looking for database version: %s" % Def.DB_VERSION, xbmc.LOGDEBUG)
                     try:
                         version = cdam_db.get_db_version()
                         if version == Def.DB_VERSION:
-                            log("Database matched", xbmc.LOGNOTICE)
+                            log("Database matched", xbmc.LOGDEBUG)
                         else:
-                            log("Old version found, upgrading database", xbmc.LOGNOTICE)
+                            log("Old version found, upgrading database", xbmc.LOGDEBUG)
                             cdam_db.upgrade_db(version)
-                    except StandardError, e:
+                    except Exception as e:
                         traceback.print_exc()
-                        log("# Error: %s" % e.__class__.__name__, xbmc.LOGNOTICE)
+                        log("# Error: %s" % e.__class__.__name__, xbmc.LOGDEBUG)
                         try:
-                            log("Trying To Delete Database", xbmc.LOGNOTICE)
+                            log("Trying To Delete Database", xbmc.LOGDEBUG)
                             xbmcvfs.delete(__cdam__.file_addon_db())
-                        except StandardError, e:
+                        except Exception as e:
                             traceback.print_exc()
-                            log("# unable to remove folder", xbmc.LOGNOTICE)
-                            log("# Error: %s" % e.__class__.__name__, xbmc.LOGNOTICE)
+                            log("# unable to remove folder", xbmc.LOGDEBUG)
+                            log("# Error: %s" % e.__class__.__name__, xbmc.LOGDEBUG)
                             script_fail = True
                 if not script_fail and not background_db:
                     if rebuild:
@@ -396,20 +396,20 @@ if __name__ == "__main__":
                         except KeyboardInterrupt:
                             raise
                         except Exception as e:
-                            log("Error in script occured", xbmc.LOGNOTICE)
-                            log(e.message, xbmc.LOGWARNING)
+                            log("Error in script occured", xbmc.LOGDEBUG)
+                            log(e, xbmc.LOGWARNING)
                             traceback.print_exc()
                             dialog_msg("close")
                             clear_skin_properties()
                 elif not background_db and not soft_exit:
-                    log("Problem accessing folder, exiting script", xbmc.LOGNOTICE)
+                    log("Problem accessing folder, exiting script", xbmc.LOGDEBUG)
                     xbmc.executebuiltin(
                         "Notification( %s, %s, %d, %s)" % (
                             __lng__(32042), __lng__(32110), 500, __cdam__.file_icon()))
             clear_skin_properties()
         except Exception as e:
-            print "Unexpected error:", sys.exc_info()[0]
-            log(e.message, xbmc.LOGWARNING)
+            print ("Unexpected error:"), sys.exc_info()[0]
+            log(e, xbmc.LOGDEBUG)
             clear_skin_properties()
             raise
     else:

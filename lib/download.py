@@ -7,15 +7,15 @@ from traceback import print_exc
 import xbmc
 import xbmcvfs
 
-import cdam
-import cdam_db
-import cdam_fs
-import cdam_utils as cu
-import ftv_scraper
+import lib.cdam as cdam
+import lib.cdam_db
+import lib.cdam_fs
+import lib.cdam_utils as cu
+import lib.ftv_scraper
 
-from cdam_utils import log, dialog_msg
-from cdam import ArtType, FileName
-from cdam_fs import sanitize
+from lib.cdam_utils import log, dialog_msg
+from lib.cdam import ArtType, FileName
+from lib.cdam_fs import sanitize
 
 __cdam__ = cdam.CDAM()
 __cfg__ = cdam.Settings()
@@ -187,7 +187,7 @@ def auto_download(type_, artist_list, background=False):
             if percent > 100:
                 percent = 100
             log("Artist: %-40s Local ID: %-10s   Distant MBID: %s" % (
-                artist["name"], artist["local_id"], artist["musicbrainz_artistid"]), xbmc.LOGNOTICE)
+                artist["name"], artist["local_id"], artist["musicbrainz_artistid"]), xbmc.LOGDEBUG)
             if type_ in (ArtType.FANART, ArtType.CLEARLOGO, ArtType.THUMB, ArtType.BANNER) \
                     and artist["has_art"]:
                 dialog_msg("update",
@@ -240,7 +240,7 @@ def auto_download(type_, artist_list, background=False):
                             fanart = {}
                             fanart_number = 0
                             if __cfg__.enable_fanart_limit() and fanart_number == __cfg__.fanart_limit():
-                                log("Fanart Limit Reached", xbmc.LOGNOTICE)
+                                log("Fanart Limit Reached", xbmc.LOGDEBUG)
                                 continue
                             if xbmcvfs.exists(os.path.join(auto_art["path"], os.path.basename(artwork))):
                                 log("Fanart already exists, skipping")

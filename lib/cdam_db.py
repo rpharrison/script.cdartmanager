@@ -13,14 +13,14 @@ from sqlite3 import Error as SQLError
 import xbmc
 import xbmcvfs
 
-import cdam
-import cdam_utils as cu
+import lib.cdam as cdam
+import lib.cdam_utils as cu
 
-from cdam import Def, ArtType, FileName
-from mb_utils import get_musicbrainz_artist_id, get_musicbrainz_album, mbid_check, get_musicbrainz_release_group
-from cdam_utils import log, dialog_msg
-from cdam_fs import sanitize
-from jsonrpc_calls import get_all_local_artists, retrieve_album_list, retrieve_album_details, get_album_path
+from lib.cdam import Def, ArtType, FileName
+from lib.mb_utils import get_musicbrainz_artist_id, get_musicbrainz_album, mbid_check, get_musicbrainz_release_group
+from lib.cdam_utils import log, dialog_msg
+from lib.cdam_fs import sanitize
+from lib.jsonrpc_calls import get_all_local_artists, retrieve_album_list, retrieve_album_details, get_album_path
 
 __cdam__ = cdam.CDAM()
 __cfg__ = cdam.Settings()
@@ -32,12 +32,12 @@ def connect():
 
 
 def upgrade_db(from_version):
-    log("Found database version %s, upgrading to current" % from_version, xbmc.LOGNOTICE)
+    log("Found database version %s, upgrading to current" % from_version, xbmc.LOGDEBUG)
     # there is no upgrade path at the moment
 
 
 def user_updates(details, type_):
-    log("Storing User edit", xbmc.LOGNOTICE)
+    log("Storing User edit", xbmc.LOGDEBUG)
     conn = connect()
     c = conn.cursor()
     c.execute("""\
@@ -49,19 +49,19 @@ def user_updates(details, type_):
     """)
 
     if type_ == "artist":
-        log("Storing artist update", xbmc.LOGNOTICE)
+        log("Storing artist update", xbmc.LOGDEBUG)
         try:
             c.execute("""\
                 SELECT DISTINCT musicbrainz_artistid FROM artist_updates WHERE local_id=?
             """, (details["local_id"],))
             db_details = c.fetchall()
             if db_details:
-                log("Updating existing artist edit", xbmc.LOGNOTICE)
+                log("Updating existing artist edit", xbmc.LOGDEBUG)
                 c.execute("""\
                     UPDATE artist_updates SET musicbrainz_artistid=?, name=? WHERE local_id=?
                 """, (details["musicbrainz_artistid"], details["name"], details["local_id"]))
             else:
-                log("Storing new artist edit", xbmc.LOGNOTICE)
+                log("Storing new artist edit", xbmc.LOGDEBUG)
                 c.execute("""\
                     INSERT INTO artist_updates(local_id, name, musicbrainz_artistid) values (?, ?, ?)
                 """, (details["local_id"], details["name"], details["musicbrainz_artistid"]))
@@ -90,15 +90,15 @@ def user_updates(details, type_):
             log("Error updating local artist table", xbmc.LOGERROR)
             traceback.print_exc()
     if type_ == "album":
-        log("Storing album update", xbmc.LOGNOTICE)
+        log("Storing album update", xbmc.LOGDEBUG)
         try:
             c.execute("""\
                 SELECT DISTINCT album_id FROM album_updates WHERE album_id=? and path=?
             """, (details["local_id"], cu.get_unicode(details["path"])))
             db_details = c.fetchall()
-            print db_details
+            print (db_details)
             if db_details:
-                log("Updating existing album edit", xbmc.LOGNOTICE)
+                log("Updating existing album edit", xbmc.LOGDEBUG)
                 c.execute("""\
                     UPDATE album_updates SET artist=?, title=?, musicbrainz_albumid=?,
                     musicbrainz_artistid=? WHERE album_id=? and path=?
@@ -106,7 +106,7 @@ def user_updates(details, type_):
                       details["musicbrainz_albumid"], details["musicbrainz_artistid"],
                       details["local_id"], cu.get_unicode(details["path"])))
             else:
-                log("Storing new album edit", xbmc.LOGNOTICE)
+                log("Storing new album edit", xbmc.LOGDEBUG)
                 c.execute("""\
                     INSERT INTO album_updates(album_id, title, artist, path, musicbrainz_albumid, musicbrainz_artistid)
                     values (?, ?, ?, ?, ?, ?)
@@ -525,12 +525,12 @@ def retrieve_distinct_album_artists():
 
 
 def store_counts(local_artists_count, artist_count, album_count, cdart_existing, datecode=0):
-    log("Storing Counts", xbmc.LOGNOTICE)
-    log("    Album Count: %s" % album_count, xbmc.LOGNOTICE)
-    log("    Album Artist Count: %s" % artist_count, xbmc.LOGNOTICE)
-    log("    Local Artist Count: %s" % local_artists_count, xbmc.LOGNOTICE)
-    log("    cdARTs Existing Count: %s" % cdart_existing, xbmc.LOGNOTICE)
-    log("    Unix Date Code: %s" % datecode, xbmc.LOGNOTICE)
+    log("Storing Counts", xbmc.LOGDEBUG)
+    log("    Album Count: %s" % album_count, xbmc.LOGDEBUG)
+    log("    Album Artist Count: %s" % artist_count, xbmc.LOGDEBUG)
+    log("    Local Artist Count: %s" % local_artists_count, xbmc.LOGDEBUG)
+    log("    cdARTs Existing Count: %s" % cdart_existing, xbmc.LOGDEBUG)
+    log("    Unix Date Code: %s" % datecode, xbmc.LOGDEBUG)
     conn = connect()
     c = conn.cursor()
     try:
@@ -561,7 +561,7 @@ def store_counts(local_artists_count, artist_count, album_count, cdart_existing,
 
 
 def check_local_albumartist(album_artist, local_artist_list, background=False):
-    log("Checking Local Artists", xbmc.LOGNOTICE)
+    log("Checking Local Artists", xbmc.LOGDEBUG)
     artist_count = 0
     percent = 0
     local_album_artist_list = []
@@ -973,9 +973,9 @@ def check_artist_mbid(artists, background=False, mode="all_artists"):
 
 def update_missing_artist_mbid(artists, background=False, mode="all_artists", repair=False):
     if repair:
-        log("Updating Removed MBID", xbmc.LOGNOTICE)
+        log("Updating Removed MBID", xbmc.LOGDEBUG)
     else:
-        log("Updating Missing MBID", xbmc.LOGNOTICE)
+        log("Updating Missing MBID", xbmc.LOGDEBUG)
     updated_artists = []
     canceled = False
     count = 0
@@ -1017,9 +1017,9 @@ def update_missing_artist_mbid(artists, background=False, mode="all_artists", re
 
 def update_missing_album_mbid(albums, background=False, repair=False):
     if repair:
-        log("Updating Removed MBID", xbmc.LOGNOTICE)
+        log("Updating Removed MBID", xbmc.LOGDEBUG)
     else:
-        log("Updating Missing MBID", xbmc.LOGNOTICE)
+        log("Updating Missing MBID", xbmc.LOGDEBUG)
     updated_albums = []
     canceled = False
     count = 0
@@ -1054,7 +1054,7 @@ def update_missing_album_mbid(albums, background=False, repair=False):
 
 
 def update_database(background=False):
-    log("Updating Addon's DB", xbmc.LOGNOTICE)
+    log("Updating Addon's DB", xbmc.LOGDEBUG)
     log("Checking to see if DB already exists")
     if not xbmcvfs.exists(__cdam__.file_addon_db()):
         refresh_db(background)
@@ -1074,7 +1074,7 @@ def update_database(background=False):
     canceled = False
     local_artist_count = 0
     get_local_artists_db(mode="album_artists")
-    log("Updating Addon's DB - Checking Albums", xbmc.LOGNOTICE)
+    log("Updating Addon's DB - Checking Albums", xbmc.LOGDEBUG)
     dialog_msg("create", heading=__lng__(32134), line1=__lng__(32105),
                background=background)  # retrieving all artist from xbmc
     local_album_list = get_local_albums_db("all artists", background)
@@ -1111,7 +1111,7 @@ def update_database(background=False):
     # artist matching
     if __cfg__.enable_all_artists():
         local_artists = get_all_local_artists(True)
-        log("Updating Addon's DB - Checking Artists", xbmc.LOGNOTICE)
+        log("Updating Addon's DB - Checking Artists", xbmc.LOGDEBUG)
         for artist in local_artists:
             new_artist = {"name": cu.get_unicode(artist_list_to_string(artist["artist"])),
                           "local_id": artist["artistid"], "musicbrainz_artistid": ""}
@@ -1142,7 +1142,7 @@ def update_database(background=False):
                                                                    mode="all_artists")
             combined_artists.extend(updated_artists)
 
-    log("Updating Addon's DB - Getting MusicBrainz ID's for Artist and Albums", xbmc.LOGNOTICE)
+    log("Updating Addon's DB - Getting MusicBrainz ID's for Artist and Albums", xbmc.LOGDEBUG)
     if __cfg__.update_musicbrainz() and not canceled:  # update missing MusicBrainz ID's
         if not canceled:
             updated_albums, canceled = update_missing_album_mbid(combined, background=background)
@@ -1223,7 +1223,7 @@ def update_database(background=False):
         xbmc.sleep(5000)
     if __cfg__.enable_all_artists():
         if len(combined_artists) > 0:
-            log("Updating Addon's DB - Adding All Artists to Database", xbmc.LOGNOTICE)
+            log("Updating Addon's DB - Adding All Artists to Database", xbmc.LOGDEBUG)
             dialog_msg("create", heading=__lng__(32135), background=background)
             store_local_artist_table(combined_artists, background=background)
     conn = connect()

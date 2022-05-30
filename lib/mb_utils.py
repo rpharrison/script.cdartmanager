@@ -2,14 +2,14 @@
 
 import re
 from traceback import print_exc
-from urllib import quote_plus
+from urllib.parse import quote_plus
 
 import xbmc
-import cdam
-import cdam_utils as cu
-import cdam_db
+import lib.cdam as cdam
+import lib.cdam_utils as cu
+import lib.cdam_db
 
-from cdam_utils import log
+from lib.cdam_utils import log
 
 __cdam__ = cdam.CDAM()
 __cfg__ = cdam.Settings()
@@ -332,7 +332,7 @@ def update_musicbrainz_id(type_, info):
 
 
 def mbid_check(database_mbid, type_):
-    log("Looking up %s MBID. Current MBID: %s" % (type_, database_mbid), xbmc.LOGNOTICE)
+    log("Looking up %s MBID. Current MBID: %s" % (type_, database_mbid), xbmc.LOGDEBUG)
     new_mbid = ""
     mbid_match = False
     url = None

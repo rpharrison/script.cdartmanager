@@ -74,7 +74,7 @@ class CDAM(CDAMAddon):
     @staticmethod
     def __aspath__(path, *subpath):
         p = os.path.join(path, *subpath)
-        return xbmc.translatePath(p).decode('utf-8') or p.decode('utf-8')
+        return xbmc.translatePath(p)
 
     def file_icon(self):
         return self.__aspath__(self.icon())
