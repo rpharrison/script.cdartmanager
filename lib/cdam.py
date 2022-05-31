@@ -118,7 +118,7 @@ class CDAM(CDAMAddon):
     # more
 
     def log(self, text, severity=xbmc.LOGDEBUG):
-        if type(text).__name__ == 'unicode':
+        if type(text).__name__ == 'str':
             text = text.encode('utf-8')
         message = ('[%s] - %s' % (self.name(), text.__str__()))
         xbmc.log(msg=message, level=severity)
@@ -138,7 +138,7 @@ class Settings(CDAMAddon):
         return self.getAddon().getSetting(setting)
 
     def __getSettingString__(self, setting):
-        return self.__getSetting__(setting).decode("utf-8")
+        return self.__getSetting__(setting)
 
     def __getSettingBool__(self, setting):
         return self.__getSetting__(setting) == "true"
@@ -154,7 +154,7 @@ class Settings(CDAMAddon):
 
     def __getSettingPath__(self, setting):
         p = self.__getSettingString__(setting)
-        return xbmc.translatePath(p).decode('utf-8') or p.decode('utf-8')
+        return xbmc.translatePath(p)
 
     def mbid_match_number(self):
         return self.__getSettingInt__("mbid_match_number")

@@ -39,9 +39,9 @@ def artist_musicbrainz_id(artist_id, artist_mbid):
     artist_details = jsonrpc_calls.retrieve_artist_details(artist_id)
     artist_ = {}
     if not artist_details["musicbrainzartistid"] or not artist_mbid:
-        artist_["name"] = cu.get_unicode(artist_details["label"])
+        artist_["name"] = cu.get_str(artist_details["label"])
     else:
-        artist_["name"] = cu.get_unicode(artist_details["label"])
+        artist_["name"] = cu.get_str(artist_details["label"])
         if artist_mbid:
             artist_["musicbrainz_artistid"] = artist_mbid
         else:
@@ -71,10 +71,10 @@ def select_artwork(details, media_type_):
                 if art["musicbrainz_albumid"] == details["musicbrainz_albumid"]:
                     selection = art
             if not selection:
-                dialog_msg("okdialog", heading=__lng__(32033), line1=__lng__(32030),
+                dialog_msg("okdialog", heading=__lng__(32033), message=__lng__(32030),
                            line2=__lng__(32031), background=False)
         else:
-            dialog_msg("okdialog", heading=__lng__(32033), line1=__lng__(32030), line2=__lng__(32031),
+            dialog_msg("okdialog", heading=__lng__(32033), message=__lng__(32030), line2=__lng__(32031),
                        background=False)
     else:
         if media_type_ == ArtType.FANART:
@@ -122,8 +122,8 @@ def update_xbmc_thumbnails(background=False):
             break
 
         count += 1
-        dialog_msg("update", percent=cu.percent_of(count, len(artists)), line1=__lng__(32112),
-                   line2=" %s %s" % (__lng__(32038), cu.get_unicode(artist_["name"])), background=background)
+        dialog_msg("update", percent=cu.percent_of(count, len(artists)), message=__lng__(32112),
+                   line2=" %s %s" % (__lng__(32038), cu.get_str(artist_["name"])), background=background)
         # xbmc_thumbnail_path = ""
         # xbmc_fanart_path = ""
         fanart_path = cdam_fs.get_artist_path(artist_["name"], FileName.FANART)
@@ -140,8 +140,8 @@ def update_xbmc_thumbnails(background=False):
     for album_ in albums:
         if dialog_msg("iscanceled"):
             break
-        dialog_msg("update", percent=cu.percent_of(count, len(albums)), line1=__lng__(32042), line2=__lng__(32112),
-                   line3=" %s %s" % (__lng__(32039), cu.get_unicode(album_["title"])), background=background)
+        dialog_msg("update", percent=cu.percent_of(count, len(albums)), message=__lng__(32042), line2=__lng__(32112),
+                   line3=" %s %s" % (__lng__(32039), cu.get_str(album_["title"])), background=background)
         xbmc_thumbnail_path = ""
         coverart_path = sanitize(os.path.join(album_["path"], FileName.FOLDER))
         if xbmcvfs.exists(coverart_path):
@@ -335,13 +335,13 @@ if __name__ == "__main__":
                     if not os.environ.get("OS", "win32") in ("win32", "Windows_NT"):
                         background_db = False
                         # message "cdART Manager, Stopping Background Database Building"
-                        dialog_msg("okdialog", heading=__lng__(32042), line1=__lng__(32119))
+                        dialog_msg("okdialog", heading=__lng__(32042), message=__lng__(32119))
                         log("BackgroundDB was in Progress, Stopping, allowing script to continue", xbmc.LOGDEBUG)
                         xbmcgui.Window(10000).setProperty("cdartmanager_update", "False")
                     else:
                         background_db = True
                         # message "cdART Manager, Background Database building in progress...  Exiting Script..."
-                        dialog_msg("okdialog", heading=__lng__(32042), line1=__lng__(32118))
+                        dialog_msg("okdialog", heading=__lng__(32042), message=__lng__(32118))
                         log("Background Database Building in Progress, exiting", xbmc.LOGDEBUG)
                         xbmcgui.Window(10000).setProperty("cdartmanager_update", "False")
                 if not background_db and not soft_exit:  # If Settings exists and not in background_db mode, continue on

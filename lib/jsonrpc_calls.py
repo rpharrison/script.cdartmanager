@@ -7,7 +7,7 @@ import json
 import xbmc
 import traceback
 
-import lib.cdam_utils
+import lib.cdam_utils as cdam_utils
 
 from lib.cdam_utils import log
 from lib.cdam import MediaType

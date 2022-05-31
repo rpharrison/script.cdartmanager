@@ -40,45 +40,45 @@ def change_characters(text):
     return text
 
 
-def smart_unicode(s):
+def smart_str(s):
     """credit : sfaxman"""
     if not s:
         return ''
     try:
-        if not isinstance(s, basestring):
-            if hasattr(s, '__unicode__'):
-                s = unicode(s)
+        if not isinstance(s, str):
+            if hasattr(s, '__str__'):
+                s = str(s)
             else:
-                s = unicode(str(s), 'UTF-8')
-        elif not isinstance(s, unicode):
-            s = unicode(s, 'UTF-8')
+                s = str(str(s), 'UTF-8')
+        elif not isinstance(s, str):
+            s = str(s, 'UTF-8')
     except Exception as e:
-        log(e.message)
-        if not isinstance(s, basestring):
-            if hasattr(s, '__unicode__'):
-                s = unicode(s)
+        log(e)
+        if not isinstance(s, str):
+            if hasattr(s, '__str__'):
+                s = str(s)
             else:
-                s = unicode(str(s), 'ISO-8859-1')
-        elif not isinstance(s, unicode):
-            s = unicode(s, 'ISO-8859-1')
+                s = str(str(s), 'ISO-8859-1')
+        elif not isinstance(s, str):
+            s = str(s, 'ISO-8859-1')
     return s
 
 
 def smart_utf8(s):
-    return smart_unicode(s).encode('utf-8')
+    return smart_str(s).encode('utf-8')
 
 
-def get_unicode(to_decode):
+def get_str(to_decode):
     final = []
     try:
         to_decode.encode('utf8')
         return to_decode
-    except UnicodeError:
+    except strError:
         while True:
             try:
                 final.append(to_decode.decode('utf8'))
                 break
-            except UnicodeDecodeError as exc:
+            except strDecodeError as exc:
                 # everything up to crazy character should be good
                 final.append(to_decode[:exc.start].decode('utf8'))
                 # crazy character is probably latin1
@@ -105,7 +105,7 @@ def settings_to_log(settings_path):
                 log("%30s: %s" % (match.group(1), str(unescape(match.group(2).decode('utf-8', 'ignore')))),
                     xbmc.LOGDEBUG)
     except Exception as e:
-        log(e.message, xbmc.LOGERROR)
+        log(e, xbmc.LOGDEBUG)
         traceback.print_exc()
 
 
@@ -227,57 +227,57 @@ def unescape(text):
 def dialog_msg(action,
                percent=0,
                heading='',
-               line1='',
-               line2='',
-               line3='',
+               message='',
+               #line2='',
+               #line3='',
                background=False,
                nolabel=__lng__(32179),
                yeslabel=__lng__(32178)):
-    # Fix possible unicode errors
-    heading = heading.encode('utf-8', 'ignore')
-    line1 = line1.encode('utf-8', 'ignore')
-    line2 = line2.encode('utf-8', 'ignore')
-    line3 = line3.encode('utf-8', 'ignore')
+    # Fix possible str errors
+    #heading = heading.encode('utf-8', 'ignore')
+    #message = message.encode('utf-8', 'ignore')
+    #line2 = line2.encode('utf-8', 'ignore')
+    #line3 = line3.encode('utf-8', 'ignore')
     # Dialog logic
     if not heading == '':
-        heading = __cdam__.name() + " - " + heading
+        heading = __cdam__.name() + "-" + heading
     else:
         heading = __cdam__.name()
-    if not line1:
-        line1 = ""
-    if not line2:
-        line2 = ""
-    if not line3:
-        line3 = ""
+    if not message:
+        message = ""
+    #if not line2:
+    #    line2 = ""
+    #if not line3:
+    #    line3 = ""
     if not background:
         if action == 'create':
-            dialog.create(heading, line1, line2, line3)
+            dialog.create(heading, message)
         if action == 'update':
             if percent > 100:
                 percent = 100
             elif percent < 0:
                 percent = 0
-            dialog.update(percent, line1, line2, line3)
+            dialog.update(percent, message)
         if action == 'close':
             dialog.close()
         if action == 'iscanceled':
             return dialog.iscanceled()
         if action == 'okdialog':
-            xbmcgui.Dialog().ok(heading, line1, line2, line3)
+            xbmcgui.Dialog().ok(heading, message, line2, line3)
         if action == 'yesno':
-            return xbmcgui.Dialog().yesno(heading, line1, line2, line3, nolabel, yeslabel)
+            return xbmcgui.Dialog().yesno(heading, message, line2, line3, nolabel, yeslabel)
     if background:
         if action == 'create' or action == 'okdialog':
             if line2 == '':
-                msg = line1
+                msg = message
             else:
-                msg = line1 + ': ' + line2
+                msg = message + ': ' + line2
             if __cfg__.notify_in_background():
                 xbmc.executebuiltin("XBMC.Notification(%s, %s, 7500, %s)" % (heading, msg, __cdam__.file_icon()))
 
 
 def log(text, severity=xbmc.LOGDEBUG):
-    if type(text).__name__ == 'unicode':
+    if type(text).__name__ == 'str':
         text = text.encode('utf-8')
     message = ('[%s] - %s' % (__cdam__.name(), text.__str__()))
     xbmc.log(msg=message, level=severity)

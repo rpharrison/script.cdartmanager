@@ -86,8 +86,8 @@ def get_musicbrainz_album(album_title, artist, e_count, limit=1, with_singles=Fa
         Use:
             album, albums = get_musicbrainz_album( album_title, artist, e_count, limit, with_singles, by_release )
 
-        album_title  - the album title(must be unicode)
-        artist       - the artist's name(must be unicode)
+        album_title  - the album title(must be str)
+        artist       - the artist's name(must be str)
         e_count      - used internally(should be set to 0)
         limit        - limit the number of responses
         with_singles - set to True to look up single releases at the same time
@@ -101,8 +101,8 @@ def get_musicbrainz_album(album_title, artist, e_count, limit=1, with_singles=Fa
     album["title"] = ""
     album["artist"] = ""
     album["artist_id"] = ""
-    artist = cu.smart_unicode(cu.get_unicode(artist))
-    album_title = cu.smart_unicode(cu.get_unicode(album_title))
+    artist = cu.smart_str(cu.get_str(artist))
+    album_title = cu.smart_str(cu.get_str(album_title))
     log("Artist: %s" % artist)
     log("Album: %s" % album_title)
     artist = artist.replace('"', '?')
@@ -159,8 +159,8 @@ def get_musicbrainz_album(album_title, artist, e_count, limit=1, with_singles=Fa
                 mbartist = re.search('''<name>(.*?)</name>''', htmlsource)
                 mbartistid = re.search('''<artist id="(.*?)">''', htmlsource)
                 album["id"] = mbid.group(1)
-                album["title"] = cu.unescape(cu.smart_unicode(mbtitle.group(1)))
-                album["artist"] = cu.unescape(cu.smart_unicode(mbartist.group(1)))
+                album["title"] = cu.unescape(cu.smart_str(mbtitle.group(1)))
+                album["artist"] = cu.unescape(cu.smart_str(mbartist.group(1)))
                 album["artist_id"] = mbartistid.group(1)
             except Exception as e:
                 log(e.message)
@@ -217,8 +217,8 @@ def get_musicbrainz_album(album_title, artist, e_count, limit=1, with_singles=Fa
                         mbartistid = re.search('''<artist id="(.*?)">''', item)
                         album["score"] = mbscore.group(1)
                         album["id"] = mbid.group(1)
-                        album["title"] = cu.unescape(cu.smart_unicode(mbtitle.group(1)))
-                        album["artist"] = cu.unescape(cu.smart_unicode(mbartist.group(1)))
+                        album["title"] = cu.unescape(cu.smart_str(mbtitle.group(1)))
+                        album["artist"] = cu.unescape(cu.smart_str(mbartist.group(1)))
                         album["artist_id"] = mbartistid.group(1)
                         log("Score     : %s" % album["score"])
                         log("Title     : %s" % album["title"])
@@ -241,7 +241,7 @@ def get_musicbrainz_album(album_title, artist, e_count, limit=1, with_singles=Fa
 def get_musicbrainz_artists(artist_search, limit=1):
     log("Artist: %s" % artist_search)
     artists = []
-    artist_name = cu.smart_unicode((artist_search.replace('"', '?').replace('&', 'and')))
+    artist_name = cu.smart_str((artist_search.replace('"', '?').replace('&', 'and')))
     url = artist_url % (server, quote_plus(artist_name.encode("utf-8")), limit)
     htmlsource = cu.get_html_source(url, "", save_file=False, overwrite=False)
     match = re.findall('''<artist(.*?)</artist>''', htmlsource)
@@ -257,11 +257,11 @@ def get_musicbrainz_artists(artist_search, limit=1):
             if score_match:
                 artist["score"] = score_match.group(1)
             if name_match:
-                artist["name"] = cu.unescape(cu.smart_unicode(name_match.group(1)))
+                artist["name"] = cu.unescape(cu.smart_str(name_match.group(1)))
             if id_match:
                 artist["id"] = id_match.group(1)
             if sort_name_match:
-                artist["sortname"] = cu.unescape(cu.smart_unicode(sort_name_match.group(1)))
+                artist["sortname"] = cu.unescape(cu.smart_str(sort_name_match.group(1)))
             log("Score     : %s" % artist["score"])
             log("Id        : %s" % artist["id"])
             log("Name      : %s" % artist["name"])
@@ -278,7 +278,7 @@ def get_musicbrainz_artist_id(artist_search, limit=1, alias=False):
     id_ = ""
     score = ""
     sortname = ""
-    artist_name = cu.smart_unicode((artist_search.replace('"', '?').replace('&', 'and')))
+    artist_name = cu.smart_str((artist_search.replace('"', '?').replace('&', 'and')))
     if not alias:
         url = artist_url % (server, quote_plus(artist_name.encode("utf-8")), limit)
     else:
@@ -296,11 +296,11 @@ def get_musicbrainz_artist_id(artist_search, limit=1, alias=False):
         if score_match:
             score = score_match.group(1)
         if name_match:
-            name = cu.unescape(cu.smart_unicode(name_match.group(1)))
+            name = cu.unescape(cu.smart_str(name_match.group(1)))
         if id_match:
             id_ = id_match.group(1)
         if sort_name_match:
-            sortname = cu.unescape(cu.smart_unicode(sort_name_match.group(1)))
+            sortname = cu.unescape(cu.smart_str(sort_name_match.group(1)))
         log("Score     : %s" % score)
         log("Id        : %s" % id_)
         log("Name      : %s" % name)

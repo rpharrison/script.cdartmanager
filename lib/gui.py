@@ -15,7 +15,7 @@ import json
 import lib.cdam as cdam
 import lib.cdam_utils as cu
 import lib.cdam_fs
-import lib.cdam_db
+import lib.cdam_db as cdam_db
 
 import lib.download
 import lib.ftv_scraper
@@ -93,7 +93,7 @@ class GUI(xbmcgui.WindowXMLDialog):
             # no cdart found
             xbmc.executebuiltin("Dialog.Close(busydialog)")
             xbmcgui.Window(10001).clearProperty("artwork")
-            dialog_msg("ok", heading=__lng__(32033), line1=__lng__(32030), line2=__lng__(32031))
+            dialog_msg("ok", heading=__lng__(32033), message=__lng__(32030), line2=__lng__(32031))
             # Onscreen Dialog - Not Found on Fanart.tv, Please contribute! Upload your cdARTs, On fanart.tv
             # return
         else:
@@ -167,7 +167,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                 self.getControl(122).selectItem(focus_item)
             else:
                 xbmcgui.Window(10001).clearProperty("artwork")
-                dialog_msg("ok", heading=__lng__(32033), line1=__lng__(32030), line2=__lng__(32031))
+                dialog_msg("ok", heading=__lng__(32033), message=__lng__(32030), line2=__lng__(32031))
                 # Onscreen Dialog - Not Found on Fanart.tv, Please contribute! Upload your cdARTs, On fanart.tv
         return
 
@@ -314,7 +314,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                 log("[script.cdartmanager - No Fanart for this artist", xbmc.LOGDEBUG)
                 xbmc.executebuiltin("Dialog.Close(busydialog)")
                 xbmcgui.Window(10001).clearProperty("artwork")
-                dialog_msg("ok", heading=__lng__(32033), line1=__lng__(32030), line2=__lng__(32031))
+                dialog_msg("ok", heading=__lng__(32033), message=__lng__(32030), line2=__lng__(32031))
                 # Onscreen Dialog - Not Found on Fanart.tv, Please contribute! Upload your cdARTs, On fanart.tv
                 return
         except Exception as e:
@@ -345,7 +345,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                 log("[script.cdartmanager - No Music Banners for this artist", xbmc.LOGDEBUG)
                 xbmc.executebuiltin("Dialog.Close(busydialog)")
                 xbmcgui.Window(10001).clearProperty("artwork")
-                dialog_msg("ok", heading=__lng__(32033), line1=__lng__(32030), line2=__lng__(32031))
+                dialog_msg("ok", heading=__lng__(32033), message=__lng__(32030), line2=__lng__(32031))
                 # Onscreen Dialog - Not Found on Fanart.tv, Please contribute! Upload your cdARTs, On fanart.tv
                 return
         except Exception as e:
@@ -393,7 +393,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                 log("[script.cdartmanager - No ClearLOGO for this artist", xbmc.LOGDEBUG)
                 xbmc.executebuiltin("Dialog.Close(busydialog)")
                 xbmcgui.Window(10001).clearProperty("artwork")
-                dialog_msg("ok", heading=__lng__(32033), line1=__lng__(32030), line2=__lng__(32031))
+                dialog_msg("ok", heading=__lng__(32033), message=__lng__(32030), line2=__lng__(32031))
                 # Onscreen Dialog - Not Found on Fanart.tv, Please contribute! Upload your cdARTs, On fanart.tv
                 return
         except Exception as e:
@@ -497,10 +497,10 @@ class GUI(xbmcgui.WindowXMLDialog):
             if cdam_fs.cdart_single_restore(target, album["artist"], album["title"], album["disc"]):
                 copied += 1
                 cdam_db.set_has_art(ArtType.CDART, album["path"])
-            dialog_msg("update", percent=cu.percent_of(total, len(albums)), line1="%s" % target,
+            dialog_msg("update", percent=cu.percent_of(total, len(albums)), message="%s" % target,
                        line2="%s: %s" % (__lng__(32056), copied))
         dialog_msg("close")
-        dialog_msg("ok", heading=__lng__(32057), line1="%s: %s" % (__lng__(32058), __cfg__.path_backup_path()),
+        dialog_msg("ok", heading=__lng__(32057), message="%s: %s" % (__lng__(32058), __cfg__.path_backup_path()),
                    line2="%s %s" % (copied, __lng__(32059)))
         return
 
@@ -519,12 +519,12 @@ class GUI(xbmcgui.WindowXMLDialog):
                 source = sanitize(os.path.join(album["path"], FileName.CDART))
                 if cdam_fs.cdart_single_backup(source, album["artist"], album["title"], album["disc"]):
                     copied += 1
-                dialog_msg("update", percent=cu.percent_of(total, len(albums)), line1="%s" % source,
+                dialog_msg("update", percent=cu.percent_of(total, len(albums)), message="%s" % source,
                            line2="%s: %s" % (__lng__(32056), copied))
             else:
                 pass
         dialog_msg("close")
-        dialog_msg("ok", heading=__lng__(32057), line1="%s: %s" % (__lng__(32058), __cfg__.path_backup_path()),
+        dialog_msg("ok", heading=__lng__(32057), message="%s: %s" % (__lng__(32058), __cfg__.path_backup_path()),
                    line2="%s %s" % (copied, __lng__(32059)))
         return
 
@@ -538,7 +538,7 @@ class GUI(xbmcgui.WindowXMLDialog):
         artists = cdam_db.get_local_artists_db(mode="local_artists")
         if not artists:
             artists = cdam_db.get_local_artists_db(mode="album_artists")
-        dialog_msg("create", heading=__lng__(32103), line1=__lng__(20186), line2="", line3="")
+        dialog_msg("create", heading=__lng__(32103), message=__lng__(20186))
         temp_destination = os.path.join(__cdam__.path_profile(), "missing.txt")
         try:
             missing = open(temp_destination, "wb")
@@ -553,8 +553,8 @@ class GUI(xbmcgui.WindowXMLDialog):
                 count += 1
                 if dialog_msg("iscanceled"):
                     break
-                dialog_msg("update", percent=cu.percent_of(count, len(albums)), line1=__lng__(32103),
-                           line2=" %s: %s" % (__lng__(32039), cu.get_unicode(album["title"])), line3="")
+                dialog_msg("update", percent=cu.percent_of(count, len(albums)), message=__lng__(32103),
+                           line2=" %s: %s" % (__lng__(32039), cu.get_str(album["title"])), line3="")
                 if album[ArtType.CDART] and album[ArtType.COVER]:
                     continue
                 else:
@@ -590,8 +590,8 @@ class GUI(xbmcgui.WindowXMLDialog):
                 count += 1
                 if dialog_msg("iscanceled"):
                     break
-                dialog_msg("update", percent=cu.percent_of(count, len(artists)), line1=__lng__(32103),
-                           line2=" %s: %s" % (__lng__(32038), cu.get_unicode(artist["name"])), line3="")
+                dialog_msg("update", percent=cu.percent_of(count, len(artists)), message=__lng__(32103),
+                           line2=" %s: %s" % (__lng__(32038), cu.get_str(artist["name"])), line3="")
 
                 line = ""
                 fanart = "X" if xbmcvfs.exists(cdam_fs.get_artist_path(artist["name"], FileName.FANART)) else " "
@@ -650,8 +650,8 @@ class GUI(xbmcgui.WindowXMLDialog):
         self.getControl(210).setImage(self.image)
 
     @staticmethod
-    def popup(header, line1, line2, line3):
-        dialog_msg("create", heading=header, line1=line1, line2=line2, line3=line3)
+    def popup(header, message, line2, line3):
+        dialog_msg("create", heading=header, message=message, line2=line2, line3=line3)
         xbmc.sleep(2000)
         dialog_msg("close")
 
@@ -673,23 +673,23 @@ class GUI(xbmcgui.WindowXMLDialog):
                 if type_ == "artist":
                     if len(mbid) == 0 and len(self.artist_menu["musicbrainz_artistid"]) != 0:
                         if dialog_msg("yesno", heading=__lng__(32163),
-                                      line1=self.artist_menu["musicbrainz_artistid"]):
+                                      message=self.artist_menu["musicbrainz_artistid"]):
                             canceled = False
                             break
                 elif type_ == "albumartist":
                     if len(mbid) == 0 and len(self.artist_menu["musicbrainz_artistid"]) != 0:
                         if dialog_msg("yesno", heading=__lng__(32163),
-                                      line1=self.album_menu["musicbrainz_artistid"]):
+                                      message=self.album_menu["musicbrainz_artistid"]):
                             canceled = False
                             break
                 elif type_ == "album":
                     if len(mbid) == 0 and len(self.artist_menu["musicbrainz_albumid"]) != 0:
                         if dialog_msg("yesno", heading=__lng__(32163),
-                                      line1=self.album_menu["musicbrainz_albumid"]):
+                                      message=self.album_menu["musicbrainz_albumid"]):
                             canceled = False
                             break
                 if len(mbid) == 36:
-                    if dialog_msg("yesno", heading=__lng__(32162), line1=mbid):
+                    if dialog_msg("yesno", heading=__lng__(32162), message=mbid):
                         canceled = False
                         break
                     else:
@@ -705,7 +705,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                     mbid = "".join(temp_mbid)
                 else:
                     mbid = "canceled"
-                    if dialog_msg("yesno", heading=__lng__(32160), line1=__lng__(32161)):
+                    if dialog_msg("yesno", heading=__lng__(32160), message=__lng__(32161)):
                         kb.doModal()
                         continue
                     else:
@@ -730,16 +730,16 @@ class GUI(xbmcgui.WindowXMLDialog):
             xbmc.executebuiltin("ActivateWindow(busydialog)")
             self.artist_menu = {
                 "local_id": (self.local_artists[self.getControl(120).getSelectedPosition()]["local_id"]),
-                "name": cu.get_unicode(
+                "name": cu.get_str(
                     self.local_artists[self.getControl(120).getSelectedPosition()]["name"]),
-                "musicbrainz_artistid": cu.get_unicode(
+                "musicbrainz_artistid": cu.get_str(
                     self.local_artists[self.getControl(120).getSelectedPosition()]["musicbrainz_artistid"])}
             if self.menu_mode not in (10, 11, 12, 14):
                 self.artist_menu["has_art"] = self.local_artists[self.getControl(120).getSelectedPosition()]["has_art"]
                 if not self.artist_menu["musicbrainz_artistid"]:
                     self.artist_menu["musicbrainz_artistid"] = mb_utils.update_musicbrainz_id("artist",
                                                                                               self.artist_menu)
-            artist_name = cu.get_unicode(self.artist_menu["name"])
+            artist_name = cu.get_str(self.artist_menu["name"])
             self.getControl(204).setLabel(__lng__(32038) + "[CR]%s" % artist_name)
             if self.menu_mode == 1:
                 remote_cdart_url = ftv_scraper.remote_cdart_list(self.artist_menu)
@@ -770,31 +770,31 @@ class GUI(xbmcgui.WindowXMLDialog):
             if self.menu_mode == 10:  # Artist
                 self.artist_menu = {"local_id": (
                     self.local_artists[self.getControl(145).getSelectedPosition()]["local_id"]),
-                    "name": cu.get_unicode(self.local_artists[self.getControl(145).getSelectedPosition()]["name"]),
-                    "musicbrainz_artistid": cu.get_unicode(
+                    "name": cu.get_str(self.local_artists[self.getControl(145).getSelectedPosition()]["name"]),
+                    "musicbrainz_artistid": cu.get_str(
                         self.local_artists[self.getControl(145).getSelectedPosition()]["musicbrainz_artistid"])}
                 self.setFocusId(157)
                 try:
                     self.getControl(156).setLabel(
-                        __lng__(32038) + "[CR]%s" % cu.get_unicode(self.artist_menu["name"]))
+                        __lng__(32038) + "[CR]%s" % cu.get_str(self.artist_menu["name"]))
                 except Exception as ex:
                     log(ex.message)
                     self.getControl(156).setLabel(__lng__(32038) + "[CR]%s" % repr(self.artist_menu["name"]))
             if self.menu_mode in (11, 12):  # Album
                 self.album_menu = {"local_id": (
                     self.local_albums[self.getControl(145).getSelectedPosition()]["local_id"]),
-                    "title": cu.get_unicode(self.local_albums[self.getControl(145).getSelectedPosition()]["title"]),
-                    "musicbrainz_albumid": cu.get_unicode(
+                    "title": cu.get_str(self.local_albums[self.getControl(145).getSelectedPosition()]["title"]),
+                    "musicbrainz_albumid": cu.get_str(
                         self.local_albums[self.getControl(145).getSelectedPosition()]["musicbrainz_albumid"]),
-                    "artist": cu.get_unicode(
+                    "artist": cu.get_str(
                         self.local_albums[self.getControl(145).getSelectedPosition()]["artist"]),
-                    "path": cu.get_unicode(self.local_albums[self.getControl(145).getSelectedPosition()]["path"]),
-                    "musicbrainz_artistid": cu.get_unicode(
+                    "path": cu.get_str(self.local_albums[self.getControl(145).getSelectedPosition()]["path"]),
+                    "musicbrainz_artistid": cu.get_str(
                         self.local_albums[self.getControl(145).getSelectedPosition()]["musicbrainz_artistid"])}
                 self.setFocusId(157)
                 try:
                     self.getControl(156).setLabel(
-                        __lng__(32039) + "[CR]%s" % cu.get_unicode(self.album_menu["title"]))
+                        __lng__(32039) + "[CR]%s" % cu.get_str(self.album_menu["title"]))
                 except Exception as ex:
                     log(ex.message)
                     self.getControl(156).setLabel(__lng__(32039) + "[CR]%s" % repr(self.album_menu["title"]))
@@ -848,14 +848,14 @@ class GUI(xbmcgui.WindowXMLDialog):
                         message, _, _ = download.download_art(url, data, ArtType.COVER, "manual")
                     dialog_msg("close")
                     if message is not None:  # and do not crash if there's somethin wrong with this url
-                        dialog_msg("ok", heading=message[0], line1=message[1], line2=message[2], line3=message[3])
+                        dialog_msg("ok", heading=message[0], message=message[1], line2=message[2], line3=message[3])
                     else:
                         log("Download must have failed, message is None")
             else:  # If it is not a recognized Album...
                 log("Oops --  Some how I got here... - ControlID(122)")
             all_artist_count, local_album_count, local_artist_count, local_cdart_count = cdam_db.new_local_count()
             self.refresh_counts(local_album_count, local_artist_count, local_cdart_count)
-            artist_name = cu.get_unicode(self.artist_menu["name"])
+            artist_name = cu.get_str(self.artist_menu["name"])
             self.getControl(204).setLabel(__lng__(32038) + "[CR]%s" % artist_name)
             if self.menu_mode == 1:
                 remote_cdart_url = ftv_scraper.remote_cdart_list(self.artist_menu)
@@ -1011,7 +1011,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                 if url:
                     message, _, _ = download.download_art(url, data, ArtType.CLEARLOGO, "manual")
                     dialog_msg("close")
-                    dialog_msg("ok", heading=message[0], line1=message[1], line2=message[2], line3=message[3])
+                    dialog_msg("ok", heading=message[0], message=message[1], line2=message[2], line3=message[3])
                 else:
                     log("Nothing to download")
                 xbmcgui.Window(10001).setProperty("artwork", ArtType.CLEARLOGO)
@@ -1026,7 +1026,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                 if url:
                     message, success, is_canceled = download.download_art(url, data, ArtType.BANNER, "manual")
                     dialog_msg("close")
-                    dialog_msg("ok", heading=message[0], line1=message[1], line2=message[2], line3=message[3])
+                    dialog_msg("ok", heading=message[0], message=message[1], line2=message[2], line3=message[3])
                 else:
                     log("Nothing to download")
                 xbmcgui.Window(10001).setProperty("artwork", ArtType.BANNER)
@@ -1041,7 +1041,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                 if url:
                     message, success, is_canceled = download.download_art(url, data, ArtType.FANART, "manual")
                     dialog_msg("close")
-                    dialog_msg("ok", heading=message[0], line1=message[1], line2=message[2], line3=message[3])
+                    dialog_msg("ok", heading=message[0], message=message[1], line2=message[2], line3=message[3])
                 else:
                     log("Nothing to download")
                 xbmcgui.Window(10001).setProperty("artwork", ArtType.FANART)
@@ -1056,7 +1056,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                 if url:
                     message, success, is_canceled = download.download_art(url, data, ArtType.THUMB, "manual")
                     dialog_msg("close")
-                    dialog_msg("ok", heading=message[0], line1=message[1], line2=message[2], line3=message[3])
+                    dialog_msg("ok", heading=message[0], message=message[1], line2=message[2], line3=message[3])
                 else:
                     log("Nothing to download")
                 xbmcgui.Window(10001).setProperty("artwork", ArtType.THUMB)
