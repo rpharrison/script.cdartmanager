@@ -6,8 +6,9 @@ import json
 import os
 import re
 import traceback
-import urllib
-
+import urllib, urllib.parse, urllib.error
+import urllib.request
+from urllib.request import FancyURLopener
 import xbmc
 import xbmcgui
 import xbmcvfs
@@ -149,7 +150,7 @@ def get_html_source(url, path, save_file=True, overwrite=False):
             xbmcvfs.mkdir(os.path.join(tempxml_folder, ''))
         file_name = os.path.join(tempxml_folder, path)
 
-    class AppURLopener(urllib.FancyURLopener):
+    class AppURLopener(urllib.request.FancyURLopener):
         version = __cdam__.user_agent()
 
     urllib._urlopener = AppURLopener()
@@ -172,8 +173,8 @@ def get_html_source(url, path, save_file=True, overwrite=False):
                     urllib.urlcleanup()
                     sock = urllib.urlopen(url)
             else:
-                urllib.urlcleanup()
-                sock = urllib.urlopen(url)
+                urllib.request.urlcleanup()
+                sock = urllib.request.urlopen(url)
             htmlsource = sock.read()
             if save_file and htmlsource not in ("null", ""):
                 if not xbmcvfs.exists(file_name) or overwrite:
