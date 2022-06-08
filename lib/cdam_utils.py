@@ -170,22 +170,23 @@ def get_html_source(url, path, save_file=True, overwrite=False):
                     sock = open(file_name, "r")
                 else:
                     log("Retrieving online source")
-                    urllib.urlcleanup()
-                    sock = urllib.urlopen(url)
+                    urllib.request.urlcleanup()
+                    sock = urllib.request.urlopen(url)
             else:
                 urllib.request.urlcleanup()
                 sock = urllib.request.urlopen(url)
-            htmlsource = sock.read()
-            if save_file and htmlsource not in ("null", ""):
+            htmlbytes = sock.read()
+            htmlsource = sock.read().decode("utf-8")
+            if save_file and htmlbytes not in ("null", ""):
                 if not xbmcvfs.exists(file_name) or overwrite:
-                    file(file_name, "w").write(htmlsource)
+                    open(file_name, "wb").write(htmlbytes)
             sock.close()
             break
         except IOError as e:
             log("error: %s" % e, xbmc.LOGERROR)
             log("e.errno: %s" % e.errno, xbmc.LOGERROR)
             if not e.errno == "socket error":
-                log("errno.errorcode: %s" % errno.errorcode[e.errno], xbmc.LOGERROR)
+                log("errno.errorcode: %s" % errno.errorcode[e.errno], xbmc.LOGDEBUG)
         except Exception as e:
             log("error: %s" % e, xbmc.LOGERROR)
             traceback.print_exc()
@@ -207,15 +208,15 @@ def unescape(text):
             # character reference
             try:
                 if text_[:3] == "&#x":
-                    return unichr(int(text_[3:-1], 16))
+                    return chr(int(text_[3:-1], 16))
                 else:
-                    return unichr(int(text_[2:-1]))
+                    return chr(int(text_[2:-1]))
             except ValueError:
                 pass
         else:
             # named entity
             try:
-                text_ = unichr(htmlentitydefs.name2codepoint[text_[1:-1]])
+                text_ = chr(htmlentitydefs.name2codepoint[text_[1:-1]])
             except KeyError:
                 pass
         return text_  # leave as is

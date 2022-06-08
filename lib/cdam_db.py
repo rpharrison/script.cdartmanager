@@ -396,9 +396,7 @@ def store_alblist(local_album_list, background=False):
     percent = 0
     try:
         for album in local_album_list:
-            dialog_msg("update", percent=percent, message=__lng__(20186),
-                       line2="%s: %s" % (__lng__(32138), cu.get_str(album["title"])),
-                       line3="%s%6s" % (__lng__(32100), album_count), background=background)
+            dialog_msg("update", percent=percent, message=__lng__(20186))
             log("Album Count: %s" % album_count)
             log("Album ID: %s" % album["local_id"])
             log("Album Title: %s" % album["title"])
@@ -569,8 +567,7 @@ def check_local_albumartist(album_artist, local_artist_list, background=False):
         artist_count += 1
         id_ = None
         for local in local_artist_list:
-            dialog_msg("update", percent=percent, message=__lng__(20186), line2="%s" % __lng__(32101),
-                       line3="%s:%s" % (__lng__(32038), (cu.get_str(artist_list_to_string(local["artist"])))),
+            dialog_msg("update", percent=percent, message=__lng__(20186),
                        background=background)
             if dialog_msg("iscanceled", background=background):
                 break
@@ -999,8 +996,6 @@ def update_missing_artist_mbid(artists, background=False, mode="all_artists", re
                 canceled = True
                 break
             dialog_msg("update", percent=percent, message=__lng__(32132),
-                       line2="%s%s" % (__lng__(32125), update_artist["local_id"]),
-                       line3="%s: %s" % (__lng__(32137), cu.get_str(update_artist["name"])),
                        background=background)
             try:
                 _, update_artist["musicbrainz_artistid"], _ = get_musicbrainz_artist_id(

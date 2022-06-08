@@ -120,7 +120,7 @@ def remote_banner_list(artist_menu):
         if not len(art) < 3:
             banner = art[4]["banner"]
     except Exception as e:
-        log(e.message, xbmc.LOGERROR)
+        log(e, xbmc.LOGDEBUG)
         print_exc()
     return banner
 
@@ -294,8 +294,8 @@ def first_check(all_artists, album_artists, background=False, update_db=False):
         else:
             match["has_art"] = artist["has_art"]
         album_artists_matched.append(match)
-        dialog_msg("update", percent=percent_of(float(count), len(album_artists)), line1=heading,
-                   line2="", line3=__lng__(32049) % artist["name"], background=background)
+        dialog_msg("update", percent=percent_of(float(count), len(album_artists)),
+                   background=background)
         count += 1
     log("Storing Album Artists List")
     store_lalist(album_artists_matched)

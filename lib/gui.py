@@ -17,9 +17,9 @@ import lib.cdam_utils as cu
 import lib.cdam_fs
 import lib.cdam_db as cdam_db
 
-import lib.download
-import lib.ftv_scraper
-import lib.mb_utils
+import lib.download as download
+import lib.ftv_scraper as ftv_scraper
+import lib.mb_utils as mb_utils
 
 from lib.cdam_utils import log, dialog_msg
 from lib.cdam_fs import sanitize
@@ -350,7 +350,7 @@ class GUI(xbmcgui.WindowXMLDialog):
                 return
         except Exception as e:
             log("Error in script occured", xbmc.LOGDEBUG)
-            log(e.message, xbmc.LOGWARNING)
+            log(e, xbmc.LOGDEBUG)
             traceback.print_exc()
             xbmc.executebuiltin("Dialog.Close(busydialog)")
 
@@ -519,13 +519,11 @@ class GUI(xbmcgui.WindowXMLDialog):
                 source = sanitize(os.path.join(album["path"], FileName.CDART))
                 if cdam_fs.cdart_single_backup(source, album["artist"], album["title"], album["disc"]):
                     copied += 1
-                dialog_msg("update", percent=cu.percent_of(total, len(albums)), message="%s" % source,
-                           line2="%s: %s" % (__lng__(32056), copied))
+                dialog_msg("update", percent=cu.percent_of(total, len(albums)), message="%s" % source)
             else:
                 pass
         dialog_msg("close")
-        dialog_msg("ok", heading=__lng__(32057), message="%s: %s" % (__lng__(32058), __cfg__.path_backup_path()),
-                   line2="%s %s" % (copied, __lng__(32059)))
+        dialog_msg("ok", heading=__lng__(32057), message="%s: %s" % (__lng__(32058), __cfg__.path_backup_path()))
         return
 
     # Search for missing cdARTs and save to missing.txt in Missing List path
@@ -641,7 +639,7 @@ class GUI(xbmcgui.WindowXMLDialog):
             else:
                 self.getControl(210).setImage(self.image)
         except Exception as ex:  # If there is not any information in any of those locations, no image.
-            log(ex.message)
+            log(ex)
             traceback.print_exc()
             self.getControl(210).setImage(self.image)
 

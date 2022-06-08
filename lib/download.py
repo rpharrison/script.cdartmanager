@@ -353,13 +353,13 @@ def auto_download(type_, artist_list, background=False):
                         log("%s artwork file already exists, skipping..." % key_label)
         dialog_msg("close", background=background)
         if d_error:
-            dialog_msg("ok", line1=__lng__(32026), line2="%s: %s" % (__lng__(32041), download_count),
+            dialog_msg("ok", download_count,
                        background=background)
         else:
-            dialog_msg("ok", line1=__lng__(32040), line2="%s: %s" % (__lng__(32041), download_count),
+            dialog_msg("ok", download_count,
                        background=background)
         return download_count, successfully_downloaded
     except Exception as e:
-        xbmc.log(e.message, xbmc.LOGERROR)
+        xbmc.log(e, xbmc.LOGDEBUG)
         print_exc()
         dialog_msg("close", background=background)

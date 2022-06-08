@@ -7,7 +7,7 @@ from urllib.parse import quote_plus
 import xbmc
 import lib.cdam as cdam
 import lib.cdam_utils as cu
-import lib.cdam_db
+import lib.cdam_db as cdam_db
 
 from lib.cdam_utils import log
 
@@ -17,14 +17,14 @@ __cfg__ = cdam.Settings()
 artist_url = '%s/ws/2/artist/?query=artist:"%s"&limit=%d'
 alias_url = '%s/ws/2/artist/?query=alias:"%s"&limit=%d'
 release_group_url = '%s/ws/2/release-group/'
-release_group_url_artist = release_group_url + '?query="%s"%s AND artist:"%s"'
-release_group_url_alias = release_group_url + '?query="%s"%s AND alias:"%s"'
-nolive_nosingles = ' NOT type:single NOT type:live'
-live_nosingles = ' NOT type:single'
+release_group_url_artist = release_group_url + '?query="%s"%s+AND+artist:"%s"'
+release_group_url_alias = release_group_url + '?query="%s"%s+AND+alias:"%s"'
+nolive_nosingles = '+NOT+type:single+NOT+type:live'
+live_nosingles = '+NOT+type:single'
 query_limit = '&limit=%d'
 
-release_group_url_using_release_name = '%s/ws/2/release-group/?query=release:"%s"%s AND artist:"%s"&limit=%d'
-release_group_url_using_release_name_alias = '%s/ws/2/release-group/?query=release:"%s"%s AND alias:"%s"&limit=%d'
+release_group_url_using_release_name = '%s/ws/2/release-group/?query=release:"%s"%s+AND+artist:"%s"&limit=%d'
+release_group_url_using_release_name_alias = '%s/ws/2/release-group/?query=release:"%s"%s+AND+alias:"%s"&limit=%d'
 release_group_url_release_mbid = '%s/ws/2/release-group/?release=%s'
 release_groups_url_artist_mbid = '%s/ws/2/release-group/?artist="%s"'
 artist_id_check = '%s/ws/2/artist/%s'
@@ -163,7 +163,7 @@ def get_musicbrainz_album(album_title, artist, e_count, limit=1, with_singles=Fa
                 album["artist"] = cu.unescape(cu.smart_str(mbartist.group(1)))
                 album["artist_id"] = mbartistid.group(1)
             except Exception as e:
-                log(e.message)
+                log(e)
         if not album["id"]:
             xbmc.sleep(mb_delay)  # sleep for allowing proper use of webserver
             if not with_singles and not by_release and not use_alias and not use_live:
@@ -326,7 +326,7 @@ def update_musicbrainz_id(type_, info):
             album, _ = get_musicbrainz_album(info["title"], info["artist"], 0)
             cdam_db.set_album_mbid(album["id"], info["title"])
     except Exception as e:
-        log(e.message, xbmc.LOGERROR)
+        log(e, xbmc.LOGDEBUG)
         print_exc()
     return artist_id
 
